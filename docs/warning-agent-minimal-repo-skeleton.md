@@ -1,30 +1,24 @@
-# warning-agent Minimal Repo Skeleton
+# warning-agent 最小 Repo Skeleton
 
-- Status: draft
-- Scope: smallest repository layout for the narrow smart-alerting product
-- Depends on:
+- 状态: `draft`
+- 范围: 仅服务于窄版智能分析-报警器
+- 对齐文档:
   - `warning-agent-architecture.md`
   - `warning-agent-schema-draft.md`
 
-## 1. Design Goal
+## 1. 设计目标
 
-The repository should make the hot path obvious and keep everything else out.
+这个 repo 的目标不是“容纳所有未来能力”，而是把主路径做得最清楚。
 
-The hot path is:
+唯一主路径是:
 
 ```text
-alert -> packet -> local analysis -> optional cloud investigation -> markdown report
+alert -> packet -> local analysis -> optional local Gemma4 investigation -> optional cloud final review -> markdown report
 ```
 
-The repository should not contain:
+因此 repo 结构必须让这条路径直接可见。
 
-- action autopilot code
-- promotion ladder code
-- temporal sidecar code
-- multi-service governance frameworks
-- large UI surfaces
-
-## 2. Minimal Tree
+## 2. 最小目录结构
 
 ```text
 warning-agent/
@@ -60,7 +54,9 @@ warning-agent/
       calibrate.py
 
     investigator/
-      cloud_investigator.py
+      local_gemma4_investigator.py
+      cloud_final_reviewer.py
+      handoff_builder.py
       signoz_tools.py
       prom_tools.py
       repo_locator.py
@@ -112,30 +108,136 @@ warning-agent/
     test_end_to_end_shadow.py
 ```
 
-## 3. File Responsibilities
+## 3. 热路径模块
 
-| Path | Must exist now? | Responsibility |
-|---|---|---|
-| `app/receiver/alertmanager_webhook.py` | yes | accept Alertmanager events and enqueue bounded analysis jobs |
-| `app/collectors/prometheus.py` | yes | collect fixed Prometheus metric windows |
-| `app/collectors/signoz.py` | yes | collect fixed SigNoz log and trace evidence |
-| `app/packet/builder.py` | yes | build canonical `incident packet` objects |
-| `app/packet/render.py` | yes | render packet text for retrieval and local model input |
-| `app/retrieval/index.py` | yes | build local search index over packets, reports, and outcomes |
-| `app/retrieval/search.py` | yes | return top historical matches for one packet |
-| `app/analyzer/fast_scorer.py` | yes | run cheap local first-pass scoring |
-| `app/analyzer/small_model.py` | later | drop-in local small-model implementation behind the same analyzer contract |
-| `app/investigator/cloud_investigator.py` | yes | bounded cloud investigation for escalated packets |
-| `app/investigator/repo_locator.py` | yes | map packet service or operation to candidate repos before code search |
-| `app/reports/markdown_builder.py` | yes | generate the stable Markdown alert report |
-| `app/storage/sqlite_store.py` | yes | store metadata for packets, decisions, reports, and outcomes |
-| `app/storage/artifact_store.py` | yes | read and write JSONL or Parquet artifacts |
-| `app/feedback/outcome_ingest.py` | yes | ingest operator or incident outcomes |
-| `app/feedback/retrain_jobs.py` | later | rebuild retrieval and refresh local analyzer weights |
+这些模块构成产品主路径，必须优先实现：
 
-## 4. Suggested Build Order
+| 文件 | 作用 |
+|---|---|
+| `app/receiver/alertmanager_webhook.py` | 接收 Prometheus Alertmanager 事件 |
+| `app/collectors/prometheus.py` | 拉取固定 Prometheus 指标窗口 |
+| `app/collectors/signoz.py` | 拉取固定 SigNoz logs / traces / 聚合结果 |
+| `app/packet/builder.py` | 构造 `incident packet` |
+| `app/packet/render.py` | 把 packet 渲染成检索与模型输入文本 |
+| `app/retrieval/search.py` | 本地历史检索 |
+| `app/analyzer/fast_scorer.py` | 本地高频 structured scorer |
+| `app/investigator/local_gemma4_investigator.py` | 本地 Gemma4 高频 hard-case 深挖 |
+| `app/investigator/handoff_builder.py` | 把本地 investigator 结果压缩成下一层可消费 handoff |
+| `app/investigator/cloud_final_reviewer.py` | 云端最强模型终审 top hard cases |
+| `app/reports/markdown_builder.py` | 生成标准化 Markdown 报文 |
 
-Build the repository in this order:
+如果某个模块不直接服务这条链路，就不应该进入第一版 repo。
+
+## 4. 冷路径模块
+
+这些模块不是第一波必须完整实现，但必须保留位置：
+
+| 文件 | 作用 |
+|---|---|
+| `app/retrieval/index.py` | 构建本地检索索引 |
+| `app/analyzer/small_model.py` | 本地小模型版 analyzer |
+| `app/analyzer/calibrate.py` | 校准与阈值更新 |
+| `app/storage/sqlite_store.py` | metadata 存储 |
+| `app/storage/artifact_store.py` | JSONL / Parquet artifact 存储 |
+| `app/feedback/outcome_ingest.py` | outcome 写回 |
+| `app/feedback/retrain_jobs.py` | 检索刷新与训练任务 |
+
+## 5. 本地 analyzer 边界
+
+本地 analyzer 必须永远被当成一个稳定接口，而不是一个具体模型。
+
+统一 contract:
+
+- 输入: `incident packet`
+- 输出: `local analyzer decision`
+
+内部可以有两种实现:
+
+1. `fast_scorer.py`
+   - 当前默认实现
+   - retrieval + feature scorer
+2. `small_model.py`
+   - 后续替代候选
+   - 使用相同输出 schema
+
+这样做的原因是:
+
+- 产品不绑定某个模型家族
+- benchmark 与 rollback 更简单
+- Bitter Lesson 下，系统结构优先于具体模型
+
+## 6. investigator 三层边界
+
+### 6.1 `local_gemma4_investigator.py`
+
+作用：
+
+- 处理被 first-pass 升级的 hard cases
+- 允许较大 token budget
+- 做 bounded observability deep analysis
+- 输出结构化 investigation result
+- 生成压缩 handoff
+
+允许：
+
+- 读一个 `incident packet`
+- 读一个 `local analyzer decision`
+- 调 `SigNoz MCP`
+- 补 Prometheus 查询
+- 在映射 repo 中做代码确认
+
+不允许：
+
+- 参与 every-alert 热路径
+- 无边界工具调用
+- 直接决定系统 schema
+- 取代 local analyzer
+
+### 6.2 `handoff_builder.py`
+
+作用：
+
+- 把本地 Gemma4 investigation result 压缩成更短的 handoff
+- 供 cloud final reviewer 使用
+
+允许：
+
+- 提炼关键 hypothesis
+- 提炼 reason codes
+- 提炼证据引用
+- 估算 handoff token 规模
+
+不允许：
+
+- 替代 investigator 本身
+- 直接做最终判决
+
+### 6.3 `cloud_final_reviewer.py`
+
+作用：
+
+- 只处理最难、最重要的 top hard cases
+- 复核本地 Gemma4 的结论
+- 输出 final review result
+
+允许：
+
+- 读 packet
+- 读 local decision
+- 读 local Gemma4 investigation result
+- 读 compressed handoff
+- 必要时补充极少量高价值工具调用
+
+不允许：
+
+- 参与 every-alert 热路径
+- 重复做完整本地调查
+- 读取原始观测洪流
+- 直接决定系统 schema
+
+## 7. 推荐实现顺序
+
+按下面顺序实现最稳：
 
 1. `schemas/`
 2. `packet/`
@@ -143,154 +245,103 @@ Build the repository in this order:
 4. `reports/`
 5. `retrieval/`
 6. `analyzer/fast_scorer.py`
-7. `investigator/`
-8. `feedback/`
-9. `analyzer/small_model.py`
+7. `investigator/local_gemma4_investigator.py`
+8. `investigator/handoff_builder.py`
+9. `investigator/cloud_final_reviewer.py`
+10. `storage/`
+11. `feedback/`
+12. `analyzer/small_model.py`
 
-This order preserves the Bitter Lesson logic:
+这个顺序的意义是：
 
-- first make the representation stable
-- then make search work
-- then add cheap local learning
-- only then add a local small model behind the same contract
+- 先固定表示
+- 再固定采证
+- 再固定输出
+- 再引入 search
+- 再引入 local learning
+- 再引入本地 Gemma4 investigator
+- 再引入云端终审
+- 最后才引入 local small model
 
-## 5. Hot Path vs Offline Path
+## 8. 最小配置文件
 
-### Hot path modules
+### `configs/services.yaml`
 
-These must stay simple and deterministic:
+只放:
 
-- `receiver/*`
-- `collectors/*`
-- `packet/*`
-- `retrieval/search.py`
-- `analyzer/fast_scorer.py`
-- `investigator/cloud_investigator.py`
-- `reports/markdown_builder.py`
-
-### Offline path modules
-
-These can evolve later:
-
-- `retrieval/index.py`
-- `feedback/retrain_jobs.py`
-- `scripts/train_fast_scorer.py`
-- `scripts/train_small_model.py`
-
-## 6. Local Analyzer Contract Boundary
-
-The repository should treat local analysis as one stable interface:
-
-- input: `incident packet`
-- output: `local analyzer decision`
-
-Two implementations may live behind that interface:
-
-1. `fast_scorer.py`
-   - current default
-   - cheap, high-frequency
-   - retrieval plus structured scorer
-2. `small_model.py`
-   - later replacement candidate
-   - same output schema
-   - same metrics and rollback bars
-
-This prevents the repository from coupling product behavior to one model family.
-
-## 7. Cloud Investigator Boundary
-
-The cloud investigator must stay a sidecar, not the main runtime brain.
-
-It may:
-
-- read one packet
-- read one local analyzer decision
-- call SigNoz and Prometheus tools
-- search mapped repos only
-- write one investigation result
-
-It may not:
-
-- act as the first-pass scorer
-- scan arbitrary raw logs at global scale
-- decide product output format on its own
-
-## 8. Storage Layout
-
-Prefer simple local storage first.
-
-Recommended default:
-
-- `SQLite` for metadata tables
-- `JSONL` for raw packet, decision, investigation, and outcome artifacts
-- local on-disk retrieval index
-
-Suggested table set:
-
-- `packets`
-- `local_decisions`
-- `cloud_investigations`
-- `alert_reports`
-- `outcomes`
-
-## 9. Configuration Files
-
-Keep configuration small and explicit.
-
-### `services.yaml`
-
-Contains:
-
-- service names
-- operation allowlists if needed
+- service canonical names
+- operation allowlists
 - owner hints
 - repo hints
 
-### `thresholds.yaml`
+### `configs/thresholds.yaml`
 
-Contains:
+只放:
 
-- local severity thresholds
+- 本地 severity thresholds
 - novelty threshold
 - cloud escalation threshold
-- false-page guardrails
+- false-page ceiling
 
-### `escalation.yaml`
+### `configs/escalation.yaml`
 
-Contains:
+只放:
 
-- cloud investigation trigger rules
-- max concurrent investigations
-- report delivery rules
+- local Gemma4 investigation trigger rules
+- cloud final review trigger rules
+- max concurrent local investigations
+- max concurrent cloud reviews
+- report delivery routes
 
-### `reports.yaml`
+### `configs/reports.yaml`
 
-Contains:
+只放:
 
 - Markdown section order
-- severity-to-delivery mapping
-- optional report labels
+- severity -> delivery class mapping
+- optional labels
 
-## 10. Deliberately Missing From This Skeleton
+## 9. 推荐最小存储
 
-These are intentionally not part of the minimal repository:
+一开始不要上复杂数据库与事件总线。
 
-- UI server
+推荐最小存储：
+
+- `SQLite` 存 metadata
+- `JSONL` 存 packet / decision / investigation / outcome artifacts
+- 本地检索索引文件
+
+最小表集合：
+
+- `packets`
+- `local_decisions`
+- `investigations`
+- `alert_reports`
+- `outcomes`
+
+## 10. 第一版不要引入的东西
+
+下面这些都应明确排除在最小 repo 外：
+
+- action autopilot
+- promotion ladder
+- runtime action admission
+- temporal sidecar
+- multi-lane governance
+- UI dashboard
 - workflow engine
-- action execution sink
-- autopilot ledgers
-- promotion-state artifacts
-- temporal experiments
-- multi-tenant control plane
+- general agent runtime
 
-If any of these become necessary, they should be justified by product evidence first.
+如果未来真的需要，也必须在产品证据基础上再引入。
 
-## 11. Final Recommendation
+## 11. 最终建议
 
-This repository skeleton is intentionally narrower than `fixit`.
+这个 skeleton 的目的只有一个：
 
-It is built for one thing:
+> 让 `warning-agent` 只围绕“本地高频分析 + 稀疏云端深挖 + Markdown 报文”这条产品主线生长，
+> 不让 repo 在第一阶段长成更大的 incident platform。
 
-`realtime smart alerting with cheap local first-pass analysis and sparse cloud investigation`
+在三层 investigator 版本下，更精确的表述应是：
 
-If a new file or module does not directly support that loop, it should not enter the repository.
+> 让 `warning-agent` 只围绕“本地高频分析 + 本地 Gemma4 深挖 + 稀疏云端终审 + Markdown 报文”这条产品主线生长，
+> 不让 repo 在第一阶段长成更大的 incident platform。
