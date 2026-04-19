@@ -1,0 +1,47 @@
+{
+  "protocol_version": "manual-replay.v1",
+  "candidate_source": "manual_replay",
+  "environment": "prod",
+  "replay_label": "auth-session-traffic-shift-fixture",
+  "alert_payload": {
+    "receiver": "warning-agent",
+    "status": "firing",
+    "alerts": [
+      {
+        "status": "firing",
+        "labels": {
+          "alertname": "AuthTrafficShift",
+          "service": "auth",
+          "operation": "POST /api/session",
+          "severity": "warning",
+          "environment": "prod"
+        },
+        "annotations": {
+          "summary": "auth POST /api/session traffic shifted but errors stayed near baseline"
+        },
+        "startsAt": "2026-04-18T13:45:00Z",
+        "endsAt": "0001-01-01T00:00:00Z",
+        "generatorURL": "http://prometheus.example/graph?g0.expr=auth_session_traffic_shift",
+        "fingerprint": "authwarn001"
+      }
+    ],
+    "groupLabels": {
+      "alertname": "AuthTrafficShift",
+      "service": "auth"
+    },
+    "commonLabels": {
+      "alertname": "AuthTrafficShift",
+      "service": "auth",
+      "severity": "warning",
+      "environment": "prod",
+      "operation": "POST /api/session"
+    },
+    "commonAnnotations": {
+      "summary": "auth POST /api/session traffic shifted but errors stayed near baseline"
+    },
+    "externalURL": "http://alertmanager.example",
+    "version": "4",
+    "groupKey": "{}:{alertname=\"AuthTrafficShift\",service=\"auth\"}",
+    "truncatedAlerts": 0
+  }
+}

@@ -1,0 +1,99 @@
+{
+  "summary_version": "cloud-fallback-benchmark-summary.v1",
+  "generated_at": "2026-04-19T06:58:12Z",
+  "corpus_path": "/home/peng/dt-git/github/warning-agent/fixtures/evidence/cloud-fallback-routing-eval-corpus.json",
+  "corpus_contract": {
+    "schema_version": "cloud-fallback-routing-eval-corpus.v1",
+    "total_cases": 10,
+    "expected_cloud_fallback_case_count": 0,
+    "minimum_cases": 10,
+    "measurement_ready": true,
+    "blocking_reasons": []
+  },
+  "routing_snapshot": {
+    "allow_cloud_fallback": true,
+    "cloud_fallback_enabled": true,
+    "local_confidence_below": 0.7,
+    "unresolved_unknowns_required": true,
+    "conflicting_hypotheses_required": false,
+    "max_invocation_rate_total": 0.05,
+    "max_invocation_rate_investigated": 0.25,
+    "max_wall_time_seconds": 90,
+    "max_handoff_tokens": 1200
+  },
+  "gate_snapshot": {
+    "required_corpus_schema_version": "cloud-fallback-routing-eval-corpus.v1",
+    "minimum_cases": 10,
+    "cloud_fallback_rate_total_max": 0.05,
+    "cloud_fallback_rate_investigated_max": 0.25,
+    "cloud_fallback_p95_wall_time_sec_max": 90,
+    "compressed_handoff_p95_tokens_max": 1200,
+    "final_investigation_schema_validity_required": 1.0,
+    "cloud_unavailable_fallback_report_success_required": 0.95
+  },
+  "metrics": {
+    "total_cases": 10,
+    "expected_cloud_fallback_case_count": 0,
+    "investigated_case_count": 2,
+    "actual_cloud_fallback_invocation_count": 0,
+    "cloud_fallback_rate_total": 0.0,
+    "cloud_fallback_rate_investigated": 0.0,
+    "cloud_routing_label_alignment_rate": 1.0,
+    "cloud_fallback_p95_wall_time_sec": 0.0,
+    "compressed_handoff_p95_tokens": 0.0,
+    "final_investigation_schema_validity_rate": 1.0,
+    "cloud_unavailable_fallback_report_success_rate": 1.0
+  },
+  "acceptance": {
+    "accepted": true,
+    "blockers": [],
+    "checks": {
+      "benchmark_measurement_ready": {
+        "actual": true,
+        "expected": true,
+        "comparator": "==",
+        "passed": true
+      },
+      "cloud_fallback_rate_total": {
+        "actual": 0.0,
+        "expected": 0.05,
+        "comparator": "<=",
+        "passed": true
+      },
+      "cloud_fallback_rate_investigated": {
+        "actual": 0.0,
+        "expected": 0.25,
+        "comparator": "<=",
+        "passed": true
+      },
+      "cloud_fallback_p95_wall_time_sec": {
+        "actual": 0.0,
+        "expected": 90,
+        "comparator": "<=",
+        "passed": true
+      },
+      "compressed_handoff_p95_tokens": {
+        "actual": 0.0,
+        "expected": 1200,
+        "comparator": "<=",
+        "passed": true
+      },
+      "final_investigation_schema_validity_rate": {
+        "actual": 1.0,
+        "expected": 1.0,
+        "comparator": "==",
+        "passed": true
+      },
+      "cloud_unavailable_fallback_report_success_rate": {
+        "actual": 1.0,
+        "expected": 0.95,
+        "comparator": ">=",
+        "passed": true
+      }
+    }
+  },
+  "accepted_cloud_fallback_baseline": true,
+  "notes": [
+    "cloud benchmark corpus produced zero runtime cloud invocations; cloud path correctness is separately proven by targeted runtime/failure smoke tests"
+  ]
+}

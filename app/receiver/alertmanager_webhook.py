@@ -1,0 +1,294 @@
+"""Minimal Alertmanager webhook stub and normalization surface for warning-agent."""
+
+from __future__ import annotations
+
+import json
+from dataclasses import asdict
+from pathlib import Path
+from typing import Final, Literal, NotRequired, TypedDict
+
+from fastapi import FastAPI
+from fastapi.responses import JSONResponse
+
+from app.collectors.evidence_bundle import build_live_evidence_bundle
+from app.collectors.prometheus import PrometheusCollector
+from app.collectors.signoz import SignozCollector
+from app.packet.contracts import CandidateSource
+from app.receiver.replay_loader import AlertmanagerWebhookPayload
+
+WEBHOOK_PATH: Final = "/webhook/alertmanager"
+HEALTH_PATH: Final = "/healthz"
+READINESS_PATH: Final = "/readyz"
+WEBHOOK_RECEIPT_SCHEMA_VERSION: Final = "alertmanager-webhook-receipt.v1"
+
+
+class NormalizedSourceRefs(TypedDict):
+    rule_id: str | None
+    source_url: str | None
+    eval_window: str | None
+    severity: str | None
+
+
+class NormalizedAlertGroup(TypedDict):
+    candidate_source: CandidateSource
+    receiver: str
+    status: str
+    alert_count: int
+    alertname: str | None
+    environment: str | None
+    service: str | None
+    operation: str | None
+    group_key: str
+    common_labels: dict[str, str]
+    common_annotations: dict[str, str]
+    source_refs: NotRequired[NormalizedSourceRefs]
+
+
+class WebhookRuntimeSummary(TypedDict):
+    packet_id: str
+    decision_id: str
+    investigation_id: str | None
+    investigation_stage: Literal["none", "local_primary", "cloud_fallback"]
+    report_id: str
+
+
+class WebhookError(TypedDict):
+    code: str
+    message: str
+
+
+class WebhookHealth(TypedDict):
+    status: str
+    service: str
+    surface: str
+
+
+class WebhookReadiness(TypedDict):
+    status: str
+    service: str
+    surface: str
+    evidence_source: Literal["fixture", "live"]
+    checks: dict[str, bool]
+
+
+class WebhookReceipt(TypedDict):
+    schema_version: str
+    accepted: bool
+    receipt_state: Literal["accepted", "rejected"]
+    normalized: NormalizedAlertGroup
+    runtime: NotRequired[WebhookRuntimeSummary]
+    error: NotRequired[WebhookError]
+
+
+def _first_non_empty(*values: str | None) -> str | None:
+    for value in values:
+        if value:
+            return value
+    return None
+
+
+def normalize_alertmanager_payload(
+    payload: AlertmanagerWebhookPayload,
+    *,
+    candidate_source: Literal["alertmanager_webhook", "manual_replay"] = "alertmanager_webhook",
+) -> NormalizedAlertGroup:
+    alerts = payload.get("alerts", [])
+    first_alert = alerts[0] if alerts else None
+    common_labels = payload.get("commonLabels", {})
+    group_labels = payload.get("groupLabels", {})
+    first_labels = first_alert.get("labels", {}) if first_alert else {}
+
+    return {
+        "candidate_source": candidate_source,
+        "receiver": payload["receiver"],
+        "status": payload["status"],
+        "alert_count": len(alerts),
+        "alertname": _first_non_empty(
+            common_labels.get("alertname"),
+            group_labels.get("alertname"),
+            first_labels.get("alertname"),
+        ),
+        "environment": _first_non_empty(
+            common_labels.get("environment"),
+            first_labels.get("environment"),
+        ),
+        "service": _first_non_empty(
+            common_labels.get("service"),
+            group_labels.get("service"),
+            first_labels.get("service"),
+        ),
+        "operation": _first_non_empty(
+            common_labels.get("operation"),
+            first_labels.get("operation"),
+        ),
+        "group_key": payload["groupKey"],
+        "common_labels": common_labels,
+        "common_annotations": payload.get("commonAnnotations", {}),
+    }
+
+
+def _load_json(path: Path) -> dict:
+    with path.open("r", encoding="utf-8") as handle:
+        return json.load(handle)
+
+
+def _resolve_evidence_fixture(normalized: NormalizedAlertGroup, *, repo_root: Path) -> Path:
+    service = normalized.get("service")
+    if not service:
+        raise ValueError("normalized alert must include service before webhook runtime execution")
+
+    evidence_fixture = (repo_root / "fixtures" / "evidence" / f"{service}.packet-input.json").resolve()
+    if not evidence_fixture.exists():
+        raise ValueError(f"webhook evidence fixture does not exist: {evidence_fixture}")
+    return evidence_fixture
+
+
+def _build_health_payload() -> WebhookHealth:
+    return {
+        "status": "ok",
+        "service": "warning-agent",
+        "surface": "alertmanager_webhook",
+    }
+
+
+
+def _build_readiness_payload(
+    *,
+    repo_root: Path,
+    evidence_source: Literal["fixture", "live"],
+) -> WebhookReadiness:
+    checks = {
+        "repo_root_exists": repo_root.exists(),
+        "thresholds_config_exists": (repo_root / "configs" / "thresholds.yaml").exists(),
+        "escalation_config_exists": (repo_root / "configs" / "escalation.yaml").exists(),
+    }
+    return {
+        "status": "ready" if all(checks.values()) else "not_ready",
+        "service": "warning-agent",
+        "surface": "alertmanager_webhook",
+        "evidence_source": evidence_source,
+        "checks": checks,
+    }
+
+
+
+def build_webhook_error_receipt(
+    normalized: NormalizedAlertGroup,
+    *,
+    code: str,
+    message: str,
+) -> WebhookReceipt:
+    return {
+        "schema_version": WEBHOOK_RECEIPT_SCHEMA_VERSION,
+        "accepted": False,
+        "receipt_state": "rejected",
+        "normalized": normalized,
+        "error": {
+            "code": code,
+            "message": message,
+        },
+    }
+
+
+
+def create_app(
+    *,
+    repo_root: str | Path = Path("."),
+    data_root: str | Path | None = None,
+    evidence_source: Literal["fixture", "live"] = "fixture",
+    prometheus_collector: PrometheusCollector | None = None,
+    signoz_collector: SignozCollector | None = None,
+    evidence_now: str | None = None,
+) -> FastAPI:
+    repo_root = Path(repo_root)
+    app = FastAPI(title="warning-agent alertmanager webhook stub")
+
+    @app.get(HEALTH_PATH)
+    def healthz() -> WebhookHealth:
+        return _build_health_payload()
+
+    @app.get(READINESS_PATH, response_model=None)
+    def readyz():
+        readiness = _build_readiness_payload(repo_root=repo_root, evidence_source=evidence_source)
+        if readiness["status"] == "ready":
+            return readiness
+        return JSONResponse(status_code=503, content=readiness)
+
+    @app.post(WEBHOOK_PATH, response_model=None)
+    def receive_alertmanager_webhook(payload: AlertmanagerWebhookPayload):
+        try:
+            return build_webhook_receipt(
+                payload,
+                repo_root=repo_root,
+                data_root=data_root,
+                evidence_source=evidence_source,
+                prometheus_collector=prometheus_collector,
+                signoz_collector=signoz_collector,
+                evidence_now=evidence_now,
+            )
+        except ValueError as exc:
+            return JSONResponse(
+                status_code=422,
+                content=build_webhook_error_receipt(
+                    normalize_alertmanager_payload(payload),
+                    code="runtime_validation_error",
+                    message=str(exc),
+                ),
+            )
+        except Exception as exc:
+            return JSONResponse(
+                status_code=500,
+                content=build_webhook_error_receipt(
+                    normalize_alertmanager_payload(payload),
+                    code="runtime_execution_failed",
+                    message=str(exc),
+                ),
+            )
+
+    return app
+
+
+def build_webhook_receipt(
+    payload: AlertmanagerWebhookPayload,
+    *,
+    repo_root: str | Path = Path("."),
+    data_root: str | Path | None = None,
+    evidence_source: Literal["fixture", "live"] = "fixture",
+    prometheus_collector: PrometheusCollector | None = None,
+    signoz_collector: SignozCollector | None = None,
+    evidence_now: str | None = None,
+) -> WebhookReceipt:
+    normalized = normalize_alertmanager_payload(payload)
+    repo_root = Path(repo_root)
+
+    from app.runtime_entry import build_runtime_execution_summary, execute_runtime_inputs
+    from app.storage.artifact_store import JSONLArtifactStore
+
+    evidence_fixture = None
+    if evidence_source == "fixture":
+        evidence_fixture = _resolve_evidence_fixture(normalized, repo_root=repo_root)
+        evidence_bundle = _load_json(evidence_fixture)
+    else:
+        evidence_bundle = build_live_evidence_bundle(
+            normalized,
+            repo_root=repo_root,
+            prometheus_collector=prometheus_collector,
+            signoz_collector=signoz_collector,
+            now=evidence_now,
+        )
+    artifact_store = JSONLArtifactStore(root=Path(data_root)) if data_root else JSONLArtifactStore()
+    runtime_execution = execute_runtime_inputs(
+        normalized_alert=normalized,
+        evidence_bundle=evidence_bundle,
+        repo_root=repo_root,
+        evidence_fixture=evidence_fixture,
+        artifact_store=artifact_store,
+    )
+    runtime_summary = build_runtime_execution_summary(runtime_execution)
+    return {
+        "schema_version": WEBHOOK_RECEIPT_SCHEMA_VERSION,
+        "accepted": True,
+        "receipt_state": "accepted",
+        "normalized": normalized,
+        "runtime": asdict(runtime_summary),
+    }

@@ -1,0 +1,52 @@
+investigator:
+  default_mode: local_first
+  routing:
+    require_needs_investigation: true
+    allowed_provider_order:
+      - local_primary
+    allow_cloud_fallback: true
+  local_primary:
+    enabled: true
+    model_provider: local_vllm
+    model_name: local-primary-pending
+    budgets:
+      wall_time_seconds: 120
+      max_tool_calls: 8
+      max_prompt_tokens: 2400
+      max_completion_tokens: 600
+      max_retrieval_refs: 10
+      max_trace_refs: 5
+      max_log_refs: 5
+      max_code_refs: 5
+    trigger_rules:
+      confidence_below: 0.55
+      novelty_at_or_above: 0.79
+      severity_probability_at_or_above: 0.95
+      blast_radius_at_or_above: 0.84
+      page_owner_requires_confidence_below: 0.61
+  cloud_fallback:
+    enabled: true
+    available_phase: P5
+    model_provider: openai
+    model_name: cloud-fallback-pending
+    budgets:
+      max_invocation_rate_total: 0.05
+      max_invocation_rate_investigated: 0.25
+      max_wall_time_seconds: 90
+      max_handoff_tokens: 1200
+    audit:
+      require_parent_investigation_id: true
+      require_handoff_markdown: true
+      require_handoff_tokens_estimate: true
+      require_failure_reason_note: true
+    trigger_rules:
+      local_confidence_below: 0.7
+      unresolved_unknowns_required: true
+      conflicting_hypotheses_required: false
+  max_concurrent_local_primary: 2
+  max_concurrent_cloud_fallback: 1
+report_delivery_routes:
+  observe: markdown_only
+  open_ticket: markdown_plus_ticket
+  page_owner: markdown_plus_page
+  send_to_human_review: markdown_plus_review_queue

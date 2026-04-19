@@ -1,0 +1,797 @@
+{
+  "schema_version": "local-analyzer-temporal-robustness-corpus.v1",
+  "cases": [
+    {
+      "case_id": "checkout_high_error_rate",
+      "replay_fixture": "fixtures/replay/manual-replay.checkout.high-error-rate.json",
+      "variants": [
+        {
+          "variant_id": "window_minus_5m",
+          "time_offset_minutes": -5,
+          "evidence_fixture": "fixtures/evidence/checkout.packet-input.json",
+          "temporal_context": {
+            "error_rate_1h": 0.18,
+            "error_rate_24h": 0.03,
+            "error_rate_7d_p95": 0.05,
+            "latency_p95_1h": 2200,
+            "latency_p95_24h": 390,
+            "qps_1h": 119,
+            "qps_24h": 118,
+            "anomaly_duration_sec": 600,
+            "deploy_age_sec": 900,
+            "rollback_recent": false,
+            "new_error_template_ratio": 0.61
+          },
+          "expected_needs_investigation": true,
+          "expected_severity_band": "P2"
+        },
+        {
+          "variant_id": "window_baseline",
+          "time_offset_minutes": 0,
+          "evidence_fixture": "fixtures/evidence/checkout.packet-input.json",
+          "temporal_context": {
+            "error_rate_1h": 0.21,
+            "error_rate_24h": 0.04,
+            "error_rate_7d_p95": 0.06,
+            "latency_p95_1h": 2400,
+            "latency_p95_24h": 410,
+            "qps_1h": 122,
+            "qps_24h": 118,
+            "anomaly_duration_sec": 900,
+            "deploy_age_sec": 1200,
+            "rollback_recent": false,
+            "new_error_template_ratio": 0.67
+          },
+          "expected_needs_investigation": true,
+          "expected_severity_band": "P2"
+        },
+        {
+          "variant_id": "window_plus_5m",
+          "time_offset_minutes": 5,
+          "evidence_fixture": "fixtures/evidence/checkout.packet-input.json",
+          "temporal_context": {
+            "error_rate_1h": 0.19,
+            "error_rate_24h": 0.04,
+            "error_rate_7d_p95": 0.06,
+            "latency_p95_1h": 2300,
+            "latency_p95_24h": 415,
+            "qps_1h": 121,
+            "qps_24h": 118,
+            "anomaly_duration_sec": 1200,
+            "deploy_age_sec": 1500,
+            "rollback_recent": false,
+            "new_error_template_ratio": 0.64
+          },
+          "expected_needs_investigation": true,
+          "expected_severity_band": "P2"
+        }
+      ]
+    },
+    {
+      "case_id": "payments_charge_timeout_spike",
+      "replay_fixture": "fixtures/replay/manual-replay.payments.charge-timeout-spike.json",
+      "variants": [
+        {
+          "variant_id": "window_minus_5m",
+          "time_offset_minutes": -5,
+          "evidence_fixture": "fixtures/evidence/payments.packet-input.json",
+          "temporal_context": {
+            "error_rate_1h": 0.16,
+            "error_rate_24h": 0.03,
+            "error_rate_7d_p95": 0.05,
+            "latency_p95_1h": 1850,
+            "latency_p95_24h": 360,
+            "qps_1h": 96,
+            "qps_24h": 93,
+            "anomaly_duration_sec": 480,
+            "deploy_age_sec": 1800,
+            "rollback_recent": false,
+            "new_error_template_ratio": 0.54
+          },
+          "expected_needs_investigation": true,
+          "expected_severity_band": "P2"
+        },
+        {
+          "variant_id": "window_baseline",
+          "time_offset_minutes": 0,
+          "evidence_fixture": "fixtures/evidence/payments.packet-input.json",
+          "temporal_context": {
+            "error_rate_1h": 0.19,
+            "error_rate_24h": 0.04,
+            "error_rate_7d_p95": 0.05,
+            "latency_p95_1h": 1960,
+            "latency_p95_24h": 370,
+            "qps_1h": 99,
+            "qps_24h": 94,
+            "anomaly_duration_sec": 780,
+            "deploy_age_sec": 2100,
+            "rollback_recent": false,
+            "new_error_template_ratio": 0.58
+          },
+          "expected_needs_investigation": true,
+          "expected_severity_band": "P2"
+        },
+        {
+          "variant_id": "window_plus_5m",
+          "time_offset_minutes": 5,
+          "evidence_fixture": "fixtures/evidence/payments.packet-input.json",
+          "temporal_context": {
+            "error_rate_1h": 0.17,
+            "error_rate_24h": 0.04,
+            "error_rate_7d_p95": 0.05,
+            "latency_p95_1h": 1880,
+            "latency_p95_24h": 372,
+            "qps_1h": 97,
+            "qps_24h": 94,
+            "anomaly_duration_sec": 1020,
+            "deploy_age_sec": 2400,
+            "rollback_recent": false,
+            "new_error_template_ratio": 0.56
+          },
+          "expected_needs_investigation": true,
+          "expected_severity_band": "P2"
+        }
+      ]
+    },
+    {
+      "case_id": "catalog_latency_warning",
+      "replay_fixture": "fixtures/replay/manual-replay.catalog.latency-warning.json",
+      "variants": [
+        {
+          "variant_id": "window_minus_5m",
+          "time_offset_minutes": -5,
+          "evidence_fixture": "fixtures/evidence/catalog.packet-input.json",
+          "temporal_context": {
+            "error_rate_1h": 0.01,
+            "error_rate_24h": 0.01,
+            "error_rate_7d_p95": 0.02,
+            "latency_p95_1h": 620,
+            "latency_p95_24h": 610,
+            "qps_1h": 84,
+            "qps_24h": 83,
+            "anomaly_duration_sec": 180,
+            "deploy_age_sec": 14400,
+            "rollback_recent": false,
+            "new_error_template_ratio": 0.08
+          },
+          "expected_needs_investigation": false,
+          "expected_severity_band": "P4"
+        },
+        {
+          "variant_id": "window_baseline",
+          "time_offset_minutes": 0,
+          "evidence_fixture": "fixtures/evidence/catalog.packet-input.json",
+          "temporal_context": {
+            "error_rate_1h": 0.01,
+            "error_rate_24h": 0.01,
+            "error_rate_7d_p95": 0.02,
+            "latency_p95_1h": 640,
+            "latency_p95_24h": 615,
+            "qps_1h": 85,
+            "qps_24h": 83,
+            "anomaly_duration_sec": 240,
+            "deploy_age_sec": 14700,
+            "rollback_recent": false,
+            "new_error_template_ratio": 0.09
+          },
+          "expected_needs_investigation": false,
+          "expected_severity_band": "P4"
+        },
+        {
+          "variant_id": "window_plus_5m",
+          "time_offset_minutes": 5,
+          "evidence_fixture": "fixtures/evidence/catalog.packet-input.json",
+          "temporal_context": {
+            "error_rate_1h": 0.01,
+            "error_rate_24h": 0.01,
+            "error_rate_7d_p95": 0.02,
+            "latency_p95_1h": 630,
+            "latency_p95_24h": 612,
+            "qps_1h": 84,
+            "qps_24h": 83,
+            "anomaly_duration_sec": 300,
+            "deploy_age_sec": 15000,
+            "rollback_recent": false,
+            "new_error_template_ratio": 0.09
+          },
+          "expected_needs_investigation": false,
+          "expected_severity_band": "P4"
+        }
+      ]
+    },
+    {
+      "case_id": "profile_read_latency_warning",
+      "replay_fixture": "fixtures/replay/manual-replay.profile.read-latency-warning.json",
+      "variants": [
+        {
+          "variant_id": "window_minus_5m",
+          "time_offset_minutes": -5,
+          "evidence_fixture": "fixtures/evidence/profile.packet-input.json",
+          "temporal_context": {
+            "error_rate_1h": 0.02,
+            "error_rate_24h": 0.02,
+            "error_rate_7d_p95": 0.03,
+            "latency_p95_1h": 720,
+            "latency_p95_24h": 705,
+            "qps_1h": 61,
+            "qps_24h": 60,
+            "anomaly_duration_sec": 240,
+            "deploy_age_sec": 21600,
+            "rollback_recent": false,
+            "new_error_template_ratio": 0.11
+          },
+          "expected_needs_investigation": false,
+          "expected_severity_band": "P4"
+        },
+        {
+          "variant_id": "window_baseline",
+          "time_offset_minutes": 0,
+          "evidence_fixture": "fixtures/evidence/profile.packet-input.json",
+          "temporal_context": {
+            "error_rate_1h": 0.02,
+            "error_rate_24h": 0.02,
+            "error_rate_7d_p95": 0.03,
+            "latency_p95_1h": 740,
+            "latency_p95_24h": 710,
+            "qps_1h": 62,
+            "qps_24h": 60,
+            "anomaly_duration_sec": 300,
+            "deploy_age_sec": 21900,
+            "rollback_recent": false,
+            "new_error_template_ratio": 0.12
+          },
+          "expected_needs_investigation": false,
+          "expected_severity_band": "P4"
+        },
+        {
+          "variant_id": "window_plus_5m",
+          "time_offset_minutes": 5,
+          "evidence_fixture": "fixtures/evidence/profile.packet-input.json",
+          "temporal_context": {
+            "error_rate_1h": 0.02,
+            "error_rate_24h": 0.02,
+            "error_rate_7d_p95": 0.03,
+            "latency_p95_1h": 730,
+            "latency_p95_24h": 708,
+            "qps_1h": 61,
+            "qps_24h": 60,
+            "anomaly_duration_sec": 360,
+            "deploy_age_sec": 22200,
+            "rollback_recent": false,
+            "new_error_template_ratio": 0.12
+          },
+          "expected_needs_investigation": false,
+          "expected_severity_band": "P4"
+        }
+      ]
+    },
+    {
+      "case_id": "checkout_high_error_rate_db_retry_regression",
+      "replay_fixture": "fixtures/replay/manual-replay.checkout-high-error-rate-db-retry-regression.json",
+      "variants": [
+        {
+          "variant_id": "window_minus_5m",
+          "time_offset_minutes": -5,
+          "evidence_fixture": "fixtures/evidence/checkout-high-error-rate-db-retry-regression.packet-input.json",
+          "temporal_context": {
+            "error_rate_1h": 0.2,
+            "error_rate_24h": 0.02,
+            "error_rate_7d_p95": 0.04,
+            "latency_p95_1h": 2310.0,
+            "latency_p95_24h": 410.0,
+            "qps_1h": 121.0,
+            "qps_24h": 118.0,
+            "anomaly_duration_sec": 600,
+            "deploy_age_sec": 1200,
+            "rollback_recent": false,
+            "new_error_template_ratio": 0.95
+          },
+          "expected_needs_investigation": true,
+          "expected_severity_band": "P2"
+        },
+        {
+          "variant_id": "window_baseline",
+          "time_offset_minutes": 0,
+          "evidence_fixture": "fixtures/evidence/checkout-high-error-rate-db-retry-regression.packet-input.json",
+          "temporal_context": {
+            "error_rate_1h": 0.21,
+            "error_rate_24h": 0.02,
+            "error_rate_7d_p95": 0.04,
+            "latency_p95_1h": 2400.0,
+            "latency_p95_24h": 410.0,
+            "qps_1h": 122.0,
+            "qps_24h": 118.0,
+            "anomaly_duration_sec": 900,
+            "deploy_age_sec": 1800,
+            "rollback_recent": false,
+            "new_error_template_ratio": 0.95
+          },
+          "expected_needs_investigation": true,
+          "expected_severity_band": "P2"
+        },
+        {
+          "variant_id": "window_plus_5m",
+          "time_offset_minutes": 5,
+          "evidence_fixture": "fixtures/evidence/checkout-high-error-rate-db-retry-regression.packet-input.json",
+          "temporal_context": {
+            "error_rate_1h": 0.22,
+            "error_rate_24h": 0.02,
+            "error_rate_7d_p95": 0.04,
+            "latency_p95_1h": 2490.0,
+            "latency_p95_24h": 410.0,
+            "qps_1h": 123.0,
+            "qps_24h": 118.0,
+            "anomaly_duration_sec": 1200,
+            "deploy_age_sec": 2400,
+            "rollback_recent": false,
+            "new_error_template_ratio": 0.95
+          },
+          "expected_needs_investigation": true,
+          "expected_severity_band": "P2"
+        }
+      ]
+    },
+    {
+      "case_id": "payments_charge_timeout_spike_gateway_drain",
+      "replay_fixture": "fixtures/replay/manual-replay.payments-charge-timeout-spike-gateway-drain.json",
+      "variants": [
+        {
+          "variant_id": "window_minus_5m",
+          "time_offset_minutes": -5,
+          "evidence_fixture": "fixtures/evidence/payments-charge-timeout-spike-gateway-drain.packet-input.json",
+          "temporal_context": {
+            "error_rate_1h": 0.18,
+            "error_rate_24h": 0.03,
+            "error_rate_7d_p95": 0.05,
+            "latency_p95_1h": 1890.0,
+            "latency_p95_24h": 450.0,
+            "qps_1h": 94.0,
+            "qps_24h": 92.0,
+            "anomaly_duration_sec": 600,
+            "deploy_age_sec": 1200,
+            "rollback_recent": false,
+            "new_error_template_ratio": 0.84
+          },
+          "expected_needs_investigation": true,
+          "expected_severity_band": "P2"
+        },
+        {
+          "variant_id": "window_baseline",
+          "time_offset_minutes": 0,
+          "evidence_fixture": "fixtures/evidence/payments-charge-timeout-spike-gateway-drain.packet-input.json",
+          "temporal_context": {
+            "error_rate_1h": 0.19,
+            "error_rate_24h": 0.03,
+            "error_rate_7d_p95": 0.05,
+            "latency_p95_1h": 1980.0,
+            "latency_p95_24h": 450.0,
+            "qps_1h": 95.0,
+            "qps_24h": 92.0,
+            "anomaly_duration_sec": 900,
+            "deploy_age_sec": 1800,
+            "rollback_recent": false,
+            "new_error_template_ratio": 0.84
+          },
+          "expected_needs_investigation": true,
+          "expected_severity_band": "P2"
+        },
+        {
+          "variant_id": "window_plus_5m",
+          "time_offset_minutes": 5,
+          "evidence_fixture": "fixtures/evidence/payments-charge-timeout-spike-gateway-drain.packet-input.json",
+          "temporal_context": {
+            "error_rate_1h": 0.2,
+            "error_rate_24h": 0.03,
+            "error_rate_7d_p95": 0.05,
+            "latency_p95_1h": 2070.0,
+            "latency_p95_24h": 450.0,
+            "qps_1h": 96.0,
+            "qps_24h": 92.0,
+            "anomaly_duration_sec": 1200,
+            "deploy_age_sec": 2400,
+            "rollback_recent": false,
+            "new_error_template_ratio": 0.84
+          },
+          "expected_needs_investigation": true,
+          "expected_severity_band": "P2"
+        }
+      ]
+    },
+    {
+      "case_id": "search_query_error_burst_shard_regression",
+      "replay_fixture": "fixtures/replay/manual-replay.search-query-error-burst-shard-regression.json",
+      "variants": [
+        {
+          "variant_id": "window_minus_5m",
+          "time_offset_minutes": -5,
+          "evidence_fixture": "fixtures/evidence/search-query-error-burst-shard-regression.packet-input.json",
+          "temporal_context": {
+            "error_rate_1h": 0.185,
+            "error_rate_24h": 0.03,
+            "error_rate_7d_p95": 0.05,
+            "latency_p95_1h": 1800.0,
+            "latency_p95_24h": 450.0,
+            "qps_1h": 209.0,
+            "qps_24h": 209.0,
+            "anomaly_duration_sec": 600,
+            "deploy_age_sec": 1200,
+            "rollback_recent": false,
+            "new_error_template_ratio": 0.84
+          },
+          "expected_needs_investigation": true,
+          "expected_severity_band": "P2"
+        },
+        {
+          "variant_id": "window_baseline",
+          "time_offset_minutes": 0,
+          "evidence_fixture": "fixtures/evidence/search-query-error-burst-shard-regression.packet-input.json",
+          "temporal_context": {
+            "error_rate_1h": 0.195,
+            "error_rate_24h": 0.03,
+            "error_rate_7d_p95": 0.05,
+            "latency_p95_1h": 1890.0,
+            "latency_p95_24h": 450.0,
+            "qps_1h": 210.0,
+            "qps_24h": 209.0,
+            "anomaly_duration_sec": 900,
+            "deploy_age_sec": 1800,
+            "rollback_recent": false,
+            "new_error_template_ratio": 0.84
+          },
+          "expected_needs_investigation": true,
+          "expected_severity_band": "P2"
+        },
+        {
+          "variant_id": "window_plus_5m",
+          "time_offset_minutes": 5,
+          "evidence_fixture": "fixtures/evidence/search-query-error-burst-shard-regression.packet-input.json",
+          "temporal_context": {
+            "error_rate_1h": 0.205,
+            "error_rate_24h": 0.03,
+            "error_rate_7d_p95": 0.05,
+            "latency_p95_1h": 1980.0,
+            "latency_p95_24h": 450.0,
+            "qps_1h": 211.0,
+            "qps_24h": 209.0,
+            "anomaly_duration_sec": 1200,
+            "deploy_age_sec": 2400,
+            "rollback_recent": false,
+            "new_error_template_ratio": 0.84
+          },
+          "expected_needs_investigation": true,
+          "expected_severity_band": "P2"
+        }
+      ]
+    },
+    {
+      "case_id": "catalog_latency_warning_cache_refresh",
+      "replay_fixture": "fixtures/replay/manual-replay.catalog-latency-warning-cache-refresh.json",
+      "variants": [
+        {
+          "variant_id": "window_minus_5m",
+          "time_offset_minutes": -5,
+          "evidence_fixture": "fixtures/evidence/catalog-latency-warning-cache-refresh.packet-input.json",
+          "temporal_context": {
+            "error_rate_1h": 0.028,
+            "error_rate_24h": 0.02,
+            "error_rate_7d_p95": 0.03,
+            "latency_p95_1h": 305.0,
+            "latency_p95_24h": 200.0,
+            "qps_1h": 40.0,
+            "qps_24h": 40.0,
+            "anomaly_duration_sec": 180,
+            "deploy_age_sec": 14400,
+            "rollback_recent": false,
+            "new_error_template_ratio": 0.18
+          },
+          "expected_needs_investigation": false,
+          "expected_severity_band": "P4"
+        },
+        {
+          "variant_id": "window_baseline",
+          "time_offset_minutes": 0,
+          "evidence_fixture": "fixtures/evidence/catalog-latency-warning-cache-refresh.packet-input.json",
+          "temporal_context": {
+            "error_rate_1h": 0.03,
+            "error_rate_24h": 0.02,
+            "error_rate_7d_p95": 0.03,
+            "latency_p95_1h": 320.0,
+            "latency_p95_24h": 200.0,
+            "qps_1h": 41.0,
+            "qps_24h": 40.0,
+            "anomaly_duration_sec": 240,
+            "deploy_age_sec": 18000,
+            "rollback_recent": false,
+            "new_error_template_ratio": 0.18
+          },
+          "expected_needs_investigation": false,
+          "expected_severity_band": "P4"
+        },
+        {
+          "variant_id": "window_plus_5m",
+          "time_offset_minutes": 5,
+          "evidence_fixture": "fixtures/evidence/catalog-latency-warning-cache-refresh.packet-input.json",
+          "temporal_context": {
+            "error_rate_1h": 0.032,
+            "error_rate_24h": 0.02,
+            "error_rate_7d_p95": 0.03,
+            "latency_p95_1h": 335.0,
+            "latency_p95_24h": 200.0,
+            "qps_1h": 42.0,
+            "qps_24h": 40.0,
+            "anomaly_duration_sec": 300,
+            "deploy_age_sec": 21600,
+            "rollback_recent": false,
+            "new_error_template_ratio": 0.18
+          },
+          "expected_needs_investigation": false,
+          "expected_severity_band": "P4"
+        }
+      ]
+    },
+    {
+      "case_id": "profile_read_latency_warning_background_scan",
+      "replay_fixture": "fixtures/replay/manual-replay.profile-read-latency-warning-background-scan.json",
+      "variants": [
+        {
+          "variant_id": "window_minus_5m",
+          "time_offset_minutes": -5,
+          "evidence_fixture": "fixtures/evidence/profile-read-latency-warning-background-scan.packet-input.json",
+          "temporal_context": {
+            "error_rate_1h": 0.032,
+            "error_rate_24h": 0.02,
+            "error_rate_7d_p95": 0.03,
+            "latency_p95_1h": 357.0,
+            "latency_p95_24h": 240.0,
+            "qps_1h": 52.0,
+            "qps_24h": 51.0,
+            "anomaly_duration_sec": 180,
+            "deploy_age_sec": 14400,
+            "rollback_recent": false,
+            "new_error_template_ratio": 0.06
+          },
+          "expected_needs_investigation": false,
+          "expected_severity_band": "P4"
+        },
+        {
+          "variant_id": "window_baseline",
+          "time_offset_minutes": 0,
+          "evidence_fixture": "fixtures/evidence/profile-read-latency-warning-background-scan.packet-input.json",
+          "temporal_context": {
+            "error_rate_1h": 0.034,
+            "error_rate_24h": 0.02,
+            "error_rate_7d_p95": 0.03,
+            "latency_p95_1h": 372.0,
+            "latency_p95_24h": 240.0,
+            "qps_1h": 53.0,
+            "qps_24h": 51.0,
+            "anomaly_duration_sec": 240,
+            "deploy_age_sec": 18000,
+            "rollback_recent": false,
+            "new_error_template_ratio": 0.06
+          },
+          "expected_needs_investigation": false,
+          "expected_severity_band": "P4"
+        },
+        {
+          "variant_id": "window_plus_5m",
+          "time_offset_minutes": 5,
+          "evidence_fixture": "fixtures/evidence/profile-read-latency-warning-background-scan.packet-input.json",
+          "temporal_context": {
+            "error_rate_1h": 0.036,
+            "error_rate_24h": 0.02,
+            "error_rate_7d_p95": 0.03,
+            "latency_p95_1h": 387.0,
+            "latency_p95_24h": 240.0,
+            "qps_1h": 54.0,
+            "qps_24h": 51.0,
+            "anomaly_duration_sec": 300,
+            "deploy_age_sec": 21600,
+            "rollback_recent": false,
+            "new_error_template_ratio": 0.06
+          },
+          "expected_needs_investigation": false,
+          "expected_severity_band": "P4"
+        }
+      ]
+    },
+    {
+      "case_id": "inventory_stock_cpu_warning_batch_window",
+      "replay_fixture": "fixtures/replay/manual-replay.inventory-stock-cpu-warning-batch-window.json",
+      "variants": [
+        {
+          "variant_id": "window_minus_5m",
+          "time_offset_minutes": -5,
+          "evidence_fixture": "fixtures/evidence/inventory-stock-cpu-warning-batch-window.packet-input.json",
+          "temporal_context": {
+            "error_rate_1h": 0.018,
+            "error_rate_24h": 0.02,
+            "error_rate_7d_p95": 0.03,
+            "latency_p95_1h": 285.0,
+            "latency_p95_24h": 210.0,
+            "qps_1h": 60.0,
+            "qps_24h": 59.0,
+            "anomaly_duration_sec": 180,
+            "deploy_age_sec": 14400,
+            "rollback_recent": false,
+            "new_error_template_ratio": 0.08
+          },
+          "expected_needs_investigation": false,
+          "expected_severity_band": "P4"
+        },
+        {
+          "variant_id": "window_baseline",
+          "time_offset_minutes": 0,
+          "evidence_fixture": "fixtures/evidence/inventory-stock-cpu-warning-batch-window.packet-input.json",
+          "temporal_context": {
+            "error_rate_1h": 0.02,
+            "error_rate_24h": 0.02,
+            "error_rate_7d_p95": 0.03,
+            "latency_p95_1h": 300.0,
+            "latency_p95_24h": 210.0,
+            "qps_1h": 61.0,
+            "qps_24h": 59.0,
+            "anomaly_duration_sec": 240,
+            "deploy_age_sec": 18000,
+            "rollback_recent": false,
+            "new_error_template_ratio": 0.08
+          },
+          "expected_needs_investigation": false,
+          "expected_severity_band": "P4"
+        },
+        {
+          "variant_id": "window_plus_5m",
+          "time_offset_minutes": 5,
+          "evidence_fixture": "fixtures/evidence/inventory-stock-cpu-warning-batch-window.packet-input.json",
+          "temporal_context": {
+            "error_rate_1h": 0.022,
+            "error_rate_24h": 0.02,
+            "error_rate_7d_p95": 0.03,
+            "latency_p95_1h": 315.0,
+            "latency_p95_24h": 210.0,
+            "qps_1h": 62.0,
+            "qps_24h": 59.0,
+            "anomaly_duration_sec": 300,
+            "deploy_age_sec": 21600,
+            "rollback_recent": false,
+            "new_error_template_ratio": 0.08
+          },
+          "expected_needs_investigation": false,
+          "expected_severity_band": "P4"
+        }
+      ]
+    },
+    {
+      "case_id": "shipping_label_retry_warning_provider_jitter",
+      "replay_fixture": "fixtures/replay/manual-replay.shipping-label-retry-warning-provider-jitter.json",
+      "variants": [
+        {
+          "variant_id": "window_minus_5m",
+          "time_offset_minutes": -5,
+          "evidence_fixture": "fixtures/evidence/shipping-label-retry-warning-provider-jitter.packet-input.json",
+          "temporal_context": {
+            "error_rate_1h": 0.035,
+            "error_rate_24h": 0.02,
+            "error_rate_7d_p95": 0.03,
+            "latency_p95_1h": 415.0,
+            "latency_p95_24h": 300.0,
+            "qps_1h": 27.0,
+            "qps_24h": 28.0,
+            "anomaly_duration_sec": 180,
+            "deploy_age_sec": 14400,
+            "rollback_recent": false,
+            "new_error_template_ratio": 0.1
+          },
+          "expected_needs_investigation": false,
+          "expected_severity_band": "P4"
+        },
+        {
+          "variant_id": "window_baseline",
+          "time_offset_minutes": 0,
+          "evidence_fixture": "fixtures/evidence/shipping-label-retry-warning-provider-jitter.packet-input.json",
+          "temporal_context": {
+            "error_rate_1h": 0.037,
+            "error_rate_24h": 0.02,
+            "error_rate_7d_p95": 0.03,
+            "latency_p95_1h": 430.0,
+            "latency_p95_24h": 300.0,
+            "qps_1h": 28.0,
+            "qps_24h": 28.0,
+            "anomaly_duration_sec": 240,
+            "deploy_age_sec": 18000,
+            "rollback_recent": false,
+            "new_error_template_ratio": 0.1
+          },
+          "expected_needs_investigation": false,
+          "expected_severity_band": "P4"
+        },
+        {
+          "variant_id": "window_plus_5m",
+          "time_offset_minutes": 5,
+          "evidence_fixture": "fixtures/evidence/shipping-label-retry-warning-provider-jitter.packet-input.json",
+          "temporal_context": {
+            "error_rate_1h": 0.039,
+            "error_rate_24h": 0.02,
+            "error_rate_7d_p95": 0.03,
+            "latency_p95_1h": 445.0,
+            "latency_p95_24h": 300.0,
+            "qps_1h": 29.0,
+            "qps_24h": 28.0,
+            "anomaly_duration_sec": 300,
+            "deploy_age_sec": 21600,
+            "rollback_recent": false,
+            "new_error_template_ratio": 0.1
+          },
+          "expected_needs_investigation": false,
+          "expected_severity_band": "P4"
+        }
+      ]
+    },
+    {
+      "case_id": "gateway_edge_cache_warning_soft_refresh",
+      "replay_fixture": "fixtures/replay/manual-replay.gateway-edge-cache-warning-soft-refresh.json",
+      "variants": [
+        {
+          "variant_id": "window_minus_5m",
+          "time_offset_minutes": -5,
+          "evidence_fixture": "fixtures/evidence/gateway-edge-cache-warning-soft-refresh.packet-input.json",
+          "temporal_context": {
+            "error_rate_1h": 0.032,
+            "error_rate_24h": 0.02,
+            "error_rate_7d_p95": 0.03,
+            "latency_p95_1h": 367.0,
+            "latency_p95_24h": 240.0,
+            "qps_1h": 87.0,
+            "qps_24h": 83.0,
+            "anomaly_duration_sec": 180,
+            "deploy_age_sec": 14400,
+            "rollback_recent": false,
+            "new_error_template_ratio": 0.21
+          },
+          "expected_needs_investigation": false,
+          "expected_severity_band": "P4"
+        },
+        {
+          "variant_id": "window_baseline",
+          "time_offset_minutes": 0,
+          "evidence_fixture": "fixtures/evidence/gateway-edge-cache-warning-soft-refresh.packet-input.json",
+          "temporal_context": {
+            "error_rate_1h": 0.034,
+            "error_rate_24h": 0.02,
+            "error_rate_7d_p95": 0.03,
+            "latency_p95_1h": 382.0,
+            "latency_p95_24h": 240.0,
+            "qps_1h": 88.0,
+            "qps_24h": 83.0,
+            "anomaly_duration_sec": 240,
+            "deploy_age_sec": 18000,
+            "rollback_recent": false,
+            "new_error_template_ratio": 0.21
+          },
+          "expected_needs_investigation": false,
+          "expected_severity_band": "P4"
+        },
+        {
+          "variant_id": "window_plus_5m",
+          "time_offset_minutes": 5,
+          "evidence_fixture": "fixtures/evidence/gateway-edge-cache-warning-soft-refresh.packet-input.json",
+          "temporal_context": {
+            "error_rate_1h": 0.036,
+            "error_rate_24h": 0.02,
+            "error_rate_7d_p95": 0.03,
+            "latency_p95_1h": 397.0,
+            "latency_p95_24h": 240.0,
+            "qps_1h": 89.0,
+            "qps_24h": 83.0,
+            "anomaly_duration_sec": 300,
+            "deploy_age_sec": 21600,
+            "rollback_recent": false,
+            "new_error_template_ratio": 0.21
+          },
+          "expected_needs_investigation": false,
+          "expected_severity_band": "P4"
+        }
+      ]
+    }
+  ]
+}

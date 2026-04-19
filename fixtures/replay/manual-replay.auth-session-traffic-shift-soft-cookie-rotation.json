@@ -1,0 +1,47 @@
+{
+  "protocol_version": "manual-replay.v1",
+  "candidate_source": "manual_replay",
+  "environment": "prod",
+  "replay_label": "auth-session-traffic-shift-soft-cookie-rotation-fixture",
+  "alert_payload": {
+    "receiver": "warning-agent",
+    "status": "firing",
+    "alerts": [
+      {
+        "status": "firing",
+        "labels": {
+          "alertname": "AuthTrafficShift",
+          "service": "auth",
+          "operation": "POST /api/session",
+          "severity": "warning",
+          "environment": "prod"
+        },
+        "annotations": {
+          "summary": "auth POST /api/session traffic shifted but errors stayed near baseline [auth_session_traffic_shift_soft_cookie_rotation]"
+        },
+        "startsAt": "2026-04-19T05:45:00Z",
+        "endsAt": "0001-01-01T00:00:00Z",
+        "generatorURL": "http://prometheus.example/graph?g0.expr=auth_session_traffic_shift",
+        "fingerprint": "auth_session_traffic16"
+      }
+    ],
+    "groupLabels": {
+      "alertname": "AuthTrafficShift",
+      "service": "auth"
+    },
+    "commonLabels": {
+      "alertname": "AuthTrafficShift",
+      "service": "auth",
+      "severity": "warning",
+      "environment": "prod",
+      "operation": "POST /api/session"
+    },
+    "commonAnnotations": {
+      "summary": "auth POST /api/session traffic shifted but errors stayed near baseline [auth_session_traffic_shift_soft_cookie_rotation]"
+    },
+    "externalURL": "http://alertmanager.example",
+    "version": "4",
+    "groupKey": "{}:{alertname=\"AuthTrafficShift\",service=\"auth\"}",
+    "truncatedAlerts": 0
+  }
+}

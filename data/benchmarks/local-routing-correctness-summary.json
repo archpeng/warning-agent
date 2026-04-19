@@ -1,0 +1,42 @@
+{
+  "summary_version": "local-routing-correctness-summary.v1",
+  "feature_set_version": "temporal-context-v2.features.v1",
+  "analyzer_version": "trained-scorer-2026-04-19",
+  "runner_version": "warning-agent-trust-benchmark-runner.v1",
+  "generated_at": "2026-04-19T06:58:08Z",
+  "corpus_path": "fixtures/evidence/local-primary-routing-eval-corpus.json",
+  "corpus_contract": {
+    "schema_version": "local-primary-routing-eval-corpus.v1",
+    "minimum_cases": 20,
+    "minimum_expected_local_primary_cases": 4,
+    "measurement_ready": true,
+    "blocking_reasons": []
+  },
+  "metrics": {
+    "total_cases": 20,
+    "expected_local_primary_case_count": 4,
+    "actual_local_primary_invocation_count": 4,
+    "routing_label_alignment_rate": 1.0
+  },
+  "acceptance": {
+    "accepted": true,
+    "blockers": [],
+    "checks": {
+      "benchmark_measurement_ready": {
+        "actual": true,
+        "expected": true,
+        "comparator": "==",
+        "passed": true
+      },
+      "routing_label_alignment_rate": {
+        "actual": 1.0,
+        "expected": 1.0,
+        "comparator": "==",
+        "passed": true
+      }
+    }
+  },
+  "notes": [
+    "trained scorer routing benchmark reflects actual local-primary routing alignment on the dedicated routing corpus"
+  ]
+}

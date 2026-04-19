@@ -1,0 +1,18 @@
+prometheus:
+  timeout_sec: 10.0
+  endpoints:
+    - name: primary
+      base_url: http://192.168.33.16:9090
+      enabled: true
+    - name: secondary
+      base_url: http://10.10.32.206:31326
+      enabled: true
+    - name: temporal_optional
+      base_url: http://10.10.32.203:30223
+      enabled: false
+signoz:
+  timeout_sec: 20.0
+  base_url: http://127.0.0.1:3104/mcp
+  protocol_version: 2025-03-26
+  client_name: warning-agent
+  client_version: 0.1.0

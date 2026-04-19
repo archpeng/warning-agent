@@ -1,0 +1,47 @@
+{
+  "protocol_version": "manual-replay.v1",
+  "candidate_source": "manual_replay",
+  "environment": "prod",
+  "replay_label": "catalog-latency-warning-warmup-tail-fixture",
+  "alert_payload": {
+    "receiver": "warning-agent",
+    "status": "firing",
+    "alerts": [
+      {
+        "status": "firing",
+        "labels": {
+          "alertname": "LatencyWarning",
+          "service": "catalog",
+          "operation": "GET /api/items",
+          "severity": "warning",
+          "environment": "prod"
+        },
+        "annotations": {
+          "summary": "catalog GET /api/items latency is slightly above warning threshold [catalog_latency_warning_warmup_tail]"
+        },
+        "startsAt": "2026-04-18T20:05:00Z",
+        "endsAt": "0001-01-01T00:00:00Z",
+        "generatorURL": "http://prometheus.example/graph?g0.expr=latency_warning",
+        "fingerprint": "catalog_latency_warn08"
+      }
+    ],
+    "groupLabels": {
+      "alertname": "LatencyWarning",
+      "service": "catalog"
+    },
+    "commonLabels": {
+      "alertname": "LatencyWarning",
+      "service": "catalog",
+      "severity": "warning",
+      "environment": "prod",
+      "operation": "GET /api/items"
+    },
+    "commonAnnotations": {
+      "summary": "catalog GET /api/items latency is slightly above warning threshold [catalog_latency_warning_warmup_tail]"
+    },
+    "externalURL": "http://alertmanager.example",
+    "version": "4",
+    "groupKey": "{}:{alertname=\"LatencyWarning\",service=\"catalog\"}",
+    "truncatedAlerts": 0
+  }
+}

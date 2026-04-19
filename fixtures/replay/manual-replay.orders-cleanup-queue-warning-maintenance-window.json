@@ -1,0 +1,47 @@
+{
+  "protocol_version": "manual-replay.v1",
+  "candidate_source": "manual_replay",
+  "environment": "prod",
+  "replay_label": "orders-cleanup-queue-warning-maintenance-window-fixture",
+  "alert_payload": {
+    "receiver": "warning-agent",
+    "status": "firing",
+    "alerts": [
+      {
+        "status": "firing",
+        "labels": {
+          "alertname": "OrdersQueueWarning",
+          "service": "orders",
+          "operation": "POST /api/cleanup",
+          "severity": "warning",
+          "environment": "prod"
+        },
+        "annotations": {
+          "summary": "orders POST /api/cleanup queue depth rose briefly without customer impact [orders_cleanup_queue_warning_maintenance_window]"
+        },
+        "startsAt": "2026-04-19T06:55:00Z",
+        "endsAt": "0001-01-01T00:00:00Z",
+        "generatorURL": "http://prometheus.example/graph?g0.expr=orders_cleanup_queue_warning",
+        "fingerprint": "orders_cleanup_queue17"
+      }
+    ],
+    "groupLabels": {
+      "alertname": "OrdersQueueWarning",
+      "service": "orders"
+    },
+    "commonLabels": {
+      "alertname": "OrdersQueueWarning",
+      "service": "orders",
+      "severity": "warning",
+      "environment": "prod",
+      "operation": "POST /api/cleanup"
+    },
+    "commonAnnotations": {
+      "summary": "orders POST /api/cleanup queue depth rose briefly without customer impact [orders_cleanup_queue_warning_maintenance_window]"
+    },
+    "externalURL": "http://alertmanager.example",
+    "version": "4",
+    "groupKey": "{}:{alertname=\"OrdersQueueWarning\",service=\"orders\"}",
+    "truncatedAlerts": 0
+  }
+}

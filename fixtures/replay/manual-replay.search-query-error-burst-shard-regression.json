@@ -1,0 +1,47 @@
+{
+  "protocol_version": "manual-replay.v1",
+  "candidate_source": "manual_replay",
+  "environment": "prod",
+  "replay_label": "search-query-error-burst-shard-regression-fixture",
+  "alert_payload": {
+    "receiver": "warning-agent",
+    "status": "firing",
+    "alerts": [
+      {
+        "status": "firing",
+        "labels": {
+          "alertname": "SearchQueryErrorBurst",
+          "service": "search",
+          "operation": "GET /api/query",
+          "severity": "critical",
+          "environment": "prod"
+        },
+        "annotations": {
+          "summary": "search GET /api/query started returning 5xx with elevated latency [search_query_error_burst_shard_regression]"
+        },
+        "startsAt": "2026-04-18T18:05:00Z",
+        "endsAt": "0001-01-01T00:00:00Z",
+        "generatorURL": "http://prometheus.example/graph?g0.expr=search_query_error_burst",
+        "fingerprint": "search_query_error_b05"
+      }
+    ],
+    "groupLabels": {
+      "alertname": "SearchQueryErrorBurst",
+      "service": "search"
+    },
+    "commonLabels": {
+      "alertname": "SearchQueryErrorBurst",
+      "service": "search",
+      "severity": "critical",
+      "environment": "prod",
+      "operation": "GET /api/query"
+    },
+    "commonAnnotations": {
+      "summary": "search GET /api/query started returning 5xx with elevated latency [search_query_error_burst_shard_regression]"
+    },
+    "externalURL": "http://alertmanager.example",
+    "version": "4",
+    "groupKey": "{}:{alertname=\"SearchQueryErrorBurst\",service=\"search\"}",
+    "truncatedAlerts": 0
+  }
+}

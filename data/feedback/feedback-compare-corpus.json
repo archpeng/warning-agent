@@ -1,0 +1,3239 @@
+{
+  "schema_version": "feedback-compare-corpus.v1",
+  "generated_at": "2026-04-19T07:45:02Z",
+  "corpus_contract": {
+    "replay_case_count": 30,
+    "landed_outcome_case_count": 1,
+    "unknown_outcome_skipped_count": 0,
+    "total_cases": 31
+  },
+  "cases": [
+    {
+      "case_id": "replay::checkout_high_error_rate",
+      "case_source": "replay_baseline",
+      "label": "severe",
+      "packet": {
+        "schema_version": "incident-packet.v1",
+        "packet_id": "ipk_checkout_post_api_pay_20260418t120008z",
+        "candidate_source": "manual_replay",
+        "created_at": "2026-04-18T12:00:08Z",
+        "environment": "prod",
+        "service": "checkout",
+        "operation": "POST /api/pay",
+        "entity_type": "service_operation",
+        "entity_key": "checkout:POST /api/pay",
+        "window": {
+          "start_ts": "2026-04-18T11:55:00Z",
+          "end_ts": "2026-04-18T12:00:00Z",
+          "duration_sec": 300
+        },
+        "prometheus": {
+          "alerts_firing": [
+            "high_error_rate",
+            "latency_p95_high"
+          ],
+          "error_rate": 0.21,
+          "error_rate_baseline": 0.02,
+          "error_rate_delta": 0.19,
+          "latency_p95_ms": 2400,
+          "latency_p95_baseline_ms": 410,
+          "latency_p95_delta": 1990,
+          "qps": 122,
+          "qps_baseline": 118,
+          "qps_delta": 4,
+          "saturation": 0.81
+        },
+        "signoz": {
+          "top_error_templates": [
+            {
+              "template_id": "tmpl_db_timeout",
+              "template": "db timeout on order lookup",
+              "count": 182,
+              "novelty_score": 0.91
+            }
+          ],
+          "top_slow_operations": [
+            {
+              "operation": "POST /api/pay",
+              "p95_ms": 2400,
+              "error_ratio": 0.34
+            }
+          ],
+          "trace_error_ratio": 0.34,
+          "sample_trace_ids": [
+            "7f8a3c",
+            "7f8a40"
+          ],
+          "sample_log_refs": [
+            "signoz://logs/query-123/row-18"
+          ]
+        },
+        "topology": {
+          "tier": "tier1",
+          "owner": "payments-oncall",
+          "repo_candidates": [
+            "checkout-service",
+            "payment-gateway-client"
+          ],
+          "upstream_count": 6,
+          "downstream_count": 12,
+          "blast_radius_score": 0.88
+        },
+        "evidence_refs": {
+          "prometheus_query_refs": [
+            "prom://query/high_error_rate_window_300s"
+          ],
+          "signoz_query_refs": [
+            "signoz://trace/query-123",
+            "signoz://logs/query-456"
+          ]
+        },
+        "history": {
+          "recent_deploy": true,
+          "similar_incident_ids": [
+            "INC-1422"
+          ],
+          "similar_packet_ids": [
+            "ipk_checkout_post_pay_20260411t110000z"
+          ]
+        }
+      },
+      "retrieval_hits": [
+        {
+          "packet_id": "ipk_checkout_post_pay_20260411t110000z",
+          "similarity": 0.82,
+          "known_outcome": "severe"
+        }
+      ],
+      "input_refs": {
+        "packet_id": "ipk_checkout_post_api_pay_20260418t120008z",
+        "decision_id": "",
+        "investigation_id": null,
+        "report_id": null,
+        "outcome_id": null,
+        "replay_case_id": "checkout_high_error_rate"
+      }
+    },
+    {
+      "case_id": "replay::catalog_latency_warning",
+      "case_source": "replay_baseline",
+      "label": "benign",
+      "packet": {
+        "schema_version": "incident-packet.v1",
+        "packet_id": "ipk_catalog_get_api_items_20260418t121008z",
+        "candidate_source": "manual_replay",
+        "created_at": "2026-04-18T12:10:08Z",
+        "environment": "prod",
+        "service": "catalog",
+        "operation": "GET /api/items",
+        "entity_type": "service_operation",
+        "entity_key": "catalog:GET /api/items",
+        "window": {
+          "start_ts": "2026-04-18T12:05:00Z",
+          "end_ts": "2026-04-18T12:10:00Z",
+          "duration_sec": 300
+        },
+        "prometheus": {
+          "alerts_firing": [
+            "latency_warning",
+            "minor_traffic_shift"
+          ],
+          "error_rate": 0.03,
+          "error_rate_baseline": 0.02,
+          "error_rate_delta": 0.01,
+          "latency_p95_ms": 320,
+          "latency_p95_baseline_ms": 200,
+          "latency_p95_delta": 120,
+          "qps": 41,
+          "qps_baseline": 40,
+          "qps_delta": 1,
+          "saturation": 0.22
+        },
+        "signoz": {
+          "top_error_templates": [
+            {
+              "template_id": "tmpl_cache_warn",
+              "template": "cache miss warning on items list",
+              "count": 3,
+              "novelty_score": 0.18
+            }
+          ],
+          "top_slow_operations": [
+            {
+              "operation": "GET /api/items",
+              "p95_ms": 320,
+              "error_ratio": 0.02
+            }
+          ],
+          "trace_error_ratio": 0.02,
+          "sample_trace_ids": [
+            "c1a2b3"
+          ],
+          "sample_log_refs": [
+            "signoz://logs/query-789/row-4"
+          ]
+        },
+        "topology": {
+          "tier": "tier2",
+          "owner": "catalog-oncall",
+          "repo_candidates": [
+            "catalog-service"
+          ],
+          "upstream_count": 1,
+          "downstream_count": 2,
+          "blast_radius_score": 0.21
+        },
+        "evidence_refs": {
+          "prometheus_query_refs": [
+            "prom://query/catalog_latency_warning_window_300s"
+          ],
+          "signoz_query_refs": [
+            "signoz://trace/query-789",
+            "signoz://logs/query-789"
+          ]
+        },
+        "history": {
+          "recent_deploy": false,
+          "similar_incident_ids": [],
+          "similar_packet_ids": []
+        }
+      },
+      "retrieval_hits": [
+        {
+          "packet_id": "ipk_catalog_get_items_20260410t090000z",
+          "similarity": 0.77,
+          "known_outcome": "benign"
+        }
+      ],
+      "input_refs": {
+        "packet_id": "ipk_catalog_get_api_items_20260418t121008z",
+        "decision_id": "",
+        "investigation_id": null,
+        "report_id": null,
+        "outcome_id": null,
+        "replay_case_id": "catalog_latency_warning"
+      }
+    },
+    {
+      "case_id": "replay::payments_charge_timeout_spike",
+      "case_source": "replay_baseline",
+      "label": "severe",
+      "packet": {
+        "schema_version": "incident-packet.v1",
+        "packet_id": "ipk_payments_post_api_charge_20260418t130008z",
+        "candidate_source": "manual_replay",
+        "created_at": "2026-04-18T13:00:08Z",
+        "environment": "prod",
+        "service": "payments",
+        "operation": "POST /api/charge",
+        "entity_type": "service_operation",
+        "entity_key": "payments:POST /api/charge",
+        "window": {
+          "start_ts": "2026-04-18T12:55:00Z",
+          "end_ts": "2026-04-18T13:00:00Z",
+          "duration_sec": 300
+        },
+        "prometheus": {
+          "alerts_firing": [
+            "charge_timeout_spike",
+            "latency_p95_high"
+          ],
+          "error_rate": 0.2,
+          "error_rate_baseline": 0.03,
+          "error_rate_delta": 0.17,
+          "latency_p95_ms": 2100,
+          "latency_p95_baseline_ms": 450,
+          "latency_p95_delta": 1650,
+          "qps": 95,
+          "qps_baseline": 92,
+          "qps_delta": 3,
+          "saturation": 0.76
+        },
+        "signoz": {
+          "top_error_templates": [
+            {
+              "template_id": "tmpl_payments_timeout",
+              "template": "gateway timeout during charge authorization",
+              "count": 200,
+              "novelty_score": 0.83
+            }
+          ],
+          "top_slow_operations": [
+            {
+              "operation": "POST /api/charge",
+              "p95_ms": 2100,
+              "error_ratio": 0.29
+            }
+          ],
+          "trace_error_ratio": 0.29,
+          "sample_trace_ids": [
+            "pay1a2b",
+            "pay1a2c"
+          ],
+          "sample_log_refs": [
+            "signoz://logs/query-payments-1300/row-11"
+          ]
+        },
+        "topology": {
+          "tier": "tier1",
+          "owner": "payments-oncall",
+          "repo_candidates": [
+            "payments-service",
+            "card-gateway-client"
+          ],
+          "upstream_count": 5,
+          "downstream_count": 9,
+          "blast_radius_score": 0.84
+        },
+        "evidence_refs": {
+          "prometheus_query_refs": [
+            "prom://query/payments_charge_timeout_window_300s"
+          ],
+          "signoz_query_refs": [
+            "signoz://trace/query-payments-1300",
+            "signoz://logs/query-payments-1300"
+          ]
+        },
+        "history": {
+          "recent_deploy": true,
+          "similar_incident_ids": [
+            "INC-1491"
+          ],
+          "similar_packet_ids": [
+            "ipk_payments_post_api_charge_20260415t131008z"
+          ]
+        }
+      },
+      "retrieval_hits": [
+        {
+          "packet_id": "ipk_payments_post_api_charge_20260415t131008z",
+          "similarity": 0.79,
+          "known_outcome": "severe"
+        }
+      ],
+      "input_refs": {
+        "packet_id": "ipk_payments_post_api_charge_20260418t130008z",
+        "decision_id": "",
+        "investigation_id": null,
+        "report_id": null,
+        "outcome_id": null,
+        "replay_case_id": "payments_charge_timeout_spike"
+      }
+    },
+    {
+      "case_id": "replay::search_query_error_burst",
+      "case_source": "replay_baseline",
+      "label": "severe",
+      "packet": {
+        "schema_version": "incident-packet.v1",
+        "packet_id": "ipk_search_get_api_query_20260418t131008z",
+        "candidate_source": "manual_replay",
+        "created_at": "2026-04-18T13:10:08Z",
+        "environment": "prod",
+        "service": "search",
+        "operation": "GET /api/query",
+        "entity_type": "service_operation",
+        "entity_key": "search:GET /api/query",
+        "window": {
+          "start_ts": "2026-04-18T13:05:00Z",
+          "end_ts": "2026-04-18T13:10:00Z",
+          "duration_sec": 300
+        },
+        "prometheus": {
+          "alerts_firing": [
+            "query_error_burst",
+            "query_latency_high"
+          ],
+          "error_rate": 0.21,
+          "error_rate_baseline": 0.03,
+          "error_rate_delta": 0.18,
+          "latency_p95_ms": 1950,
+          "latency_p95_baseline_ms": 450,
+          "latency_p95_delta": 1500,
+          "qps": 210,
+          "qps_baseline": 209,
+          "qps_delta": 1,
+          "saturation": 0.78
+        },
+        "signoz": {
+          "top_error_templates": [
+            {
+              "template_id": "tmpl_search_5xx",
+              "template": "search backend returned 5xx for query shard",
+              "count": 210,
+              "novelty_score": 0.81
+            }
+          ],
+          "top_slow_operations": [
+            {
+              "operation": "GET /api/query",
+              "p95_ms": 1950,
+              "error_ratio": 0.24
+            }
+          ],
+          "trace_error_ratio": 0.24,
+          "sample_trace_ids": [
+            "src5aa1",
+            "src5aa2"
+          ],
+          "sample_log_refs": [
+            "signoz://logs/query-search-1310/row-7"
+          ]
+        },
+        "topology": {
+          "tier": "tier1",
+          "owner": "search-oncall",
+          "repo_candidates": [
+            "search-service"
+          ],
+          "upstream_count": 4,
+          "downstream_count": 11,
+          "blast_radius_score": 0.82
+        },
+        "evidence_refs": {
+          "prometheus_query_refs": [
+            "prom://query/search_query_error_burst_window_300s"
+          ],
+          "signoz_query_refs": [
+            "signoz://trace/query-search-1310",
+            "signoz://logs/query-search-1310"
+          ]
+        },
+        "history": {
+          "recent_deploy": true,
+          "similar_incident_ids": [
+            "INC-1498"
+          ],
+          "similar_packet_ids": [
+            "ipk_search_get_api_query_20260416t141008z"
+          ]
+        }
+      },
+      "retrieval_hits": [
+        {
+          "packet_id": "ipk_search_get_api_query_20260416t141008z",
+          "similarity": 0.78,
+          "known_outcome": "severe"
+        }
+      ],
+      "input_refs": {
+        "packet_id": "ipk_search_get_api_query_20260418t131008z",
+        "decision_id": "",
+        "investigation_id": null,
+        "report_id": null,
+        "outcome_id": null,
+        "replay_case_id": "search_query_error_burst"
+      }
+    },
+    {
+      "case_id": "replay::profile_read_latency_warning",
+      "case_source": "replay_baseline",
+      "label": "benign",
+      "packet": {
+        "schema_version": "incident-packet.v1",
+        "packet_id": "ipk_profile_get_api_profile_20260418t132008z",
+        "candidate_source": "manual_replay",
+        "created_at": "2026-04-18T13:20:08Z",
+        "environment": "prod",
+        "service": "profile",
+        "operation": "GET /api/profile",
+        "entity_type": "service_operation",
+        "entity_key": "profile:GET /api/profile",
+        "window": {
+          "start_ts": "2026-04-18T13:15:00Z",
+          "end_ts": "2026-04-18T13:20:00Z",
+          "duration_sec": 300
+        },
+        "prometheus": {
+          "alerts_firing": [
+            "profile_latency_warning",
+            "profile_cache_soft_miss"
+          ],
+          "error_rate": 0.03,
+          "error_rate_baseline": 0.02,
+          "error_rate_delta": 0.01,
+          "latency_p95_ms": 360,
+          "latency_p95_baseline_ms": 240,
+          "latency_p95_delta": 120,
+          "qps": 52,
+          "qps_baseline": 51,
+          "qps_delta": 1,
+          "saturation": 0.24
+        },
+        "signoz": {
+          "top_error_templates": [
+            {
+              "template_id": "tmpl_profile_cache_soft_miss",
+              "template": "profile cache miss warning on read path",
+              "count": 30,
+              "novelty_score": 0.05
+            }
+          ],
+          "top_slow_operations": [
+            {
+              "operation": "GET /api/profile",
+              "p95_ms": 360,
+              "error_ratio": 0.01
+            }
+          ],
+          "trace_error_ratio": 0.01,
+          "sample_trace_ids": [
+            "prf1",
+            "prf2"
+          ],
+          "sample_log_refs": [
+            "signoz://logs/query-profile-1320/row-3"
+          ]
+        },
+        "topology": {
+          "tier": "tier2",
+          "owner": "profile-oncall",
+          "repo_candidates": [
+            "profile-service"
+          ],
+          "upstream_count": 1,
+          "downstream_count": 2,
+          "blast_radius_score": 0.21
+        },
+        "evidence_refs": {
+          "prometheus_query_refs": [
+            "prom://query/profile_latency_warning_window_300s"
+          ],
+          "signoz_query_refs": [
+            "signoz://trace/query-profile-1320",
+            "signoz://logs/query-profile-1320"
+          ]
+        },
+        "history": {
+          "recent_deploy": false,
+          "similar_incident_ids": [],
+          "similar_packet_ids": []
+        }
+      },
+      "retrieval_hits": [
+        {
+          "packet_id": "ipk_profile_get_api_profile_20260412t111008z",
+          "similarity": 0.72,
+          "known_outcome": "benign"
+        }
+      ],
+      "input_refs": {
+        "packet_id": "ipk_profile_get_api_profile_20260418t132008z",
+        "decision_id": "",
+        "investigation_id": null,
+        "report_id": null,
+        "outcome_id": null,
+        "replay_case_id": "profile_read_latency_warning"
+      }
+    },
+    {
+      "case_id": "replay::inventory_stock_cpu_warning",
+      "case_source": "replay_baseline",
+      "label": "benign",
+      "packet": {
+        "schema_version": "incident-packet.v1",
+        "packet_id": "ipk_inventory_get_api_stock_20260418t133008z",
+        "candidate_source": "manual_replay",
+        "created_at": "2026-04-18T13:30:08Z",
+        "environment": "prod",
+        "service": "inventory",
+        "operation": "GET /api/stock",
+        "entity_type": "service_operation",
+        "entity_key": "inventory:GET /api/stock",
+        "window": {
+          "start_ts": "2026-04-18T13:25:00Z",
+          "end_ts": "2026-04-18T13:30:00Z",
+          "duration_sec": 300
+        },
+        "prometheus": {
+          "alerts_firing": [
+            "inventory_cpu_warning",
+            "inventory_latency_warning"
+          ],
+          "error_rate": 0.02,
+          "error_rate_baseline": 0.02,
+          "error_rate_delta": 0.0,
+          "latency_p95_ms": 300,
+          "latency_p95_baseline_ms": 210,
+          "latency_p95_delta": 90,
+          "qps": 61,
+          "qps_baseline": 59,
+          "qps_delta": 2,
+          "saturation": 0.39
+        },
+        "signoz": {
+          "top_error_templates": [
+            {
+              "template_id": "tmpl_inventory_cache_rotate",
+              "template": "inventory cache rotation caused mild stock read slowdown",
+              "count": 20,
+              "novelty_score": 0.08
+            }
+          ],
+          "top_slow_operations": [
+            {
+              "operation": "GET /api/stock",
+              "p95_ms": 300,
+              "error_ratio": 0.0
+            }
+          ],
+          "trace_error_ratio": 0.0,
+          "sample_trace_ids": [
+            "inv1",
+            "inv2"
+          ],
+          "sample_log_refs": [
+            "signoz://logs/query-inventory-1330/row-6"
+          ]
+        },
+        "topology": {
+          "tier": "tier2",
+          "owner": "inventory-oncall",
+          "repo_candidates": [
+            "inventory-service"
+          ],
+          "upstream_count": 2,
+          "downstream_count": 3,
+          "blast_radius_score": 0.19
+        },
+        "evidence_refs": {
+          "prometheus_query_refs": [
+            "prom://query/inventory_stock_cpu_warning_window_300s"
+          ],
+          "signoz_query_refs": [
+            "signoz://trace/query-inventory-1330",
+            "signoz://logs/query-inventory-1330"
+          ]
+        },
+        "history": {
+          "recent_deploy": false,
+          "similar_incident_ids": [],
+          "similar_packet_ids": []
+        }
+      },
+      "retrieval_hits": [
+        {
+          "packet_id": "ipk_inventory_get_api_stock_20260412t121008z",
+          "similarity": 0.69,
+          "known_outcome": "benign"
+        }
+      ],
+      "input_refs": {
+        "packet_id": "ipk_inventory_get_api_stock_20260418t133008z",
+        "decision_id": "",
+        "investigation_id": null,
+        "report_id": null,
+        "outcome_id": null,
+        "replay_case_id": "inventory_stock_cpu_warning"
+      }
+    },
+    {
+      "case_id": "replay::shipping_label_retry_warning",
+      "case_source": "replay_baseline",
+      "label": "benign",
+      "packet": {
+        "schema_version": "incident-packet.v1",
+        "packet_id": "ipk_shipping_post_api_label_20260418t134008z",
+        "candidate_source": "manual_replay",
+        "created_at": "2026-04-18T13:40:08Z",
+        "environment": "prod",
+        "service": "shipping",
+        "operation": "POST /api/label",
+        "entity_type": "service_operation",
+        "entity_key": "shipping:POST /api/label",
+        "window": {
+          "start_ts": "2026-04-18T13:35:00Z",
+          "end_ts": "2026-04-18T13:40:00Z",
+          "duration_sec": 300
+        },
+        "prometheus": {
+          "alerts_firing": [
+            "shipping_retry_warning",
+            "shipping_latency_warning"
+          ],
+          "error_rate": 0.04,
+          "error_rate_baseline": 0.02,
+          "error_rate_delta": 0.02,
+          "latency_p95_ms": 440,
+          "latency_p95_baseline_ms": 300,
+          "latency_p95_delta": 140,
+          "qps": 28,
+          "qps_baseline": 28,
+          "qps_delta": 0,
+          "saturation": 0.28
+        },
+        "signoz": {
+          "top_error_templates": [
+            {
+              "template_id": "tmpl_shipping_retry_noise",
+              "template": "carrier retry warning with successful fallback",
+              "count": 40,
+              "novelty_score": 0.11
+            }
+          ],
+          "top_slow_operations": [
+            {
+              "operation": "POST /api/label",
+              "p95_ms": 440,
+              "error_ratio": 0.03
+            }
+          ],
+          "trace_error_ratio": 0.03,
+          "sample_trace_ids": [
+            "shp1",
+            "shp2"
+          ],
+          "sample_log_refs": [
+            "signoz://logs/query-shipping-1340/row-9"
+          ]
+        },
+        "topology": {
+          "tier": "tier2",
+          "owner": "shipping-oncall",
+          "repo_candidates": [
+            "shipping-service"
+          ],
+          "upstream_count": 1,
+          "downstream_count": 2,
+          "blast_radius_score": 0.27
+        },
+        "evidence_refs": {
+          "prometheus_query_refs": [
+            "prom://query/shipping_label_retry_warning_window_300s"
+          ],
+          "signoz_query_refs": [
+            "signoz://trace/query-shipping-1340",
+            "signoz://logs/query-shipping-1340"
+          ]
+        },
+        "history": {
+          "recent_deploy": false,
+          "similar_incident_ids": [
+            "INC-1450"
+          ],
+          "similar_packet_ids": [
+            "ipk_shipping_post_api_label_20260413t101008z"
+          ]
+        }
+      },
+      "retrieval_hits": [
+        {
+          "packet_id": "ipk_shipping_post_api_label_20260413t101008z",
+          "similarity": 0.71,
+          "known_outcome": "benign"
+        }
+      ],
+      "input_refs": {
+        "packet_id": "ipk_shipping_post_api_label_20260418t134008z",
+        "decision_id": "",
+        "investigation_id": null,
+        "report_id": null,
+        "outcome_id": null,
+        "replay_case_id": "shipping_label_retry_warning"
+      }
+    },
+    {
+      "case_id": "replay::auth_session_traffic_shift",
+      "case_source": "replay_baseline",
+      "label": "benign",
+      "packet": {
+        "schema_version": "incident-packet.v1",
+        "packet_id": "ipk_auth_post_api_session_20260418t135008z",
+        "candidate_source": "manual_replay",
+        "created_at": "2026-04-18T13:50:08Z",
+        "environment": "prod",
+        "service": "auth",
+        "operation": "POST /api/session",
+        "entity_type": "service_operation",
+        "entity_key": "auth:POST /api/session",
+        "window": {
+          "start_ts": "2026-04-18T13:45:00Z",
+          "end_ts": "2026-04-18T13:50:00Z",
+          "duration_sec": 300
+        },
+        "prometheus": {
+          "alerts_firing": [
+            "auth_traffic_shift",
+            "auth_soft_latency_warning"
+          ],
+          "error_rate": 0.02,
+          "error_rate_baseline": 0.02,
+          "error_rate_delta": 0.0,
+          "latency_p95_ms": 290,
+          "latency_p95_baseline_ms": 180,
+          "latency_p95_delta": 110,
+          "qps": 135,
+          "qps_baseline": 129,
+          "qps_delta": 6,
+          "saturation": 0.18
+        },
+        "signoz": {
+          "top_error_templates": [
+            {
+              "template_id": "tmpl_auth_traffic_shift",
+              "template": "auth session traffic shift after upstream rebalance",
+              "count": 20,
+              "novelty_score": 0.14
+            }
+          ],
+          "top_slow_operations": [
+            {
+              "operation": "POST /api/session",
+              "p95_ms": 290,
+              "error_ratio": 0.0
+            }
+          ],
+          "trace_error_ratio": 0.01,
+          "sample_trace_ids": [
+            "auth1",
+            "auth2"
+          ],
+          "sample_log_refs": [
+            "signoz://logs/query-auth-1350/row-5"
+          ]
+        },
+        "topology": {
+          "tier": "tier2",
+          "owner": "auth-oncall",
+          "repo_candidates": [
+            "auth-service"
+          ],
+          "upstream_count": 2,
+          "downstream_count": 2,
+          "blast_radius_score": 0.24
+        },
+        "evidence_refs": {
+          "prometheus_query_refs": [
+            "prom://query/auth_session_traffic_shift_window_300s"
+          ],
+          "signoz_query_refs": [
+            "signoz://trace/query-auth-1350",
+            "signoz://logs/query-auth-1350"
+          ]
+        },
+        "history": {
+          "recent_deploy": false,
+          "similar_incident_ids": [],
+          "similar_packet_ids": []
+        }
+      },
+      "retrieval_hits": [
+        {
+          "packet_id": "ipk_auth_post_api_session_20260413t111008z",
+          "similarity": 0.68,
+          "known_outcome": "benign"
+        }
+      ],
+      "input_refs": {
+        "packet_id": "ipk_auth_post_api_session_20260418t135008z",
+        "decision_id": "",
+        "investigation_id": null,
+        "report_id": null,
+        "outcome_id": null,
+        "replay_case_id": "auth_session_traffic_shift"
+      }
+    },
+    {
+      "case_id": "replay::orders_cleanup_queue_warning",
+      "case_source": "replay_baseline",
+      "label": "benign",
+      "packet": {
+        "schema_version": "incident-packet.v1",
+        "packet_id": "ipk_orders_post_api_cleanup_20260418t140008z",
+        "candidate_source": "manual_replay",
+        "created_at": "2026-04-18T14:00:08Z",
+        "environment": "prod",
+        "service": "orders",
+        "operation": "POST /api/cleanup",
+        "entity_type": "service_operation",
+        "entity_key": "orders:POST /api/cleanup",
+        "window": {
+          "start_ts": "2026-04-18T13:55:00Z",
+          "end_ts": "2026-04-18T14:00:00Z",
+          "duration_sec": 300
+        },
+        "prometheus": {
+          "alerts_firing": [
+            "orders_queue_warning",
+            "orders_worker_soft_latency"
+          ],
+          "error_rate": 0.03,
+          "error_rate_baseline": 0.02,
+          "error_rate_delta": 0.01,
+          "latency_p95_ms": 390,
+          "latency_p95_baseline_ms": 240,
+          "latency_p95_delta": 150,
+          "qps": 33,
+          "qps_baseline": 32,
+          "qps_delta": 1,
+          "saturation": 0.33
+        },
+        "signoz": {
+          "top_error_templates": [
+            {
+              "template_id": "tmpl_orders_queue_backlog",
+              "template": "orders cleanup queue backlog cleared without paging",
+              "count": 30,
+              "novelty_score": 0.17
+            }
+          ],
+          "top_slow_operations": [
+            {
+              "operation": "POST /api/cleanup",
+              "p95_ms": 390,
+              "error_ratio": 0.02
+            }
+          ],
+          "trace_error_ratio": 0.02,
+          "sample_trace_ids": [
+            "ord1",
+            "ord2"
+          ],
+          "sample_log_refs": [
+            "signoz://logs/query-orders-1400/row-8"
+          ]
+        },
+        "topology": {
+          "tier": "tier2",
+          "owner": "orders-oncall",
+          "repo_candidates": [
+            "orders-service"
+          ],
+          "upstream_count": 1,
+          "downstream_count": 3,
+          "blast_radius_score": 0.22
+        },
+        "evidence_refs": {
+          "prometheus_query_refs": [
+            "prom://query/orders_cleanup_queue_warning_window_300s"
+          ],
+          "signoz_query_refs": [
+            "signoz://trace/query-orders-1400",
+            "signoz://logs/query-orders-1400"
+          ]
+        },
+        "history": {
+          "recent_deploy": false,
+          "similar_incident_ids": [
+            "INC-1431"
+          ],
+          "similar_packet_ids": [
+            "ipk_orders_post_api_cleanup_20260413t121008z"
+          ]
+        }
+      },
+      "retrieval_hits": [
+        {
+          "packet_id": "ipk_orders_post_api_cleanup_20260413t121008z",
+          "similarity": 0.66,
+          "known_outcome": "benign"
+        }
+      ],
+      "input_refs": {
+        "packet_id": "ipk_orders_post_api_cleanup_20260418t140008z",
+        "decision_id": "",
+        "investigation_id": null,
+        "report_id": null,
+        "outcome_id": null,
+        "replay_case_id": "orders_cleanup_queue_warning"
+      }
+    },
+    {
+      "case_id": "replay::gateway_edge_cache_warning",
+      "case_source": "replay_baseline",
+      "label": "benign",
+      "packet": {
+        "schema_version": "incident-packet.v1",
+        "packet_id": "ipk_gateway_get_api_edge_20260418t141008z",
+        "candidate_source": "manual_replay",
+        "created_at": "2026-04-18T14:10:08Z",
+        "environment": "prod",
+        "service": "gateway",
+        "operation": "GET /api/edge",
+        "entity_type": "service_operation",
+        "entity_key": "gateway:GET /api/edge",
+        "window": {
+          "start_ts": "2026-04-18T14:05:00Z",
+          "end_ts": "2026-04-18T14:10:00Z",
+          "duration_sec": 300
+        },
+        "prometheus": {
+          "alerts_firing": [
+            "gateway_cache_warning",
+            "gateway_latency_warning"
+          ],
+          "error_rate": 0.03,
+          "error_rate_baseline": 0.02,
+          "error_rate_delta": 0.01,
+          "latency_p95_ms": 370,
+          "latency_p95_baseline_ms": 240,
+          "latency_p95_delta": 130,
+          "qps": 87,
+          "qps_baseline": 83,
+          "qps_delta": 4,
+          "saturation": 0.31
+        },
+        "signoz": {
+          "top_error_templates": [
+            {
+              "template_id": "tmpl_gateway_cache_churn",
+              "template": "gateway edge cache churn without sustained error growth",
+              "count": 30,
+              "novelty_score": 0.2
+            }
+          ],
+          "top_slow_operations": [
+            {
+              "operation": "GET /api/edge",
+              "p95_ms": 370,
+              "error_ratio": 0.01
+            }
+          ],
+          "trace_error_ratio": 0.01,
+          "sample_trace_ids": [
+            "gtw1",
+            "gtw2"
+          ],
+          "sample_log_refs": [
+            "signoz://logs/query-gateway-1410/row-4"
+          ]
+        },
+        "topology": {
+          "tier": "tier2",
+          "owner": "edge-oncall",
+          "repo_candidates": [
+            "gateway-service"
+          ],
+          "upstream_count": 2,
+          "downstream_count": 4,
+          "blast_radius_score": 0.29
+        },
+        "evidence_refs": {
+          "prometheus_query_refs": [
+            "prom://query/gateway_edge_cache_warning_window_300s"
+          ],
+          "signoz_query_refs": [
+            "signoz://trace/query-gateway-1410",
+            "signoz://logs/query-gateway-1410"
+          ]
+        },
+        "history": {
+          "recent_deploy": false,
+          "similar_incident_ids": [
+            "INC-1440"
+          ],
+          "similar_packet_ids": [
+            "ipk_gateway_get_api_edge_20260413t131008z"
+          ]
+        }
+      },
+      "retrieval_hits": [
+        {
+          "packet_id": "ipk_gateway_get_api_edge_20260413t131008z",
+          "similarity": 0.74,
+          "known_outcome": "benign"
+        }
+      ],
+      "input_refs": {
+        "packet_id": "ipk_gateway_get_api_edge_20260418t141008z",
+        "decision_id": "",
+        "investigation_id": null,
+        "report_id": null,
+        "outcome_id": null,
+        "replay_case_id": "gateway_edge_cache_warning"
+      }
+    },
+    {
+      "case_id": "replay::checkout_high_error_rate_db_retry_regression",
+      "case_source": "replay_baseline",
+      "label": "severe",
+      "packet": {
+        "schema_version": "incident-packet.v1",
+        "packet_id": "ipk_checkout_post_api_pay_20260418t130008z",
+        "candidate_source": "manual_replay",
+        "created_at": "2026-04-18T13:00:08Z",
+        "environment": "prod",
+        "service": "checkout",
+        "operation": "POST /api/pay",
+        "entity_type": "service_operation",
+        "entity_key": "checkout:POST /api/pay",
+        "window": {
+          "start_ts": "2026-04-18T12:55:00Z",
+          "end_ts": "2026-04-18T13:00:00Z",
+          "duration_sec": 300
+        },
+        "prometheus": {
+          "alerts_firing": [
+            "high_error_rate",
+            "latency_p95_high"
+          ],
+          "error_rate": 0.21,
+          "error_rate_baseline": 0.02,
+          "error_rate_delta": 0.19,
+          "latency_p95_ms": 2400.0,
+          "latency_p95_baseline_ms": 410,
+          "latency_p95_delta": 1990.0,
+          "qps": 122.0,
+          "qps_baseline": 118,
+          "qps_delta": 4.0,
+          "saturation": 0.84
+        },
+        "signoz": {
+          "top_error_templates": [
+            {
+              "template_id": "tmpl_db_timeout",
+              "template": "db timeout on order lookup",
+              "count": 194,
+              "novelty_score": 0.93
+            }
+          ],
+          "top_slow_operations": [
+            {
+              "operation": "POST /api/pay",
+              "p95_ms": 2400.0,
+              "error_ratio": 0.35
+            }
+          ],
+          "trace_error_ratio": 0.35,
+          "sample_trace_ids": [
+            "checko1a",
+            "checko1b"
+          ],
+          "sample_log_refs": [
+            "signoz://logs/checkout_high_error_rate_db_retry_regression/row-1"
+          ]
+        },
+        "topology": {
+          "tier": "tier1",
+          "owner": "payments-oncall",
+          "repo_candidates": [
+            "checkout-service",
+            "payment-gateway-client"
+          ],
+          "upstream_count": 6,
+          "downstream_count": 12,
+          "blast_radius_score": 0.89
+        },
+        "evidence_refs": {
+          "prometheus_query_refs": [
+            "prom://query/checkout_high_error_rate_db_retry_regression_window_300s"
+          ],
+          "signoz_query_refs": [
+            "signoz://trace/checkout_high_error_rate_db_retry_regression",
+            "signoz://logs/checkout_high_error_rate_db_retry_regression"
+          ]
+        },
+        "history": {
+          "recent_deploy": true,
+          "similar_incident_ids": [
+            "INC-1422"
+          ],
+          "similar_packet_ids": [
+            "ipk_checkout_post_pay_20260411t110000z"
+          ]
+        }
+      },
+      "retrieval_hits": [
+        {
+          "packet_id": "ipk_checkout_post_pay_20260411t110000z",
+          "similarity": 0.82,
+          "known_outcome": "severe"
+        }
+      ],
+      "input_refs": {
+        "packet_id": "ipk_checkout_post_api_pay_20260418t130008z",
+        "decision_id": "",
+        "investigation_id": null,
+        "report_id": null,
+        "outcome_id": null,
+        "replay_case_id": "checkout_high_error_rate_db_retry_regression"
+      }
+    },
+    {
+      "case_id": "replay::checkout_high_error_rate_cache_timeout_regression",
+      "case_source": "replay_baseline",
+      "label": "severe",
+      "packet": {
+        "schema_version": "incident-packet.v1",
+        "packet_id": "ipk_checkout_post_api_pay_20260418t140008z",
+        "candidate_source": "manual_replay",
+        "created_at": "2026-04-18T14:00:08Z",
+        "environment": "prod",
+        "service": "checkout",
+        "operation": "POST /api/pay",
+        "entity_type": "service_operation",
+        "entity_key": "checkout:POST /api/pay",
+        "window": {
+          "start_ts": "2026-04-18T13:55:00Z",
+          "end_ts": "2026-04-18T14:00:00Z",
+          "duration_sec": 300
+        },
+        "prometheus": {
+          "alerts_firing": [
+            "high_error_rate",
+            "latency_p95_high"
+          ],
+          "error_rate": 0.23,
+          "error_rate_baseline": 0.02,
+          "error_rate_delta": 0.21,
+          "latency_p95_ms": 2580.0,
+          "latency_p95_baseline_ms": 410,
+          "latency_p95_delta": 2170.0,
+          "qps": 122.0,
+          "qps_baseline": 118,
+          "qps_delta": 4.0,
+          "saturation": 0.84
+        },
+        "signoz": {
+          "top_error_templates": [
+            {
+              "template_id": "tmpl_db_timeout",
+              "template": "db timeout on order lookup",
+              "count": 203,
+              "novelty_score": 0.95
+            }
+          ],
+          "top_slow_operations": [
+            {
+              "operation": "POST /api/pay",
+              "p95_ms": 2580.0,
+              "error_ratio": 0.36
+            }
+          ],
+          "trace_error_ratio": 0.36,
+          "sample_trace_ids": [
+            "checko2a",
+            "checko2b"
+          ],
+          "sample_log_refs": [
+            "signoz://logs/checkout_high_error_rate_cache_timeout_regression/row-2"
+          ]
+        },
+        "topology": {
+          "tier": "tier1",
+          "owner": "payments-oncall",
+          "repo_candidates": [
+            "checkout-service",
+            "payment-gateway-client"
+          ],
+          "upstream_count": 6,
+          "downstream_count": 12,
+          "blast_radius_score": 0.9
+        },
+        "evidence_refs": {
+          "prometheus_query_refs": [
+            "prom://query/checkout_high_error_rate_cache_timeout_regression_window_300s"
+          ],
+          "signoz_query_refs": [
+            "signoz://trace/checkout_high_error_rate_cache_timeout_regression",
+            "signoz://logs/checkout_high_error_rate_cache_timeout_regression"
+          ]
+        },
+        "history": {
+          "recent_deploy": true,
+          "similar_incident_ids": [
+            "INC-1422"
+          ],
+          "similar_packet_ids": [
+            "ipk_checkout_post_pay_20260411t110000z"
+          ]
+        }
+      },
+      "retrieval_hits": [
+        {
+          "packet_id": "ipk_checkout_post_pay_20260411t110000z",
+          "similarity": 0.82,
+          "known_outcome": "severe"
+        }
+      ],
+      "input_refs": {
+        "packet_id": "ipk_checkout_post_api_pay_20260418t140008z",
+        "decision_id": "",
+        "investigation_id": null,
+        "report_id": null,
+        "outcome_id": null,
+        "replay_case_id": "checkout_high_error_rate_cache_timeout_regression"
+      }
+    },
+    {
+      "case_id": "replay::payments_charge_timeout_spike_gateway_drain",
+      "case_source": "replay_baseline",
+      "label": "severe",
+      "packet": {
+        "schema_version": "incident-packet.v1",
+        "packet_id": "ipk_payments_post_api_charge_20260418t160008z",
+        "candidate_source": "manual_replay",
+        "created_at": "2026-04-18T16:00:08Z",
+        "environment": "prod",
+        "service": "payments",
+        "operation": "POST /api/charge",
+        "entity_type": "service_operation",
+        "entity_key": "payments:POST /api/charge",
+        "window": {
+          "start_ts": "2026-04-18T15:55:00Z",
+          "end_ts": "2026-04-18T16:00:00Z",
+          "duration_sec": 300
+        },
+        "prometheus": {
+          "alerts_firing": [
+            "charge_timeout_spike",
+            "latency_p95_high"
+          ],
+          "error_rate": 0.19,
+          "error_rate_baseline": 0.03,
+          "error_rate_delta": 0.16,
+          "latency_p95_ms": 1980.0,
+          "latency_p95_baseline_ms": 450,
+          "latency_p95_delta": 1530.0,
+          "qps": 95.0,
+          "qps_baseline": 92,
+          "qps_delta": 3.0,
+          "saturation": 0.79
+        },
+        "signoz": {
+          "top_error_templates": [
+            {
+              "template_id": "tmpl_payments_timeout",
+              "template": "gateway timeout during charge authorization",
+              "count": 208,
+              "novelty_score": 0.82
+            }
+          ],
+          "top_slow_operations": [
+            {
+              "operation": "POST /api/charge",
+              "p95_ms": 1980.0,
+              "error_ratio": 0.29
+            }
+          ],
+          "trace_error_ratio": 0.29,
+          "sample_trace_ids": [
+            "paymen3a",
+            "paymen3b"
+          ],
+          "sample_log_refs": [
+            "signoz://logs/payments_charge_timeout_spike_gateway_drain/row-3"
+          ]
+        },
+        "topology": {
+          "tier": "tier1",
+          "owner": "payments-oncall",
+          "repo_candidates": [
+            "payments-service",
+            "card-gateway-client"
+          ],
+          "upstream_count": 5,
+          "downstream_count": 9,
+          "blast_radius_score": 0.84
+        },
+        "evidence_refs": {
+          "prometheus_query_refs": [
+            "prom://query/payments_charge_timeout_spike_gateway_drain_window_300s"
+          ],
+          "signoz_query_refs": [
+            "signoz://trace/payments_charge_timeout_spike_gateway_drain",
+            "signoz://logs/payments_charge_timeout_spike_gateway_drain"
+          ]
+        },
+        "history": {
+          "recent_deploy": true,
+          "similar_incident_ids": [
+            "INC-1491"
+          ],
+          "similar_packet_ids": [
+            "ipk_payments_post_api_charge_20260415t131008z"
+          ]
+        }
+      },
+      "retrieval_hits": [
+        {
+          "packet_id": "ipk_payments_post_api_charge_20260415t131008z",
+          "similarity": 0.79,
+          "known_outcome": "severe"
+        }
+      ],
+      "input_refs": {
+        "packet_id": "ipk_payments_post_api_charge_20260418t160008z",
+        "decision_id": "",
+        "investigation_id": null,
+        "report_id": null,
+        "outcome_id": null,
+        "replay_case_id": "payments_charge_timeout_spike_gateway_drain"
+      }
+    },
+    {
+      "case_id": "replay::payments_charge_timeout_spike_retry_queue_growth",
+      "case_source": "replay_baseline",
+      "label": "severe",
+      "packet": {
+        "schema_version": "incident-packet.v1",
+        "packet_id": "ipk_payments_post_api_charge_20260418t170008z",
+        "candidate_source": "manual_replay",
+        "created_at": "2026-04-18T17:00:08Z",
+        "environment": "prod",
+        "service": "payments",
+        "operation": "POST /api/charge",
+        "entity_type": "service_operation",
+        "entity_key": "payments:POST /api/charge",
+        "window": {
+          "start_ts": "2026-04-18T16:55:00Z",
+          "end_ts": "2026-04-18T17:00:00Z",
+          "duration_sec": 300
+        },
+        "prometheus": {
+          "alerts_firing": [
+            "charge_timeout_spike",
+            "latency_p95_high"
+          ],
+          "error_rate": 0.21,
+          "error_rate_baseline": 0.03,
+          "error_rate_delta": 0.18,
+          "latency_p95_ms": 2190.0,
+          "latency_p95_baseline_ms": 450,
+          "latency_p95_delta": 1740.0,
+          "qps": 95.0,
+          "qps_baseline": 92,
+          "qps_delta": 3.0,
+          "saturation": 0.79
+        },
+        "signoz": {
+          "top_error_templates": [
+            {
+              "template_id": "tmpl_payments_timeout",
+              "template": "gateway timeout during charge authorization",
+              "count": 217,
+              "novelty_score": 0.86
+            }
+          ],
+          "top_slow_operations": [
+            {
+              "operation": "POST /api/charge",
+              "p95_ms": 2190.0,
+              "error_ratio": 0.3
+            }
+          ],
+          "trace_error_ratio": 0.3,
+          "sample_trace_ids": [
+            "paymen4a",
+            "paymen4b"
+          ],
+          "sample_log_refs": [
+            "signoz://logs/payments_charge_timeout_spike_retry_queue_growth/row-4"
+          ]
+        },
+        "topology": {
+          "tier": "tier1",
+          "owner": "payments-oncall",
+          "repo_candidates": [
+            "payments-service",
+            "card-gateway-client"
+          ],
+          "upstream_count": 5,
+          "downstream_count": 9,
+          "blast_radius_score": 0.85
+        },
+        "evidence_refs": {
+          "prometheus_query_refs": [
+            "prom://query/payments_charge_timeout_spike_retry_queue_growth_window_300s"
+          ],
+          "signoz_query_refs": [
+            "signoz://trace/payments_charge_timeout_spike_retry_queue_growth",
+            "signoz://logs/payments_charge_timeout_spike_retry_queue_growth"
+          ]
+        },
+        "history": {
+          "recent_deploy": true,
+          "similar_incident_ids": [
+            "INC-1491"
+          ],
+          "similar_packet_ids": [
+            "ipk_payments_post_api_charge_20260415t131008z"
+          ]
+        }
+      },
+      "retrieval_hits": [
+        {
+          "packet_id": "ipk_payments_post_api_charge_20260415t131008z",
+          "similarity": 0.79,
+          "known_outcome": "severe"
+        }
+      ],
+      "input_refs": {
+        "packet_id": "ipk_payments_post_api_charge_20260418t170008z",
+        "decision_id": "",
+        "investigation_id": null,
+        "report_id": null,
+        "outcome_id": null,
+        "replay_case_id": "payments_charge_timeout_spike_retry_queue_growth"
+      }
+    },
+    {
+      "case_id": "replay::search_query_error_burst_shard_regression",
+      "case_source": "replay_baseline",
+      "label": "severe",
+      "packet": {
+        "schema_version": "incident-packet.v1",
+        "packet_id": "ipk_search_get_api_query_20260418t181008z",
+        "candidate_source": "manual_replay",
+        "created_at": "2026-04-18T18:10:08Z",
+        "environment": "prod",
+        "service": "search",
+        "operation": "GET /api/query",
+        "entity_type": "service_operation",
+        "entity_key": "search:GET /api/query",
+        "window": {
+          "start_ts": "2026-04-18T18:05:00Z",
+          "end_ts": "2026-04-18T18:10:00Z",
+          "duration_sec": 300
+        },
+        "prometheus": {
+          "alerts_firing": [
+            "query_error_burst",
+            "query_latency_high"
+          ],
+          "error_rate": 0.195,
+          "error_rate_baseline": 0.03,
+          "error_rate_delta": 0.165,
+          "latency_p95_ms": 1890.0,
+          "latency_p95_baseline_ms": 450,
+          "latency_p95_delta": 1440.0,
+          "qps": 210.0,
+          "qps_baseline": 209,
+          "qps_delta": 1.0,
+          "saturation": 0.81
+        },
+        "signoz": {
+          "top_error_templates": [
+            {
+              "template_id": "tmpl_search_5xx",
+              "template": "search backend returned 5xx for query shard",
+              "count": 219,
+              "novelty_score": 0.82
+            }
+          ],
+          "top_slow_operations": [
+            {
+              "operation": "GET /api/query",
+              "p95_ms": 1890.0,
+              "error_ratio": 0.24
+            }
+          ],
+          "trace_error_ratio": 0.24,
+          "sample_trace_ids": [
+            "search5a",
+            "search5b"
+          ],
+          "sample_log_refs": [
+            "signoz://logs/search_query_error_burst_shard_regression/row-5"
+          ]
+        },
+        "topology": {
+          "tier": "tier1",
+          "owner": "search-oncall",
+          "repo_candidates": [
+            "search-service"
+          ],
+          "upstream_count": 4,
+          "downstream_count": 11,
+          "blast_radius_score": 0.82
+        },
+        "evidence_refs": {
+          "prometheus_query_refs": [
+            "prom://query/search_query_error_burst_shard_regression_window_300s"
+          ],
+          "signoz_query_refs": [
+            "signoz://trace/search_query_error_burst_shard_regression",
+            "signoz://logs/search_query_error_burst_shard_regression"
+          ]
+        },
+        "history": {
+          "recent_deploy": true,
+          "similar_incident_ids": [
+            "INC-1498"
+          ],
+          "similar_packet_ids": [
+            "ipk_search_get_api_query_20260416t141008z"
+          ]
+        }
+      },
+      "retrieval_hits": [
+        {
+          "packet_id": "ipk_search_get_api_query_20260416t141008z",
+          "similarity": 0.78,
+          "known_outcome": "severe"
+        }
+      ],
+      "input_refs": {
+        "packet_id": "ipk_search_get_api_query_20260418t181008z",
+        "decision_id": "",
+        "investigation_id": null,
+        "report_id": null,
+        "outcome_id": null,
+        "replay_case_id": "search_query_error_burst_shard_regression"
+      }
+    },
+    {
+      "case_id": "replay::catalog_latency_warning_cache_refresh",
+      "case_source": "replay_baseline",
+      "label": "benign",
+      "packet": {
+        "schema_version": "incident-packet.v1",
+        "packet_id": "ipk_catalog_get_api_items_20260418t181008z",
+        "candidate_source": "manual_replay",
+        "created_at": "2026-04-18T18:10:08Z",
+        "environment": "prod",
+        "service": "catalog",
+        "operation": "GET /api/items",
+        "entity_type": "service_operation",
+        "entity_key": "catalog:GET /api/items",
+        "window": {
+          "start_ts": "2026-04-18T18:05:00Z",
+          "end_ts": "2026-04-18T18:10:00Z",
+          "duration_sec": 300
+        },
+        "prometheus": {
+          "alerts_firing": [
+            "latency_warning",
+            "minor_traffic_shift"
+          ],
+          "error_rate": 0.03,
+          "error_rate_baseline": 0.02,
+          "error_rate_delta": 0.01,
+          "latency_p95_ms": 320.0,
+          "latency_p95_baseline_ms": 200,
+          "latency_p95_delta": 120.0,
+          "qps": 41.0,
+          "qps_baseline": 40,
+          "qps_delta": 1.0,
+          "saturation": 0.22
+        },
+        "signoz": {
+          "top_error_templates": [
+            {
+              "template_id": "tmpl_cache_warn",
+              "template": "cache miss warning on items list",
+              "count": 5,
+              "novelty_score": 0.18
+            }
+          ],
+          "top_slow_operations": [
+            {
+              "operation": "GET /api/items",
+              "p95_ms": 320.0,
+              "error_ratio": 0.02
+            }
+          ],
+          "trace_error_ratio": 0.02,
+          "sample_trace_ids": [
+            "catalo6a",
+            "catalo6b"
+          ],
+          "sample_log_refs": [
+            "signoz://logs/catalog_latency_warning_cache_refresh/row-6"
+          ]
+        },
+        "topology": {
+          "tier": "tier2",
+          "owner": "catalog-oncall",
+          "repo_candidates": [
+            "catalog-service"
+          ],
+          "upstream_count": 1,
+          "downstream_count": 2,
+          "blast_radius_score": 0.21
+        },
+        "evidence_refs": {
+          "prometheus_query_refs": [
+            "prom://query/catalog_latency_warning_cache_refresh_window_300s"
+          ],
+          "signoz_query_refs": [
+            "signoz://trace/catalog_latency_warning_cache_refresh",
+            "signoz://logs/catalog_latency_warning_cache_refresh"
+          ]
+        },
+        "history": {
+          "recent_deploy": false,
+          "similar_incident_ids": [],
+          "similar_packet_ids": [
+            "ipk_catalog_get_items_20260410t090000z"
+          ]
+        }
+      },
+      "retrieval_hits": [
+        {
+          "packet_id": "ipk_catalog_get_items_20260410t090000z",
+          "similarity": 0.77,
+          "known_outcome": "benign"
+        }
+      ],
+      "input_refs": {
+        "packet_id": "ipk_catalog_get_api_items_20260418t181008z",
+        "decision_id": "",
+        "investigation_id": null,
+        "report_id": null,
+        "outcome_id": null,
+        "replay_case_id": "catalog_latency_warning_cache_refresh"
+      }
+    },
+    {
+      "case_id": "replay::catalog_latency_warning_soft_qps_shift",
+      "case_source": "replay_baseline",
+      "label": "benign",
+      "packet": {
+        "schema_version": "incident-packet.v1",
+        "packet_id": "ipk_catalog_get_api_items_20260418t191008z",
+        "candidate_source": "manual_replay",
+        "created_at": "2026-04-18T19:10:08Z",
+        "environment": "prod",
+        "service": "catalog",
+        "operation": "GET /api/items",
+        "entity_type": "service_operation",
+        "entity_key": "catalog:GET /api/items",
+        "window": {
+          "start_ts": "2026-04-18T19:05:00Z",
+          "end_ts": "2026-04-18T19:10:00Z",
+          "duration_sec": 300
+        },
+        "prometheus": {
+          "alerts_firing": [
+            "latency_warning",
+            "minor_traffic_shift"
+          ],
+          "error_rate": 0.035,
+          "error_rate_baseline": 0.02,
+          "error_rate_delta": 0.015,
+          "latency_p95_ms": 338.0,
+          "latency_p95_baseline_ms": 200,
+          "latency_p95_delta": 138.0,
+          "qps": 42.0,
+          "qps_baseline": 40,
+          "qps_delta": 2.0,
+          "saturation": 0.23
+        },
+        "signoz": {
+          "top_error_templates": [
+            {
+              "template_id": "tmpl_cache_warn",
+              "template": "cache miss warning on items list",
+              "count": 7,
+              "novelty_score": 0.2
+            }
+          ],
+          "top_slow_operations": [
+            {
+              "operation": "GET /api/items",
+              "p95_ms": 338.0,
+              "error_ratio": 0.03
+            }
+          ],
+          "trace_error_ratio": 0.03,
+          "sample_trace_ids": [
+            "catalo7a",
+            "catalo7b"
+          ],
+          "sample_log_refs": [
+            "signoz://logs/catalog_latency_warning_soft_qps_shift/row-7"
+          ]
+        },
+        "topology": {
+          "tier": "tier2",
+          "owner": "catalog-oncall",
+          "repo_candidates": [
+            "catalog-service"
+          ],
+          "upstream_count": 1,
+          "downstream_count": 2,
+          "blast_radius_score": 0.22
+        },
+        "evidence_refs": {
+          "prometheus_query_refs": [
+            "prom://query/catalog_latency_warning_soft_qps_shift_window_300s"
+          ],
+          "signoz_query_refs": [
+            "signoz://trace/catalog_latency_warning_soft_qps_shift",
+            "signoz://logs/catalog_latency_warning_soft_qps_shift"
+          ]
+        },
+        "history": {
+          "recent_deploy": false,
+          "similar_incident_ids": [],
+          "similar_packet_ids": [
+            "ipk_catalog_get_items_20260410t090000z"
+          ]
+        }
+      },
+      "retrieval_hits": [
+        {
+          "packet_id": "ipk_catalog_get_items_20260410t090000z",
+          "similarity": 0.77,
+          "known_outcome": "benign"
+        }
+      ],
+      "input_refs": {
+        "packet_id": "ipk_catalog_get_api_items_20260418t191008z",
+        "decision_id": "",
+        "investigation_id": null,
+        "report_id": null,
+        "outcome_id": null,
+        "replay_case_id": "catalog_latency_warning_soft_qps_shift"
+      }
+    },
+    {
+      "case_id": "replay::catalog_latency_warning_warmup_tail",
+      "case_source": "replay_baseline",
+      "label": "benign",
+      "packet": {
+        "schema_version": "incident-packet.v1",
+        "packet_id": "ipk_catalog_get_api_items_20260418t201008z",
+        "candidate_source": "manual_replay",
+        "created_at": "2026-04-18T20:10:08Z",
+        "environment": "prod",
+        "service": "catalog",
+        "operation": "GET /api/items",
+        "entity_type": "service_operation",
+        "entity_key": "catalog:GET /api/items",
+        "window": {
+          "start_ts": "2026-04-18T20:05:00Z",
+          "end_ts": "2026-04-18T20:10:00Z",
+          "duration_sec": 300
+        },
+        "prometheus": {
+          "alerts_firing": [
+            "latency_warning",
+            "minor_traffic_shift"
+          ],
+          "error_rate": 0.027,
+          "error_rate_baseline": 0.02,
+          "error_rate_delta": 0.007,
+          "latency_p95_ms": 310.0,
+          "latency_p95_baseline_ms": 200,
+          "latency_p95_delta": 110.0,
+          "qps": 41.0,
+          "qps_baseline": 40,
+          "qps_delta": 1.0,
+          "saturation": 0.22
+        },
+        "signoz": {
+          "top_error_templates": [
+            {
+              "template_id": "tmpl_cache_warn",
+              "template": "cache miss warning on items list",
+              "count": 4,
+              "novelty_score": 0.17
+            }
+          ],
+          "top_slow_operations": [
+            {
+              "operation": "GET /api/items",
+              "p95_ms": 310.0,
+              "error_ratio": 0.01
+            }
+          ],
+          "trace_error_ratio": 0.01,
+          "sample_trace_ids": [
+            "catalo8a",
+            "catalo8b"
+          ],
+          "sample_log_refs": [
+            "signoz://logs/catalog_latency_warning_warmup_tail/row-8"
+          ]
+        },
+        "topology": {
+          "tier": "tier2",
+          "owner": "catalog-oncall",
+          "repo_candidates": [
+            "catalog-service"
+          ],
+          "upstream_count": 1,
+          "downstream_count": 2,
+          "blast_radius_score": 0.21
+        },
+        "evidence_refs": {
+          "prometheus_query_refs": [
+            "prom://query/catalog_latency_warning_warmup_tail_window_300s"
+          ],
+          "signoz_query_refs": [
+            "signoz://trace/catalog_latency_warning_warmup_tail",
+            "signoz://logs/catalog_latency_warning_warmup_tail"
+          ]
+        },
+        "history": {
+          "recent_deploy": false,
+          "similar_incident_ids": [],
+          "similar_packet_ids": [
+            "ipk_catalog_get_items_20260410t090000z"
+          ]
+        }
+      },
+      "retrieval_hits": [
+        {
+          "packet_id": "ipk_catalog_get_items_20260410t090000z",
+          "similarity": 0.77,
+          "known_outcome": "benign"
+        }
+      ],
+      "input_refs": {
+        "packet_id": "ipk_catalog_get_api_items_20260418t201008z",
+        "decision_id": "",
+        "investigation_id": null,
+        "report_id": null,
+        "outcome_id": null,
+        "replay_case_id": "catalog_latency_warning_warmup_tail"
+      }
+    },
+    {
+      "case_id": "replay::profile_read_latency_warning_background_scan",
+      "case_source": "replay_baseline",
+      "label": "benign",
+      "packet": {
+        "schema_version": "incident-packet.v1",
+        "packet_id": "ipk_profile_get_api_profile_20260418t222008z",
+        "candidate_source": "manual_replay",
+        "created_at": "2026-04-18T22:20:08Z",
+        "environment": "prod",
+        "service": "profile",
+        "operation": "GET /api/profile",
+        "entity_type": "service_operation",
+        "entity_key": "profile:GET /api/profile",
+        "window": {
+          "start_ts": "2026-04-18T22:15:00Z",
+          "end_ts": "2026-04-18T22:20:00Z",
+          "duration_sec": 300
+        },
+        "prometheus": {
+          "alerts_firing": [
+            "profile_latency_warning",
+            "profile_cache_soft_miss"
+          ],
+          "error_rate": 0.034,
+          "error_rate_baseline": 0.02,
+          "error_rate_delta": 0.014,
+          "latency_p95_ms": 372.0,
+          "latency_p95_baseline_ms": 240,
+          "latency_p95_delta": 132.0,
+          "qps": 53.0,
+          "qps_baseline": 51,
+          "qps_delta": 2.0,
+          "saturation": 0.25
+        },
+        "signoz": {
+          "top_error_templates": [
+            {
+              "template_id": "tmpl_profile_cache_soft_miss",
+              "template": "profile cache miss warning on read path",
+              "count": 33,
+              "novelty_score": 0.06
+            }
+          ],
+          "top_slow_operations": [
+            {
+              "operation": "GET /api/profile",
+              "p95_ms": 372.0,
+              "error_ratio": 0.01
+            }
+          ],
+          "trace_error_ratio": 0.01,
+          "sample_trace_ids": [
+            "profil9a",
+            "profil9b"
+          ],
+          "sample_log_refs": [
+            "signoz://logs/profile_read_latency_warning_background_scan/row-9"
+          ]
+        },
+        "topology": {
+          "tier": "tier2",
+          "owner": "profile-oncall",
+          "repo_candidates": [
+            "profile-service"
+          ],
+          "upstream_count": 1,
+          "downstream_count": 2,
+          "blast_radius_score": 0.2
+        },
+        "evidence_refs": {
+          "prometheus_query_refs": [
+            "prom://query/profile_read_latency_warning_background_scan_window_300s"
+          ],
+          "signoz_query_refs": [
+            "signoz://trace/profile_read_latency_warning_background_scan",
+            "signoz://logs/profile_read_latency_warning_background_scan"
+          ]
+        },
+        "history": {
+          "recent_deploy": false,
+          "similar_incident_ids": [],
+          "similar_packet_ids": [
+            "ipk_profile_get_api_profile_20260412t111008z"
+          ]
+        }
+      },
+      "retrieval_hits": [
+        {
+          "packet_id": "ipk_profile_get_api_profile_20260412t111008z",
+          "similarity": 0.72,
+          "known_outcome": "benign"
+        }
+      ],
+      "input_refs": {
+        "packet_id": "ipk_profile_get_api_profile_20260418t222008z",
+        "decision_id": "",
+        "investigation_id": null,
+        "report_id": null,
+        "outcome_id": null,
+        "replay_case_id": "profile_read_latency_warning_background_scan"
+      }
+    },
+    {
+      "case_id": "replay::profile_read_latency_warning_soft_cache_turnover",
+      "case_source": "replay_baseline",
+      "label": "benign",
+      "packet": {
+        "schema_version": "incident-packet.v1",
+        "packet_id": "ipk_profile_get_api_profile_20260418t232008z",
+        "candidate_source": "manual_replay",
+        "created_at": "2026-04-18T23:20:08Z",
+        "environment": "prod",
+        "service": "profile",
+        "operation": "GET /api/profile",
+        "entity_type": "service_operation",
+        "entity_key": "profile:GET /api/profile",
+        "window": {
+          "start_ts": "2026-04-18T23:15:00Z",
+          "end_ts": "2026-04-18T23:20:00Z",
+          "duration_sec": 300
+        },
+        "prometheus": {
+          "alerts_firing": [
+            "profile_latency_warning",
+            "profile_cache_soft_miss"
+          ],
+          "error_rate": 0.028,
+          "error_rate_baseline": 0.02,
+          "error_rate_delta": 0.008,
+          "latency_p95_ms": 352.0,
+          "latency_p95_baseline_ms": 240,
+          "latency_p95_delta": 112.0,
+          "qps": 52.0,
+          "qps_baseline": 51,
+          "qps_delta": 1.0,
+          "saturation": 0.24
+        },
+        "signoz": {
+          "top_error_templates": [
+            {
+              "template_id": "tmpl_profile_cache_soft_miss",
+              "template": "profile cache miss warning on read path",
+              "count": 32,
+              "novelty_score": 0.05
+            }
+          ],
+          "top_slow_operations": [
+            {
+              "operation": "GET /api/profile",
+              "p95_ms": 352.0,
+              "error_ratio": 0.01
+            }
+          ],
+          "trace_error_ratio": 0.01,
+          "sample_trace_ids": [
+            "profil10a",
+            "profil10b"
+          ],
+          "sample_log_refs": [
+            "signoz://logs/profile_read_latency_warning_soft_cache_turnover/row-10"
+          ]
+        },
+        "topology": {
+          "tier": "tier2",
+          "owner": "profile-oncall",
+          "repo_candidates": [
+            "profile-service"
+          ],
+          "upstream_count": 1,
+          "downstream_count": 2,
+          "blast_radius_score": 0.21
+        },
+        "evidence_refs": {
+          "prometheus_query_refs": [
+            "prom://query/profile_read_latency_warning_soft_cache_turnover_window_300s"
+          ],
+          "signoz_query_refs": [
+            "signoz://trace/profile_read_latency_warning_soft_cache_turnover",
+            "signoz://logs/profile_read_latency_warning_soft_cache_turnover"
+          ]
+        },
+        "history": {
+          "recent_deploy": false,
+          "similar_incident_ids": [],
+          "similar_packet_ids": [
+            "ipk_profile_get_api_profile_20260412t111008z"
+          ]
+        }
+      },
+      "retrieval_hits": [
+        {
+          "packet_id": "ipk_profile_get_api_profile_20260412t111008z",
+          "similarity": 0.72,
+          "known_outcome": "benign"
+        }
+      ],
+      "input_refs": {
+        "packet_id": "ipk_profile_get_api_profile_20260418t232008z",
+        "decision_id": "",
+        "investigation_id": null,
+        "report_id": null,
+        "outcome_id": null,
+        "replay_case_id": "profile_read_latency_warning_soft_cache_turnover"
+      }
+    },
+    {
+      "case_id": "replay::inventory_stock_cpu_warning_batch_window",
+      "case_source": "replay_baseline",
+      "label": "benign",
+      "packet": {
+        "schema_version": "incident-packet.v1",
+        "packet_id": "ipk_inventory_get_api_stock_20260419t003008z",
+        "candidate_source": "manual_replay",
+        "created_at": "2026-04-19T00:30:08Z",
+        "environment": "prod",
+        "service": "inventory",
+        "operation": "GET /api/stock",
+        "entity_type": "service_operation",
+        "entity_key": "inventory:GET /api/stock",
+        "window": {
+          "start_ts": "2026-04-19T00:25:00Z",
+          "end_ts": "2026-04-19T00:30:00Z",
+          "duration_sec": 300
+        },
+        "prometheus": {
+          "alerts_firing": [
+            "inventory_cpu_warning",
+            "inventory_latency_warning"
+          ],
+          "error_rate": 0.02,
+          "error_rate_baseline": 0.02,
+          "error_rate_delta": 0.0,
+          "latency_p95_ms": 300.0,
+          "latency_p95_baseline_ms": 210,
+          "latency_p95_delta": 90.0,
+          "qps": 61.0,
+          "qps_baseline": 59,
+          "qps_delta": 2.0,
+          "saturation": 0.39
+        },
+        "signoz": {
+          "top_error_templates": [
+            {
+              "template_id": "tmpl_inventory_cache_rotate",
+              "template": "inventory cache rotation caused mild stock read slowdown",
+              "count": 22,
+              "novelty_score": 0.08
+            }
+          ],
+          "top_slow_operations": [
+            {
+              "operation": "GET /api/stock",
+              "p95_ms": 300.0,
+              "error_ratio": 0.0
+            }
+          ],
+          "trace_error_ratio": 0.0,
+          "sample_trace_ids": [
+            "invent11a",
+            "invent11b"
+          ],
+          "sample_log_refs": [
+            "signoz://logs/inventory_stock_cpu_warning_batch_window/row-11"
+          ]
+        },
+        "topology": {
+          "tier": "tier2",
+          "owner": "inventory-oncall",
+          "repo_candidates": [
+            "inventory-service"
+          ],
+          "upstream_count": 2,
+          "downstream_count": 3,
+          "blast_radius_score": 0.19
+        },
+        "evidence_refs": {
+          "prometheus_query_refs": [
+            "prom://query/inventory_stock_cpu_warning_batch_window_window_300s"
+          ],
+          "signoz_query_refs": [
+            "signoz://trace/inventory_stock_cpu_warning_batch_window",
+            "signoz://logs/inventory_stock_cpu_warning_batch_window"
+          ]
+        },
+        "history": {
+          "recent_deploy": false,
+          "similar_incident_ids": [],
+          "similar_packet_ids": [
+            "ipk_inventory_get_api_stock_20260412t121008z"
+          ]
+        }
+      },
+      "retrieval_hits": [
+        {
+          "packet_id": "ipk_inventory_get_api_stock_20260412t121008z",
+          "similarity": 0.69,
+          "known_outcome": "benign"
+        }
+      ],
+      "input_refs": {
+        "packet_id": "ipk_inventory_get_api_stock_20260419t003008z",
+        "decision_id": "",
+        "investigation_id": null,
+        "report_id": null,
+        "outcome_id": null,
+        "replay_case_id": "inventory_stock_cpu_warning_batch_window"
+      }
+    },
+    {
+      "case_id": "replay::inventory_stock_cpu_warning_minor_cache_refresh",
+      "case_source": "replay_baseline",
+      "label": "benign",
+      "packet": {
+        "schema_version": "incident-packet.v1",
+        "packet_id": "ipk_inventory_get_api_stock_20260419t013008z",
+        "candidate_source": "manual_replay",
+        "created_at": "2026-04-19T01:30:08Z",
+        "environment": "prod",
+        "service": "inventory",
+        "operation": "GET /api/stock",
+        "entity_type": "service_operation",
+        "entity_key": "inventory:GET /api/stock",
+        "window": {
+          "start_ts": "2026-04-19T01:25:00Z",
+          "end_ts": "2026-04-19T01:30:00Z",
+          "duration_sec": 300
+        },
+        "prometheus": {
+          "alerts_firing": [
+            "inventory_cpu_warning",
+            "inventory_latency_warning"
+          ],
+          "error_rate": 0.025,
+          "error_rate_baseline": 0.02,
+          "error_rate_delta": 0.005,
+          "latency_p95_ms": 318.0,
+          "latency_p95_baseline_ms": 210,
+          "latency_p95_delta": 108.0,
+          "qps": 62.0,
+          "qps_baseline": 59,
+          "qps_delta": 3.0,
+          "saturation": 0.4
+        },
+        "signoz": {
+          "top_error_templates": [
+            {
+              "template_id": "tmpl_inventory_cache_rotate",
+              "template": "inventory cache rotation caused mild stock read slowdown",
+              "count": 24,
+              "novelty_score": 0.1
+            }
+          ],
+          "top_slow_operations": [
+            {
+              "operation": "GET /api/stock",
+              "p95_ms": 318.0,
+              "error_ratio": 0.01
+            }
+          ],
+          "trace_error_ratio": 0.01,
+          "sample_trace_ids": [
+            "invent12a",
+            "invent12b"
+          ],
+          "sample_log_refs": [
+            "signoz://logs/inventory_stock_cpu_warning_minor_cache_refresh/row-12"
+          ]
+        },
+        "topology": {
+          "tier": "tier2",
+          "owner": "inventory-oncall",
+          "repo_candidates": [
+            "inventory-service"
+          ],
+          "upstream_count": 2,
+          "downstream_count": 3,
+          "blast_radius_score": 0.2
+        },
+        "evidence_refs": {
+          "prometheus_query_refs": [
+            "prom://query/inventory_stock_cpu_warning_minor_cache_refresh_window_300s"
+          ],
+          "signoz_query_refs": [
+            "signoz://trace/inventory_stock_cpu_warning_minor_cache_refresh",
+            "signoz://logs/inventory_stock_cpu_warning_minor_cache_refresh"
+          ]
+        },
+        "history": {
+          "recent_deploy": false,
+          "similar_incident_ids": [],
+          "similar_packet_ids": [
+            "ipk_inventory_get_api_stock_20260412t121008z"
+          ]
+        }
+      },
+      "retrieval_hits": [
+        {
+          "packet_id": "ipk_inventory_get_api_stock_20260412t121008z",
+          "similarity": 0.69,
+          "known_outcome": "benign"
+        }
+      ],
+      "input_refs": {
+        "packet_id": "ipk_inventory_get_api_stock_20260419t013008z",
+        "decision_id": "",
+        "investigation_id": null,
+        "report_id": null,
+        "outcome_id": null,
+        "replay_case_id": "inventory_stock_cpu_warning_minor_cache_refresh"
+      }
+    },
+    {
+      "case_id": "replay::shipping_label_retry_warning_provider_jitter",
+      "case_source": "replay_baseline",
+      "label": "benign",
+      "packet": {
+        "schema_version": "incident-packet.v1",
+        "packet_id": "ipk_shipping_post_api_label_20260419t024008z",
+        "candidate_source": "manual_replay",
+        "created_at": "2026-04-19T02:40:08Z",
+        "environment": "prod",
+        "service": "shipping",
+        "operation": "POST /api/label",
+        "entity_type": "service_operation",
+        "entity_key": "shipping:POST /api/label",
+        "window": {
+          "start_ts": "2026-04-19T02:35:00Z",
+          "end_ts": "2026-04-19T02:40:00Z",
+          "duration_sec": 300
+        },
+        "prometheus": {
+          "alerts_firing": [
+            "shipping_retry_warning",
+            "shipping_latency_warning"
+          ],
+          "error_rate": 0.037,
+          "error_rate_baseline": 0.02,
+          "error_rate_delta": 0.017,
+          "latency_p95_ms": 430.0,
+          "latency_p95_baseline_ms": 300,
+          "latency_p95_delta": 130.0,
+          "qps": 28.0,
+          "qps_baseline": 28,
+          "qps_delta": 0.0,
+          "saturation": 0.28
+        },
+        "signoz": {
+          "top_error_templates": [
+            {
+              "template_id": "tmpl_shipping_retry_noise",
+              "template": "carrier retry warning with successful fallback",
+              "count": 41,
+              "novelty_score": 0.1
+            }
+          ],
+          "top_slow_operations": [
+            {
+              "operation": "POST /api/label",
+              "p95_ms": 430.0,
+              "error_ratio": 0.02
+            }
+          ],
+          "trace_error_ratio": 0.02,
+          "sample_trace_ids": [
+            "shippi13a",
+            "shippi13b"
+          ],
+          "sample_log_refs": [
+            "signoz://logs/shipping_label_retry_warning_provider_jitter/row-13"
+          ]
+        },
+        "topology": {
+          "tier": "tier2",
+          "owner": "shipping-oncall",
+          "repo_candidates": [
+            "shipping-service"
+          ],
+          "upstream_count": 1,
+          "downstream_count": 2,
+          "blast_radius_score": 0.27
+        },
+        "evidence_refs": {
+          "prometheus_query_refs": [
+            "prom://query/shipping_label_retry_warning_provider_jitter_window_300s"
+          ],
+          "signoz_query_refs": [
+            "signoz://trace/shipping_label_retry_warning_provider_jitter",
+            "signoz://logs/shipping_label_retry_warning_provider_jitter"
+          ]
+        },
+        "history": {
+          "recent_deploy": false,
+          "similar_incident_ids": [
+            "INC-1450"
+          ],
+          "similar_packet_ids": [
+            "ipk_shipping_post_api_label_20260413t101008z"
+          ]
+        }
+      },
+      "retrieval_hits": [
+        {
+          "packet_id": "ipk_shipping_post_api_label_20260413t101008z",
+          "similarity": 0.71,
+          "known_outcome": "benign"
+        }
+      ],
+      "input_refs": {
+        "packet_id": "ipk_shipping_post_api_label_20260419t024008z",
+        "decision_id": "",
+        "investigation_id": null,
+        "report_id": null,
+        "outcome_id": null,
+        "replay_case_id": "shipping_label_retry_warning_provider_jitter"
+      }
+    },
+    {
+      "case_id": "replay::shipping_label_retry_warning_queue_catchup",
+      "case_source": "replay_baseline",
+      "label": "benign",
+      "packet": {
+        "schema_version": "incident-packet.v1",
+        "packet_id": "ipk_shipping_post_api_label_20260419t034008z",
+        "candidate_source": "manual_replay",
+        "created_at": "2026-04-19T03:40:08Z",
+        "environment": "prod",
+        "service": "shipping",
+        "operation": "POST /api/label",
+        "entity_type": "service_operation",
+        "entity_key": "shipping:POST /api/label",
+        "window": {
+          "start_ts": "2026-04-19T03:35:00Z",
+          "end_ts": "2026-04-19T03:40:00Z",
+          "duration_sec": 300
+        },
+        "prometheus": {
+          "alerts_firing": [
+            "shipping_retry_warning",
+            "shipping_latency_warning"
+          ],
+          "error_rate": 0.044,
+          "error_rate_baseline": 0.02,
+          "error_rate_delta": 0.024,
+          "latency_p95_ms": 452.0,
+          "latency_p95_baseline_ms": 300,
+          "latency_p95_delta": 152.0,
+          "qps": 29.0,
+          "qps_baseline": 28,
+          "qps_delta": 1.0,
+          "saturation": 0.29
+        },
+        "signoz": {
+          "top_error_templates": [
+            {
+              "template_id": "tmpl_shipping_retry_noise",
+              "template": "carrier retry warning with successful fallback",
+              "count": 43,
+              "novelty_score": 0.12
+            }
+          ],
+          "top_slow_operations": [
+            {
+              "operation": "POST /api/label",
+              "p95_ms": 452.0,
+              "error_ratio": 0.03
+            }
+          ],
+          "trace_error_ratio": 0.03,
+          "sample_trace_ids": [
+            "shippi14a",
+            "shippi14b"
+          ],
+          "sample_log_refs": [
+            "signoz://logs/shipping_label_retry_warning_queue_catchup/row-14"
+          ]
+        },
+        "topology": {
+          "tier": "tier2",
+          "owner": "shipping-oncall",
+          "repo_candidates": [
+            "shipping-service"
+          ],
+          "upstream_count": 1,
+          "downstream_count": 2,
+          "blast_radius_score": 0.26
+        },
+        "evidence_refs": {
+          "prometheus_query_refs": [
+            "prom://query/shipping_label_retry_warning_queue_catchup_window_300s"
+          ],
+          "signoz_query_refs": [
+            "signoz://trace/shipping_label_retry_warning_queue_catchup",
+            "signoz://logs/shipping_label_retry_warning_queue_catchup"
+          ]
+        },
+        "history": {
+          "recent_deploy": false,
+          "similar_incident_ids": [
+            "INC-1450"
+          ],
+          "similar_packet_ids": [
+            "ipk_shipping_post_api_label_20260413t101008z"
+          ]
+        }
+      },
+      "retrieval_hits": [
+        {
+          "packet_id": "ipk_shipping_post_api_label_20260413t101008z",
+          "similarity": 0.71,
+          "known_outcome": "benign"
+        }
+      ],
+      "input_refs": {
+        "packet_id": "ipk_shipping_post_api_label_20260419t034008z",
+        "decision_id": "",
+        "investigation_id": null,
+        "report_id": null,
+        "outcome_id": null,
+        "replay_case_id": "shipping_label_retry_warning_queue_catchup"
+      }
+    },
+    {
+      "case_id": "replay::auth_session_traffic_shift_shard_rebalance",
+      "case_source": "replay_baseline",
+      "label": "benign",
+      "packet": {
+        "schema_version": "incident-packet.v1",
+        "packet_id": "ipk_auth_post_api_session_20260419t045008z",
+        "candidate_source": "manual_replay",
+        "created_at": "2026-04-19T04:50:08Z",
+        "environment": "prod",
+        "service": "auth",
+        "operation": "POST /api/session",
+        "entity_type": "service_operation",
+        "entity_key": "auth:POST /api/session",
+        "window": {
+          "start_ts": "2026-04-19T04:45:00Z",
+          "end_ts": "2026-04-19T04:50:00Z",
+          "duration_sec": 300
+        },
+        "prometheus": {
+          "alerts_firing": [
+            "auth_traffic_shift",
+            "auth_soft_latency_warning"
+          ],
+          "error_rate": 0.02,
+          "error_rate_baseline": 0.02,
+          "error_rate_delta": 0.0,
+          "latency_p95_ms": 282.0,
+          "latency_p95_baseline_ms": 180,
+          "latency_p95_delta": 102.0,
+          "qps": 135.0,
+          "qps_baseline": 129,
+          "qps_delta": 6.0,
+          "saturation": 0.18
+        },
+        "signoz": {
+          "top_error_templates": [
+            {
+              "template_id": "tmpl_auth_traffic_shift",
+              "template": "auth session traffic shift after upstream rebalance",
+              "count": 22,
+              "novelty_score": 0.14
+            }
+          ],
+          "top_slow_operations": [
+            {
+              "operation": "POST /api/session",
+              "p95_ms": 282.0,
+              "error_ratio": 0.01
+            }
+          ],
+          "trace_error_ratio": 0.01,
+          "sample_trace_ids": [
+            "auth_s15a",
+            "auth_s15b"
+          ],
+          "sample_log_refs": [
+            "signoz://logs/auth_session_traffic_shift_shard_rebalance/row-15"
+          ]
+        },
+        "topology": {
+          "tier": "tier2",
+          "owner": "auth-oncall",
+          "repo_candidates": [
+            "auth-service"
+          ],
+          "upstream_count": 2,
+          "downstream_count": 2,
+          "blast_radius_score": 0.24
+        },
+        "evidence_refs": {
+          "prometheus_query_refs": [
+            "prom://query/auth_session_traffic_shift_shard_rebalance_window_300s"
+          ],
+          "signoz_query_refs": [
+            "signoz://trace/auth_session_traffic_shift_shard_rebalance",
+            "signoz://logs/auth_session_traffic_shift_shard_rebalance"
+          ]
+        },
+        "history": {
+          "recent_deploy": false,
+          "similar_incident_ids": [],
+          "similar_packet_ids": [
+            "ipk_auth_post_api_session_20260413t111008z"
+          ]
+        }
+      },
+      "retrieval_hits": [
+        {
+          "packet_id": "ipk_auth_post_api_session_20260413t111008z",
+          "similarity": 0.68,
+          "known_outcome": "benign"
+        }
+      ],
+      "input_refs": {
+        "packet_id": "ipk_auth_post_api_session_20260419t045008z",
+        "decision_id": "",
+        "investigation_id": null,
+        "report_id": null,
+        "outcome_id": null,
+        "replay_case_id": "auth_session_traffic_shift_shard_rebalance"
+      }
+    },
+    {
+      "case_id": "replay::auth_session_traffic_shift_soft_cookie_rotation",
+      "case_source": "replay_baseline",
+      "label": "benign",
+      "packet": {
+        "schema_version": "incident-packet.v1",
+        "packet_id": "ipk_auth_post_api_session_20260419t055008z",
+        "candidate_source": "manual_replay",
+        "created_at": "2026-04-19T05:50:08Z",
+        "environment": "prod",
+        "service": "auth",
+        "operation": "POST /api/session",
+        "entity_type": "service_operation",
+        "entity_key": "auth:POST /api/session",
+        "window": {
+          "start_ts": "2026-04-19T05:45:00Z",
+          "end_ts": "2026-04-19T05:50:00Z",
+          "duration_sec": 300
+        },
+        "prometheus": {
+          "alerts_firing": [
+            "auth_traffic_shift",
+            "auth_soft_latency_warning"
+          ],
+          "error_rate": 0.02,
+          "error_rate_baseline": 0.02,
+          "error_rate_delta": 0.0,
+          "latency_p95_ms": 290.0,
+          "latency_p95_baseline_ms": 180,
+          "latency_p95_delta": 110.0,
+          "qps": 135.0,
+          "qps_baseline": 129,
+          "qps_delta": 6.0,
+          "saturation": 0.18
+        },
+        "signoz": {
+          "top_error_templates": [
+            {
+              "template_id": "tmpl_auth_traffic_shift",
+              "template": "auth session traffic shift after upstream rebalance",
+              "count": 22,
+              "novelty_score": 0.14
+            }
+          ],
+          "top_slow_operations": [
+            {
+              "operation": "POST /api/session",
+              "p95_ms": 290.0,
+              "error_ratio": 0.01
+            }
+          ],
+          "trace_error_ratio": 0.01,
+          "sample_trace_ids": [
+            "auth_s16a",
+            "auth_s16b"
+          ],
+          "sample_log_refs": [
+            "signoz://logs/auth_session_traffic_shift_soft_cookie_rotation/row-16"
+          ]
+        },
+        "topology": {
+          "tier": "tier2",
+          "owner": "auth-oncall",
+          "repo_candidates": [
+            "auth-service"
+          ],
+          "upstream_count": 2,
+          "downstream_count": 2,
+          "blast_radius_score": 0.24
+        },
+        "evidence_refs": {
+          "prometheus_query_refs": [
+            "prom://query/auth_session_traffic_shift_soft_cookie_rotation_window_300s"
+          ],
+          "signoz_query_refs": [
+            "signoz://trace/auth_session_traffic_shift_soft_cookie_rotation",
+            "signoz://logs/auth_session_traffic_shift_soft_cookie_rotation"
+          ]
+        },
+        "history": {
+          "recent_deploy": false,
+          "similar_incident_ids": [],
+          "similar_packet_ids": [
+            "ipk_auth_post_api_session_20260413t111008z"
+          ]
+        }
+      },
+      "retrieval_hits": [
+        {
+          "packet_id": "ipk_auth_post_api_session_20260413t111008z",
+          "similarity": 0.68,
+          "known_outcome": "benign"
+        }
+      ],
+      "input_refs": {
+        "packet_id": "ipk_auth_post_api_session_20260419t055008z",
+        "decision_id": "",
+        "investigation_id": null,
+        "report_id": null,
+        "outcome_id": null,
+        "replay_case_id": "auth_session_traffic_shift_soft_cookie_rotation"
+      }
+    },
+    {
+      "case_id": "replay::orders_cleanup_queue_warning_maintenance_window",
+      "case_source": "replay_baseline",
+      "label": "benign",
+      "packet": {
+        "schema_version": "incident-packet.v1",
+        "packet_id": "ipk_orders_post_api_cleanup_20260419t070008z",
+        "candidate_source": "manual_replay",
+        "created_at": "2026-04-19T07:00:08Z",
+        "environment": "prod",
+        "service": "orders",
+        "operation": "POST /api/cleanup",
+        "entity_type": "service_operation",
+        "entity_key": "orders:POST /api/cleanup",
+        "window": {
+          "start_ts": "2026-04-19T06:55:00Z",
+          "end_ts": "2026-04-19T07:00:00Z",
+          "duration_sec": 300
+        },
+        "prometheus": {
+          "alerts_firing": [
+            "orders_queue_warning",
+            "orders_worker_soft_latency"
+          ],
+          "error_rate": 0.035,
+          "error_rate_baseline": 0.02,
+          "error_rate_delta": 0.015,
+          "latency_p95_ms": 408.0,
+          "latency_p95_baseline_ms": 240,
+          "latency_p95_delta": 168.0,
+          "qps": 34.0,
+          "qps_baseline": 32,
+          "qps_delta": 2.0,
+          "saturation": 0.34
+        },
+        "signoz": {
+          "top_error_templates": [
+            {
+              "template_id": "tmpl_orders_queue_backlog",
+              "template": "orders cleanup queue backlog cleared without paging",
+              "count": 34,
+              "novelty_score": 0.19
+            }
+          ],
+          "top_slow_operations": [
+            {
+              "operation": "POST /api/cleanup",
+              "p95_ms": 408.0,
+              "error_ratio": 0.03
+            }
+          ],
+          "trace_error_ratio": 0.03,
+          "sample_trace_ids": [
+            "orders17a",
+            "orders17b"
+          ],
+          "sample_log_refs": [
+            "signoz://logs/orders_cleanup_queue_warning_maintenance_window/row-17"
+          ]
+        },
+        "topology": {
+          "tier": "tier2",
+          "owner": "orders-oncall",
+          "repo_candidates": [
+            "orders-service"
+          ],
+          "upstream_count": 1,
+          "downstream_count": 3,
+          "blast_radius_score": 0.23
+        },
+        "evidence_refs": {
+          "prometheus_query_refs": [
+            "prom://query/orders_cleanup_queue_warning_maintenance_window_window_300s"
+          ],
+          "signoz_query_refs": [
+            "signoz://trace/orders_cleanup_queue_warning_maintenance_window",
+            "signoz://logs/orders_cleanup_queue_warning_maintenance_window"
+          ]
+        },
+        "history": {
+          "recent_deploy": false,
+          "similar_incident_ids": [
+            "INC-1431"
+          ],
+          "similar_packet_ids": [
+            "ipk_orders_post_api_cleanup_20260413t121008z"
+          ]
+        }
+      },
+      "retrieval_hits": [
+        {
+          "packet_id": "ipk_orders_post_api_cleanup_20260413t121008z",
+          "similarity": 0.66,
+          "known_outcome": "benign"
+        }
+      ],
+      "input_refs": {
+        "packet_id": "ipk_orders_post_api_cleanup_20260419t070008z",
+        "decision_id": "",
+        "investigation_id": null,
+        "report_id": null,
+        "outcome_id": null,
+        "replay_case_id": "orders_cleanup_queue_warning_maintenance_window"
+      }
+    },
+    {
+      "case_id": "replay::orders_cleanup_queue_warning_worker_turnover",
+      "case_source": "replay_baseline",
+      "label": "benign",
+      "packet": {
+        "schema_version": "incident-packet.v1",
+        "packet_id": "ipk_orders_post_api_cleanup_20260419t080008z",
+        "candidate_source": "manual_replay",
+        "created_at": "2026-04-19T08:00:08Z",
+        "environment": "prod",
+        "service": "orders",
+        "operation": "POST /api/cleanup",
+        "entity_type": "service_operation",
+        "entity_key": "orders:POST /api/cleanup",
+        "window": {
+          "start_ts": "2026-04-19T07:55:00Z",
+          "end_ts": "2026-04-19T08:00:00Z",
+          "duration_sec": 300
+        },
+        "prometheus": {
+          "alerts_firing": [
+            "orders_queue_warning",
+            "orders_worker_soft_latency"
+          ],
+          "error_rate": 0.027,
+          "error_rate_baseline": 0.02,
+          "error_rate_delta": 0.007,
+          "latency_p95_ms": 380.0,
+          "latency_p95_baseline_ms": 240,
+          "latency_p95_delta": 140.0,
+          "qps": 33.0,
+          "qps_baseline": 32,
+          "qps_delta": 1.0,
+          "saturation": 0.33
+        },
+        "signoz": {
+          "top_error_templates": [
+            {
+              "template_id": "tmpl_orders_queue_backlog",
+              "template": "orders cleanup queue backlog cleared without paging",
+              "count": 31,
+              "novelty_score": 0.16
+            }
+          ],
+          "top_slow_operations": [
+            {
+              "operation": "POST /api/cleanup",
+              "p95_ms": 380.0,
+              "error_ratio": 0.01
+            }
+          ],
+          "trace_error_ratio": 0.01,
+          "sample_trace_ids": [
+            "orders18a",
+            "orders18b"
+          ],
+          "sample_log_refs": [
+            "signoz://logs/orders_cleanup_queue_warning_worker_turnover/row-18"
+          ]
+        },
+        "topology": {
+          "tier": "tier2",
+          "owner": "orders-oncall",
+          "repo_candidates": [
+            "orders-service"
+          ],
+          "upstream_count": 1,
+          "downstream_count": 3,
+          "blast_radius_score": 0.22
+        },
+        "evidence_refs": {
+          "prometheus_query_refs": [
+            "prom://query/orders_cleanup_queue_warning_worker_turnover_window_300s"
+          ],
+          "signoz_query_refs": [
+            "signoz://trace/orders_cleanup_queue_warning_worker_turnover",
+            "signoz://logs/orders_cleanup_queue_warning_worker_turnover"
+          ]
+        },
+        "history": {
+          "recent_deploy": false,
+          "similar_incident_ids": [
+            "INC-1431"
+          ],
+          "similar_packet_ids": [
+            "ipk_orders_post_api_cleanup_20260413t121008z"
+          ]
+        }
+      },
+      "retrieval_hits": [
+        {
+          "packet_id": "ipk_orders_post_api_cleanup_20260413t121008z",
+          "similarity": 0.66,
+          "known_outcome": "benign"
+        }
+      ],
+      "input_refs": {
+        "packet_id": "ipk_orders_post_api_cleanup_20260419t080008z",
+        "decision_id": "",
+        "investigation_id": null,
+        "report_id": null,
+        "outcome_id": null,
+        "replay_case_id": "orders_cleanup_queue_warning_worker_turnover"
+      }
+    },
+    {
+      "case_id": "replay::gateway_edge_cache_warning_soft_refresh",
+      "case_source": "replay_baseline",
+      "label": "benign",
+      "packet": {
+        "schema_version": "incident-packet.v1",
+        "packet_id": "ipk_gateway_get_api_edge_20260419t091008z",
+        "candidate_source": "manual_replay",
+        "created_at": "2026-04-19T09:10:08Z",
+        "environment": "prod",
+        "service": "gateway",
+        "operation": "GET /api/edge",
+        "entity_type": "service_operation",
+        "entity_key": "gateway:GET /api/edge",
+        "window": {
+          "start_ts": "2026-04-19T09:05:00Z",
+          "end_ts": "2026-04-19T09:10:00Z",
+          "duration_sec": 300
+        },
+        "prometheus": {
+          "alerts_firing": [
+            "gateway_cache_warning",
+            "gateway_latency_warning"
+          ],
+          "error_rate": 0.034,
+          "error_rate_baseline": 0.02,
+          "error_rate_delta": 0.014,
+          "latency_p95_ms": 382.0,
+          "latency_p95_baseline_ms": 240,
+          "latency_p95_delta": 142.0,
+          "qps": 88.0,
+          "qps_baseline": 83,
+          "qps_delta": 5.0,
+          "saturation": 0.32
+        },
+        "signoz": {
+          "top_error_templates": [
+            {
+              "template_id": "tmpl_gateway_cache_churn",
+              "template": "gateway edge cache churn without sustained error growth",
+              "count": 33,
+              "novelty_score": 0.21
+            }
+          ],
+          "top_slow_operations": [
+            {
+              "operation": "GET /api/edge",
+              "p95_ms": 382.0,
+              "error_ratio": 0.01
+            }
+          ],
+          "trace_error_ratio": 0.01,
+          "sample_trace_ids": [
+            "gatewa19a",
+            "gatewa19b"
+          ],
+          "sample_log_refs": [
+            "signoz://logs/gateway_edge_cache_warning_soft_refresh/row-19"
+          ]
+        },
+        "topology": {
+          "tier": "tier2",
+          "owner": "edge-oncall",
+          "repo_candidates": [
+            "gateway-service"
+          ],
+          "upstream_count": 2,
+          "downstream_count": 4,
+          "blast_radius_score": 0.28
+        },
+        "evidence_refs": {
+          "prometheus_query_refs": [
+            "prom://query/gateway_edge_cache_warning_soft_refresh_window_300s"
+          ],
+          "signoz_query_refs": [
+            "signoz://trace/gateway_edge_cache_warning_soft_refresh",
+            "signoz://logs/gateway_edge_cache_warning_soft_refresh"
+          ]
+        },
+        "history": {
+          "recent_deploy": false,
+          "similar_incident_ids": [
+            "INC-1440"
+          ],
+          "similar_packet_ids": [
+            "ipk_gateway_get_api_edge_20260413t131008z"
+          ]
+        }
+      },
+      "retrieval_hits": [
+        {
+          "packet_id": "ipk_gateway_get_api_edge_20260413t131008z",
+          "similarity": 0.74,
+          "known_outcome": "benign"
+        }
+      ],
+      "input_refs": {
+        "packet_id": "ipk_gateway_get_api_edge_20260419t091008z",
+        "decision_id": "",
+        "investigation_id": null,
+        "report_id": null,
+        "outcome_id": null,
+        "replay_case_id": "gateway_edge_cache_warning_soft_refresh"
+      }
+    },
+    {
+      "case_id": "replay::gateway_edge_cache_warning_cache_reseed",
+      "case_source": "replay_baseline",
+      "label": "benign",
+      "packet": {
+        "schema_version": "incident-packet.v1",
+        "packet_id": "ipk_gateway_get_api_edge_20260419t101008z",
+        "candidate_source": "manual_replay",
+        "created_at": "2026-04-19T10:10:08Z",
+        "environment": "prod",
+        "service": "gateway",
+        "operation": "GET /api/edge",
+        "entity_type": "service_operation",
+        "entity_key": "gateway:GET /api/edge",
+        "window": {
+          "start_ts": "2026-04-19T10:05:00Z",
+          "end_ts": "2026-04-19T10:10:00Z",
+          "duration_sec": 300
+        },
+        "prometheus": {
+          "alerts_firing": [
+            "gateway_cache_warning",
+            "gateway_latency_warning"
+          ],
+          "error_rate": 0.028,
+          "error_rate_baseline": 0.02,
+          "error_rate_delta": 0.008,
+          "latency_p95_ms": 362.0,
+          "latency_p95_baseline_ms": 240,
+          "latency_p95_delta": 122.0,
+          "qps": 87.0,
+          "qps_baseline": 83,
+          "qps_delta": 4.0,
+          "saturation": 0.31
+        },
+        "signoz": {
+          "top_error_templates": [
+            {
+              "template_id": "tmpl_gateway_cache_churn",
+              "template": "gateway edge cache churn without sustained error growth",
+              "count": 32,
+              "novelty_score": 0.2
+            }
+          ],
+          "top_slow_operations": [
+            {
+              "operation": "GET /api/edge",
+              "p95_ms": 362.0,
+              "error_ratio": 0.01
+            }
+          ],
+          "trace_error_ratio": 0.01,
+          "sample_trace_ids": [
+            "gatewa20a",
+            "gatewa20b"
+          ],
+          "sample_log_refs": [
+            "signoz://logs/gateway_edge_cache_warning_cache_reseed/row-20"
+          ]
+        },
+        "topology": {
+          "tier": "tier2",
+          "owner": "edge-oncall",
+          "repo_candidates": [
+            "gateway-service"
+          ],
+          "upstream_count": 2,
+          "downstream_count": 4,
+          "blast_radius_score": 0.29
+        },
+        "evidence_refs": {
+          "prometheus_query_refs": [
+            "prom://query/gateway_edge_cache_warning_cache_reseed_window_300s"
+          ],
+          "signoz_query_refs": [
+            "signoz://trace/gateway_edge_cache_warning_cache_reseed",
+            "signoz://logs/gateway_edge_cache_warning_cache_reseed"
+          ]
+        },
+        "history": {
+          "recent_deploy": false,
+          "similar_incident_ids": [
+            "INC-1440"
+          ],
+          "similar_packet_ids": [
+            "ipk_gateway_get_api_edge_20260413t131008z"
+          ]
+        }
+      },
+      "retrieval_hits": [
+        {
+          "packet_id": "ipk_gateway_get_api_edge_20260413t131008z",
+          "similarity": 0.74,
+          "known_outcome": "benign"
+        }
+      ],
+      "input_refs": {
+        "packet_id": "ipk_gateway_get_api_edge_20260419t101008z",
+        "decision_id": "",
+        "investigation_id": null,
+        "report_id": null,
+        "outcome_id": null,
+        "replay_case_id": "gateway_edge_cache_warning_cache_reseed"
+      }
+    },
+    {
+      "case_id": "outcome::out_operator_checkout_post_api_pay_20260419t100000z",
+      "case_source": "landed_outcome",
+      "label": "severe",
+      "packet": {
+        "schema_version": "incident-packet.v1",
+        "packet_id": "ipk_checkout_post_api_pay_20260418t120008z",
+        "candidate_source": "manual_replay",
+        "created_at": "2026-04-18T12:00:08Z",
+        "environment": "prod",
+        "service": "checkout",
+        "operation": "POST /api/pay",
+        "entity_type": "service_operation",
+        "entity_key": "checkout:POST /api/pay",
+        "window": {
+          "start_ts": "2026-04-18T11:55:00Z",
+          "end_ts": "2026-04-18T12:00:00Z",
+          "duration_sec": 300
+        },
+        "prometheus": {
+          "alerts_firing": [
+            "high_error_rate",
+            "latency_p95_high"
+          ],
+          "error_rate": 0.21,
+          "error_rate_baseline": 0.02,
+          "error_rate_delta": 0.19,
+          "latency_p95_ms": 2400,
+          "latency_p95_baseline_ms": 410,
+          "latency_p95_delta": 1990,
+          "qps": 122,
+          "qps_baseline": 118,
+          "qps_delta": 4,
+          "saturation": 0.81
+        },
+        "signoz": {
+          "top_error_templates": [
+            {
+              "template_id": "tmpl_db_timeout",
+              "template": "db timeout on order lookup",
+              "count": 182,
+              "novelty_score": 0.91
+            }
+          ],
+          "top_slow_operations": [
+            {
+              "operation": "POST /api/pay",
+              "p95_ms": 2400,
+              "error_ratio": 0.34
+            }
+          ],
+          "trace_error_ratio": 0.34,
+          "sample_trace_ids": [
+            "7f8a3c",
+            "7f8a40"
+          ],
+          "sample_log_refs": [
+            "signoz://logs/query-123/row-18"
+          ]
+        },
+        "topology": {
+          "tier": "tier1",
+          "owner": "payments-oncall",
+          "repo_candidates": [
+            "checkout-service",
+            "payment-gateway-client"
+          ],
+          "upstream_count": 6,
+          "downstream_count": 12,
+          "blast_radius_score": 0.88
+        },
+        "evidence_refs": {
+          "prometheus_query_refs": [
+            "prom://query/high_error_rate_window_300s"
+          ],
+          "signoz_query_refs": [
+            "signoz://trace/query-123",
+            "signoz://logs/query-456"
+          ]
+        },
+        "history": {
+          "recent_deploy": true,
+          "similar_incident_ids": [
+            "INC-1422"
+          ],
+          "similar_packet_ids": [
+            "ipk_checkout_post_pay_20260411t110000z"
+          ]
+        }
+      },
+      "retrieval_hits": [
+        {
+          "packet_id": "ipk_checkout_post_pay_20260411t110000z",
+          "similarity": 0.82,
+          "known_outcome": "severe"
+        }
+      ],
+      "input_refs": {
+        "packet_id": "ipk_checkout_post_api_pay_20260418t120008z",
+        "decision_id": "lad_checkout_post_pay_20260418t120010z",
+        "investigation_id": null,
+        "report_id": "rpt_checkout_post_api_pay_20260418t120008z",
+        "outcome_id": "out_operator_checkout_post_api_pay_20260419t100000z",
+        "replay_case_id": null
+      }
+    }
+  ]
+}

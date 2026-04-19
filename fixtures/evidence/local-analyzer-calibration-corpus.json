@@ -1,0 +1,425 @@
+{
+  "schema_version": "local-analyzer-calibration-corpus.v1",
+  "cases": [
+    {
+      "case_id": "checkout_high_error_rate",
+      "label": "severe",
+      "expected_needs_investigation": true,
+      "replay_fixture": "fixtures/replay/manual-replay.checkout.high-error-rate.json",
+      "evidence_fixture": "fixtures/evidence/checkout.packet-input.json",
+      "retrieval_hits": [
+        {
+          "packet_id": "ipk_checkout_post_pay_20260411t110000z",
+          "similarity": 0.82,
+          "known_outcome": "severe"
+        }
+      ]
+    },
+    {
+      "case_id": "catalog_latency_warning",
+      "label": "benign",
+      "expected_needs_investigation": false,
+      "replay_fixture": "fixtures/replay/manual-replay.catalog.latency-warning.json",
+      "evidence_fixture": "fixtures/evidence/catalog.packet-input.json",
+      "retrieval_hits": [
+        {
+          "packet_id": "ipk_catalog_get_items_20260410t090000z",
+          "similarity": 0.77,
+          "known_outcome": "benign"
+        }
+      ]
+    },
+    {
+      "case_id": "payments_charge_timeout_spike",
+      "label": "severe",
+      "expected_needs_investigation": true,
+      "replay_fixture": "fixtures/replay/manual-replay.payments.charge-timeout-spike.json",
+      "evidence_fixture": "fixtures/evidence/payments.packet-input.json",
+      "retrieval_hits": [
+        {
+          "packet_id": "ipk_payments_post_api_charge_20260415t131008z",
+          "similarity": 0.79,
+          "known_outcome": "severe"
+        }
+      ]
+    },
+    {
+      "case_id": "search_query_error_burst",
+      "label": "severe",
+      "expected_needs_investigation": true,
+      "replay_fixture": "fixtures/replay/manual-replay.search.query-error-burst.json",
+      "evidence_fixture": "fixtures/evidence/search.packet-input.json",
+      "retrieval_hits": [
+        {
+          "packet_id": "ipk_search_get_api_query_20260416t141008z",
+          "similarity": 0.78,
+          "known_outcome": "severe"
+        }
+      ]
+    },
+    {
+      "case_id": "profile_read_latency_warning",
+      "label": "benign",
+      "expected_needs_investigation": false,
+      "replay_fixture": "fixtures/replay/manual-replay.profile.read-latency-warning.json",
+      "evidence_fixture": "fixtures/evidence/profile.packet-input.json",
+      "retrieval_hits": [
+        {
+          "packet_id": "ipk_profile_get_api_profile_20260412t111008z",
+          "similarity": 0.72,
+          "known_outcome": "benign"
+        }
+      ]
+    },
+    {
+      "case_id": "inventory_stock_cpu_warning",
+      "label": "benign",
+      "expected_needs_investigation": false,
+      "replay_fixture": "fixtures/replay/manual-replay.inventory.stock-cpu-warning.json",
+      "evidence_fixture": "fixtures/evidence/inventory.packet-input.json",
+      "retrieval_hits": [
+        {
+          "packet_id": "ipk_inventory_get_api_stock_20260412t121008z",
+          "similarity": 0.69,
+          "known_outcome": "benign"
+        }
+      ]
+    },
+    {
+      "case_id": "shipping_label_retry_warning",
+      "label": "benign",
+      "expected_needs_investigation": false,
+      "replay_fixture": "fixtures/replay/manual-replay.shipping.label-retry-warning.json",
+      "evidence_fixture": "fixtures/evidence/shipping.packet-input.json",
+      "retrieval_hits": [
+        {
+          "packet_id": "ipk_shipping_post_api_label_20260413t101008z",
+          "similarity": 0.71,
+          "known_outcome": "benign"
+        }
+      ]
+    },
+    {
+      "case_id": "auth_session_traffic_shift",
+      "label": "benign",
+      "expected_needs_investigation": false,
+      "replay_fixture": "fixtures/replay/manual-replay.auth.session-traffic-shift.json",
+      "evidence_fixture": "fixtures/evidence/auth.packet-input.json",
+      "retrieval_hits": [
+        {
+          "packet_id": "ipk_auth_post_api_session_20260413t111008z",
+          "similarity": 0.68,
+          "known_outcome": "benign"
+        }
+      ]
+    },
+    {
+      "case_id": "orders_cleanup_queue_warning",
+      "label": "benign",
+      "expected_needs_investigation": false,
+      "replay_fixture": "fixtures/replay/manual-replay.orders.cleanup-queue-warning.json",
+      "evidence_fixture": "fixtures/evidence/orders.packet-input.json",
+      "retrieval_hits": [
+        {
+          "packet_id": "ipk_orders_post_api_cleanup_20260413t121008z",
+          "similarity": 0.66,
+          "known_outcome": "benign"
+        }
+      ]
+    },
+    {
+      "case_id": "gateway_edge_cache_warning",
+      "label": "benign",
+      "expected_needs_investigation": false,
+      "replay_fixture": "fixtures/replay/manual-replay.gateway.edge-cache-warning.json",
+      "evidence_fixture": "fixtures/evidence/gateway.packet-input.json",
+      "retrieval_hits": [
+        {
+          "packet_id": "ipk_gateway_get_api_edge_20260413t131008z",
+          "similarity": 0.74,
+          "known_outcome": "benign"
+        }
+      ]
+    },
+    {
+      "case_id": "checkout_high_error_rate_db_retry_regression",
+      "label": "severe",
+      "expected_needs_investigation": true,
+      "replay_fixture": "fixtures/replay/manual-replay.checkout-high-error-rate-db-retry-regression.json",
+      "evidence_fixture": "fixtures/evidence/checkout-high-error-rate-db-retry-regression.packet-input.json",
+      "retrieval_hits": [
+        {
+          "packet_id": "ipk_checkout_post_pay_20260411t110000z",
+          "similarity": 0.82,
+          "known_outcome": "severe"
+        }
+      ]
+    },
+    {
+      "case_id": "checkout_high_error_rate_cache_timeout_regression",
+      "label": "severe",
+      "expected_needs_investigation": true,
+      "replay_fixture": "fixtures/replay/manual-replay.checkout-high-error-rate-cache-timeout-regression.json",
+      "evidence_fixture": "fixtures/evidence/checkout-high-error-rate-cache-timeout-regression.packet-input.json",
+      "retrieval_hits": [
+        {
+          "packet_id": "ipk_checkout_post_pay_20260411t110000z",
+          "similarity": 0.82,
+          "known_outcome": "severe"
+        }
+      ]
+    },
+    {
+      "case_id": "payments_charge_timeout_spike_gateway_drain",
+      "label": "severe",
+      "expected_needs_investigation": true,
+      "replay_fixture": "fixtures/replay/manual-replay.payments-charge-timeout-spike-gateway-drain.json",
+      "evidence_fixture": "fixtures/evidence/payments-charge-timeout-spike-gateway-drain.packet-input.json",
+      "retrieval_hits": [
+        {
+          "packet_id": "ipk_payments_post_api_charge_20260415t131008z",
+          "similarity": 0.79,
+          "known_outcome": "severe"
+        }
+      ]
+    },
+    {
+      "case_id": "payments_charge_timeout_spike_retry_queue_growth",
+      "label": "severe",
+      "expected_needs_investigation": true,
+      "replay_fixture": "fixtures/replay/manual-replay.payments-charge-timeout-spike-retry-queue-growth.json",
+      "evidence_fixture": "fixtures/evidence/payments-charge-timeout-spike-retry-queue-growth.packet-input.json",
+      "retrieval_hits": [
+        {
+          "packet_id": "ipk_payments_post_api_charge_20260415t131008z",
+          "similarity": 0.79,
+          "known_outcome": "severe"
+        }
+      ]
+    },
+    {
+      "case_id": "search_query_error_burst_shard_regression",
+      "label": "severe",
+      "expected_needs_investigation": true,
+      "replay_fixture": "fixtures/replay/manual-replay.search-query-error-burst-shard-regression.json",
+      "evidence_fixture": "fixtures/evidence/search-query-error-burst-shard-regression.packet-input.json",
+      "retrieval_hits": [
+        {
+          "packet_id": "ipk_search_get_api_query_20260416t141008z",
+          "similarity": 0.78,
+          "known_outcome": "severe"
+        }
+      ]
+    },
+    {
+      "case_id": "catalog_latency_warning_cache_refresh",
+      "label": "benign",
+      "expected_needs_investigation": false,
+      "replay_fixture": "fixtures/replay/manual-replay.catalog-latency-warning-cache-refresh.json",
+      "evidence_fixture": "fixtures/evidence/catalog-latency-warning-cache-refresh.packet-input.json",
+      "retrieval_hits": [
+        {
+          "packet_id": "ipk_catalog_get_items_20260410t090000z",
+          "similarity": 0.77,
+          "known_outcome": "benign"
+        }
+      ]
+    },
+    {
+      "case_id": "catalog_latency_warning_soft_qps_shift",
+      "label": "benign",
+      "expected_needs_investigation": false,
+      "replay_fixture": "fixtures/replay/manual-replay.catalog-latency-warning-soft-qps-shift.json",
+      "evidence_fixture": "fixtures/evidence/catalog-latency-warning-soft-qps-shift.packet-input.json",
+      "retrieval_hits": [
+        {
+          "packet_id": "ipk_catalog_get_items_20260410t090000z",
+          "similarity": 0.77,
+          "known_outcome": "benign"
+        }
+      ]
+    },
+    {
+      "case_id": "catalog_latency_warning_warmup_tail",
+      "label": "benign",
+      "expected_needs_investigation": false,
+      "replay_fixture": "fixtures/replay/manual-replay.catalog-latency-warning-warmup-tail.json",
+      "evidence_fixture": "fixtures/evidence/catalog-latency-warning-warmup-tail.packet-input.json",
+      "retrieval_hits": [
+        {
+          "packet_id": "ipk_catalog_get_items_20260410t090000z",
+          "similarity": 0.77,
+          "known_outcome": "benign"
+        }
+      ]
+    },
+    {
+      "case_id": "profile_read_latency_warning_background_scan",
+      "label": "benign",
+      "expected_needs_investigation": false,
+      "replay_fixture": "fixtures/replay/manual-replay.profile-read-latency-warning-background-scan.json",
+      "evidence_fixture": "fixtures/evidence/profile-read-latency-warning-background-scan.packet-input.json",
+      "retrieval_hits": [
+        {
+          "packet_id": "ipk_profile_get_api_profile_20260412t111008z",
+          "similarity": 0.72,
+          "known_outcome": "benign"
+        }
+      ]
+    },
+    {
+      "case_id": "profile_read_latency_warning_soft_cache_turnover",
+      "label": "benign",
+      "expected_needs_investigation": false,
+      "replay_fixture": "fixtures/replay/manual-replay.profile-read-latency-warning-soft-cache-turnover.json",
+      "evidence_fixture": "fixtures/evidence/profile-read-latency-warning-soft-cache-turnover.packet-input.json",
+      "retrieval_hits": [
+        {
+          "packet_id": "ipk_profile_get_api_profile_20260412t111008z",
+          "similarity": 0.72,
+          "known_outcome": "benign"
+        }
+      ]
+    },
+    {
+      "case_id": "inventory_stock_cpu_warning_batch_window",
+      "label": "benign",
+      "expected_needs_investigation": false,
+      "replay_fixture": "fixtures/replay/manual-replay.inventory-stock-cpu-warning-batch-window.json",
+      "evidence_fixture": "fixtures/evidence/inventory-stock-cpu-warning-batch-window.packet-input.json",
+      "retrieval_hits": [
+        {
+          "packet_id": "ipk_inventory_get_api_stock_20260412t121008z",
+          "similarity": 0.69,
+          "known_outcome": "benign"
+        }
+      ]
+    },
+    {
+      "case_id": "inventory_stock_cpu_warning_minor_cache_refresh",
+      "label": "benign",
+      "expected_needs_investigation": false,
+      "replay_fixture": "fixtures/replay/manual-replay.inventory-stock-cpu-warning-minor-cache-refresh.json",
+      "evidence_fixture": "fixtures/evidence/inventory-stock-cpu-warning-minor-cache-refresh.packet-input.json",
+      "retrieval_hits": [
+        {
+          "packet_id": "ipk_inventory_get_api_stock_20260412t121008z",
+          "similarity": 0.69,
+          "known_outcome": "benign"
+        }
+      ]
+    },
+    {
+      "case_id": "shipping_label_retry_warning_provider_jitter",
+      "label": "benign",
+      "expected_needs_investigation": false,
+      "replay_fixture": "fixtures/replay/manual-replay.shipping-label-retry-warning-provider-jitter.json",
+      "evidence_fixture": "fixtures/evidence/shipping-label-retry-warning-provider-jitter.packet-input.json",
+      "retrieval_hits": [
+        {
+          "packet_id": "ipk_shipping_post_api_label_20260413t101008z",
+          "similarity": 0.71,
+          "known_outcome": "benign"
+        }
+      ]
+    },
+    {
+      "case_id": "shipping_label_retry_warning_queue_catchup",
+      "label": "benign",
+      "expected_needs_investigation": false,
+      "replay_fixture": "fixtures/replay/manual-replay.shipping-label-retry-warning-queue-catchup.json",
+      "evidence_fixture": "fixtures/evidence/shipping-label-retry-warning-queue-catchup.packet-input.json",
+      "retrieval_hits": [
+        {
+          "packet_id": "ipk_shipping_post_api_label_20260413t101008z",
+          "similarity": 0.71,
+          "known_outcome": "benign"
+        }
+      ]
+    },
+    {
+      "case_id": "auth_session_traffic_shift_shard_rebalance",
+      "label": "benign",
+      "expected_needs_investigation": false,
+      "replay_fixture": "fixtures/replay/manual-replay.auth-session-traffic-shift-shard-rebalance.json",
+      "evidence_fixture": "fixtures/evidence/auth-session-traffic-shift-shard-rebalance.packet-input.json",
+      "retrieval_hits": [
+        {
+          "packet_id": "ipk_auth_post_api_session_20260413t111008z",
+          "similarity": 0.68,
+          "known_outcome": "benign"
+        }
+      ]
+    },
+    {
+      "case_id": "auth_session_traffic_shift_soft_cookie_rotation",
+      "label": "benign",
+      "expected_needs_investigation": false,
+      "replay_fixture": "fixtures/replay/manual-replay.auth-session-traffic-shift-soft-cookie-rotation.json",
+      "evidence_fixture": "fixtures/evidence/auth-session-traffic-shift-soft-cookie-rotation.packet-input.json",
+      "retrieval_hits": [
+        {
+          "packet_id": "ipk_auth_post_api_session_20260413t111008z",
+          "similarity": 0.68,
+          "known_outcome": "benign"
+        }
+      ]
+    },
+    {
+      "case_id": "orders_cleanup_queue_warning_maintenance_window",
+      "label": "benign",
+      "expected_needs_investigation": false,
+      "replay_fixture": "fixtures/replay/manual-replay.orders-cleanup-queue-warning-maintenance-window.json",
+      "evidence_fixture": "fixtures/evidence/orders-cleanup-queue-warning-maintenance-window.packet-input.json",
+      "retrieval_hits": [
+        {
+          "packet_id": "ipk_orders_post_api_cleanup_20260413t121008z",
+          "similarity": 0.66,
+          "known_outcome": "benign"
+        }
+      ]
+    },
+    {
+      "case_id": "orders_cleanup_queue_warning_worker_turnover",
+      "label": "benign",
+      "expected_needs_investigation": false,
+      "replay_fixture": "fixtures/replay/manual-replay.orders-cleanup-queue-warning-worker-turnover.json",
+      "evidence_fixture": "fixtures/evidence/orders-cleanup-queue-warning-worker-turnover.packet-input.json",
+      "retrieval_hits": [
+        {
+          "packet_id": "ipk_orders_post_api_cleanup_20260413t121008z",
+          "similarity": 0.66,
+          "known_outcome": "benign"
+        }
+      ]
+    },
+    {
+      "case_id": "gateway_edge_cache_warning_soft_refresh",
+      "label": "benign",
+      "expected_needs_investigation": false,
+      "replay_fixture": "fixtures/replay/manual-replay.gateway-edge-cache-warning-soft-refresh.json",
+      "evidence_fixture": "fixtures/evidence/gateway-edge-cache-warning-soft-refresh.packet-input.json",
+      "retrieval_hits": [
+        {
+          "packet_id": "ipk_gateway_get_api_edge_20260413t131008z",
+          "similarity": 0.74,
+          "known_outcome": "benign"
+        }
+      ]
+    },
+    {
+      "case_id": "gateway_edge_cache_warning_cache_reseed",
+      "label": "benign",
+      "expected_needs_investigation": false,
+      "replay_fixture": "fixtures/replay/manual-replay.gateway-edge-cache-warning-cache-reseed.json",
+      "evidence_fixture": "fixtures/evidence/gateway-edge-cache-warning-cache-reseed.packet-input.json",
+      "retrieval_hits": [
+        {
+          "packet_id": "ipk_gateway_get_api_edge_20260413t131008z",
+          "similarity": 0.74,
+          "known_outcome": "benign"
+        }
+      ]
+    }
+  ]
+}

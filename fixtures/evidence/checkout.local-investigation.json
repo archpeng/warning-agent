@@ -1,0 +1,111 @@
+{
+  "schema_version": "investigation-result.v1",
+  "investigation_id": "cir_checkout_post_api_pay_20260418t120012z",
+  "packet_id": "ipk_checkout_post_api_pay_20260418t120008z",
+  "decision_id": "lad_checkout_post_pay_20260418t120010z",
+  "investigator_tier": "local_primary_investigator",
+  "model_provider": "local_vllm",
+  "model_name": "local-primary-pending",
+  "generated_at": "2026-04-18T12:00:08Z",
+  "input_refs": {
+    "packet_id": "ipk_checkout_post_api_pay_20260418t120008z",
+    "decision_id": "lad_checkout_post_pay_20260418t120010z",
+    "retrieval_packet_ids": [
+      "ipk_checkout_post_pay_20260411t110000z"
+    ],
+    "prometheus_query_refs": [
+      "prom://query/high_error_rate_window_300s"
+    ],
+    "signoz_query_refs": [
+      "signoz://trace/query-123",
+      "signoz://logs/query-456"
+    ],
+    "code_search_refs": [],
+    "upstream_report_id": null
+  },
+  "summary": {
+    "investigation_used": true,
+    "severity_band": "P1",
+    "recommended_action": "page_owner",
+    "confidence": 0.75,
+    "reason_codes": [
+      "error_rate_spike",
+      "template_novelty_high",
+      "similar_to_past_severe"
+    ],
+    "suspected_primary_cause": "db timeout on order lookup",
+    "failure_chain_summary": "checkout POST /api/pay regressed after bounded first-pass analysis flagged db timeout on order lookup; current packet severity score is 0.94."
+  },
+  "hypotheses": [
+    {
+      "rank": 1,
+      "hypothesis": "db timeout on order lookup is driving the checkout regression on POST /api/pay",
+      "confidence": 0.75,
+      "supporting_reason_codes": [
+        "error_rate_spike",
+        "template_novelty_high",
+        "similar_to_past_severe"
+      ]
+    },
+    {
+      "rank": 2,
+      "hypothesis": "recent deploy changed checkout behavior and amplified db timeout on order lookup",
+      "confidence": 0.57,
+      "supporting_reason_codes": [
+        "recent_deploy"
+      ]
+    },
+    {
+      "rank": 3,
+      "hypothesis": "retrieval history suggests the current checkout issue resembles prior severe incidents",
+      "confidence": 0.53,
+      "supporting_reason_codes": [
+        "similar_to_past_severe"
+      ]
+    }
+  ],
+  "analysis_updates": {
+    "severity_band_changed": false,
+    "recommended_action_changed": false,
+    "fallback_invocation_was_correct": null,
+    "notes": [
+      "local_primary_smoke_result",
+      "bounded_repo_search_used",
+      "repo_search_hit_count=2",
+      "tool_calls_used=1"
+    ]
+  },
+  "routing": {
+    "owner_hint": "payments-oncall",
+    "repo_candidates": [
+      "checkout-service",
+      "payment-gateway-client"
+    ],
+    "suspected_code_paths": [
+      "services/checkout/post_api_pay.py",
+      "repos/checkout-service/post_api_pay",
+      "repos/payment-gateway-client/post_api_pay"
+    ],
+    "escalation_target": "payments-oncall"
+  },
+  "evidence_refs": {
+    "prometheus_ref_ids": [
+      "prom://query/high_error_rate_window_300s"
+    ],
+    "signoz_ref_ids": [
+      "signoz://trace/query-123",
+      "signoz://logs/query-456"
+    ],
+    "trace_ids": [
+      "7f8a3c",
+      "7f8a40"
+    ],
+    "code_refs": [
+      "services/checkout/post_api_pay.py",
+      "repos/checkout-service/post_api_pay"
+    ]
+  },
+  "unknowns": [
+    "bounded local follow-up used repo_search only; live metric/log follow-up remains pending"
+  ]
+}

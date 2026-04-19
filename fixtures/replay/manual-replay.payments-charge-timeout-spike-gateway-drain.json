@@ -1,0 +1,47 @@
+{
+  "protocol_version": "manual-replay.v1",
+  "candidate_source": "manual_replay",
+  "environment": "prod",
+  "replay_label": "payments-charge-timeout-spike-gateway-drain-fixture",
+  "alert_payload": {
+    "receiver": "warning-agent",
+    "status": "firing",
+    "alerts": [
+      {
+        "status": "firing",
+        "labels": {
+          "alertname": "ChargeTimeoutSpike",
+          "service": "payments",
+          "operation": "POST /api/charge",
+          "severity": "critical",
+          "environment": "prod"
+        },
+        "annotations": {
+          "summary": "payments POST /api/charge timeout and error rate spiked after deploy [payments_charge_timeout_spike_gateway_drain]"
+        },
+        "startsAt": "2026-04-18T15:55:00Z",
+        "endsAt": "0001-01-01T00:00:00Z",
+        "generatorURL": "http://prometheus.example/graph?g0.expr=payments_charge_timeout_spike",
+        "fingerprint": "payments_charge_time03"
+      }
+    ],
+    "groupLabels": {
+      "alertname": "ChargeTimeoutSpike",
+      "service": "payments"
+    },
+    "commonLabels": {
+      "alertname": "ChargeTimeoutSpike",
+      "service": "payments",
+      "severity": "critical",
+      "environment": "prod",
+      "operation": "POST /api/charge"
+    },
+    "commonAnnotations": {
+      "summary": "payments POST /api/charge timeout and error rate spiked after deploy [payments_charge_timeout_spike_gateway_drain]"
+    },
+    "externalURL": "http://alertmanager.example",
+    "version": "4",
+    "groupKey": "{}:{alertname=\"ChargeTimeoutSpike\",service=\"payments\"}",
+    "truncatedAlerts": 0
+  }
+}

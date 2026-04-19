@@ -1,0 +1,62 @@
+{
+  "summary_version": "local-analyzer-feedback-compare-summary.v1",
+  "generated_at": "2026-04-19T07:45:20Z",
+  "corpus_path": "/home/peng/dt-git/github/warning-agent/data/feedback/feedback-compare-corpus.json",
+  "corpus_contract": {
+    "replay_case_count": 30,
+    "landed_outcome_case_count": 1,
+    "unknown_outcome_skipped_count": 0,
+    "total_cases": 31
+  },
+  "models": {
+    "fast_scorer": {
+      "analyzer_version": "fast-scorer-2026-04-19",
+      "metrics": {
+        "total_cases": 31,
+        "severe_case_count": 9,
+        "severe_recall": 1.0,
+        "investigation_precision": 1.0,
+        "investigation_candidate_rate": 0.29,
+        "average_confidence": 0.58,
+        "brier_score": 0.02
+      }
+    },
+    "current_runtime": {
+      "analyzer_version": "trained-scorer-2026-04-19",
+      "metrics": {
+        "total_cases": 31,
+        "severe_case_count": 9,
+        "severe_recall": 1.0,
+        "investigation_precision": 1.0,
+        "investigation_candidate_rate": 0.29,
+        "average_confidence": 0.58,
+        "brier_score": 0.0
+      }
+    },
+    "candidate_retrained": {
+      "analyzer_version": "trained-scorer-feedback-candidate-2026-04-19",
+      "artifact_path": "/home/peng/dt-git/github/warning-agent/data/models/local-analyzer-trained-scorer.candidate.json",
+      "training_case_count": 67,
+      "severe_case_count": 24,
+      "metrics": {
+        "total_cases": 31,
+        "severe_case_count": 9,
+        "severe_recall": 1.0,
+        "investigation_precision": 1.0,
+        "investigation_candidate_rate": 0.29,
+        "average_confidence": 0.58,
+        "brier_score": 0.0
+      }
+    }
+  },
+  "provisional_decision": {
+    "preferred_model": "candidate_ready_for_review",
+    "reasons": [
+      "no_auto_promotion_in_s3a",
+      "candidate_not_worse_than_current_on_compare_corpus"
+    ]
+  },
+  "notes": [
+    "candidate retraining currently evaluates on the assembled compare corpus used for feedback bootstrap; reality-audit review remains mandatory before any promotion"
+  ]
+}

@@ -1,0 +1,77 @@
+{
+  "created_at": "2026-04-19T09:10:08Z",
+  "window": {
+    "start_ts": "2026-04-19T09:05:00Z",
+    "end_ts": "2026-04-19T09:10:00Z",
+    "duration_sec": 300
+  },
+  "prometheus": {
+    "alerts_firing": [
+      "gateway_cache_warning",
+      "gateway_latency_warning"
+    ],
+    "error_rate": 0.034,
+    "error_rate_baseline": 0.02,
+    "error_rate_delta": 0.014,
+    "latency_p95_ms": 382.0,
+    "latency_p95_baseline_ms": 240,
+    "latency_p95_delta": 142.0,
+    "qps": 88.0,
+    "qps_baseline": 83,
+    "qps_delta": 5.0,
+    "saturation": 0.32
+  },
+  "signoz": {
+    "top_error_templates": [
+      {
+        "template_id": "tmpl_gateway_cache_churn",
+        "template": "gateway edge cache churn without sustained error growth",
+        "count": 33,
+        "novelty_score": 0.21
+      }
+    ],
+    "top_slow_operations": [
+      {
+        "operation": "GET /api/edge",
+        "p95_ms": 382.0,
+        "error_ratio": 0.01
+      }
+    ],
+    "trace_error_ratio": 0.01,
+    "sample_trace_ids": [
+      "gatewa19a",
+      "gatewa19b"
+    ],
+    "sample_log_refs": [
+      "signoz://logs/gateway_edge_cache_warning_soft_refresh/row-19"
+    ]
+  },
+  "topology": {
+    "tier": "tier2",
+    "owner": "edge-oncall",
+    "repo_candidates": [
+      "gateway-service"
+    ],
+    "upstream_count": 2,
+    "downstream_count": 4,
+    "blast_radius_score": 0.28
+  },
+  "history": {
+    "recent_deploy": false,
+    "similar_incident_ids": [
+      "INC-1440"
+    ],
+    "similar_packet_ids": [
+      "ipk_gateway_get_api_edge_20260413t131008z"
+    ]
+  },
+  "evidence_refs": {
+    "prometheus_query_refs": [
+      "prom://query/gateway_edge_cache_warning_soft_refresh_window_300s"
+    ],
+    "signoz_query_refs": [
+      "signoz://trace/gateway_edge_cache_warning_soft_refresh",
+      "signoz://logs/gateway_edge_cache_warning_soft_refresh"
+    ]
+  }
+}

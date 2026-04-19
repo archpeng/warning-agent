@@ -1,0 +1,78 @@
+{
+  "created_at": "2026-04-18T13:00:08Z",
+  "window": {
+    "start_ts": "2026-04-18T12:55:00Z",
+    "end_ts": "2026-04-18T13:00:00Z",
+    "duration_sec": 300
+  },
+  "prometheus": {
+    "alerts_firing": [
+      "high_error_rate",
+      "latency_p95_high"
+    ],
+    "error_rate": 0.21,
+    "error_rate_baseline": 0.02,
+    "error_rate_delta": 0.19,
+    "latency_p95_ms": 2400.0,
+    "latency_p95_baseline_ms": 410,
+    "latency_p95_delta": 1990.0,
+    "qps": 122.0,
+    "qps_baseline": 118,
+    "qps_delta": 4.0,
+    "saturation": 0.84
+  },
+  "signoz": {
+    "top_error_templates": [
+      {
+        "template_id": "tmpl_db_timeout",
+        "template": "db timeout on order lookup",
+        "count": 194,
+        "novelty_score": 0.93
+      }
+    ],
+    "top_slow_operations": [
+      {
+        "operation": "POST /api/pay",
+        "p95_ms": 2400.0,
+        "error_ratio": 0.35
+      }
+    ],
+    "trace_error_ratio": 0.35,
+    "sample_trace_ids": [
+      "checko1a",
+      "checko1b"
+    ],
+    "sample_log_refs": [
+      "signoz://logs/checkout_high_error_rate_db_retry_regression/row-1"
+    ]
+  },
+  "topology": {
+    "tier": "tier1",
+    "owner": "payments-oncall",
+    "repo_candidates": [
+      "checkout-service",
+      "payment-gateway-client"
+    ],
+    "upstream_count": 6,
+    "downstream_count": 12,
+    "blast_radius_score": 0.89
+  },
+  "history": {
+    "recent_deploy": true,
+    "similar_incident_ids": [
+      "INC-1422"
+    ],
+    "similar_packet_ids": [
+      "ipk_checkout_post_pay_20260411t110000z"
+    ]
+  },
+  "evidence_refs": {
+    "prometheus_query_refs": [
+      "prom://query/checkout_high_error_rate_db_retry_regression_window_300s"
+    ],
+    "signoz_query_refs": [
+      "signoz://trace/checkout_high_error_rate_db_retry_regression",
+      "signoz://logs/checkout_high_error_rate_db_retry_regression"
+    ]
+  }
+}

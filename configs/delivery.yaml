@@ -1,0 +1,14 @@
+schema_version: delivery-config.v1
+routes:
+  observe:
+    adapter: markdown_only
+    queue: observe
+  open_ticket:
+    adapter: local_ticket_queue
+    queue: ticket_queue
+  page_owner:
+    adapter: local_page_queue
+    queue: page_queue
+  send_to_human_review:
+    adapter: local_review_queue
+    queue: review_queue

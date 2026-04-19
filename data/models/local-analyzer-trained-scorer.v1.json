@@ -1,0 +1,35 @@
+{
+  "artifact_version": "local-analyzer-trained-scorer.v1",
+  "generated_at": "2026-04-19T06:40:14Z",
+  "feature_set_version": "temporal-context-v2.features.v1",
+  "base_analyzer_version": "fast-scorer-2026-04-19",
+  "analyzer_version": "trained-scorer-2026-04-19",
+  "model_family": "logistic_regression",
+  "calibration_method": "platt_scaling",
+  "training_state": "ready",
+  "feature_columns": [
+    "error_rate_regression",
+    "latency_regression",
+    "qps_shift",
+    "anomaly_persistence",
+    "deploy_recency",
+    "rollback_recency",
+    "template_churn"
+  ],
+  "training_case_count": 66,
+  "severe_case_count": 23,
+  "weights": [
+    1.9114867069432353,
+    1.2361442696511262,
+    -0.20478541185054555,
+    0.17894701402804553,
+    1.5619320854183176,
+    0.0,
+    1.6651674170732258
+  ],
+  "bias": -2.3536169151926947,
+  "calibration_parameters": {
+    "slope": 2.148359150080555,
+    "intercept": -0.07680509231521651
+  }
+}

@@ -1,0 +1,47 @@
+{
+  "protocol_version": "manual-replay.v1",
+  "candidate_source": "manual_replay",
+  "environment": "prod",
+  "replay_label": "shipping-label-retry-warning-fixture",
+  "alert_payload": {
+    "receiver": "warning-agent",
+    "status": "firing",
+    "alerts": [
+      {
+        "status": "firing",
+        "labels": {
+          "alertname": "ShippingRetryWarning",
+          "service": "shipping",
+          "operation": "POST /api/label",
+          "severity": "warning",
+          "environment": "prod"
+        },
+        "annotations": {
+          "summary": "shipping POST /api/label saw transient retry warnings without sustained failure"
+        },
+        "startsAt": "2026-04-18T13:35:00Z",
+        "endsAt": "0001-01-01T00:00:00Z",
+        "generatorURL": "http://prometheus.example/graph?g0.expr=shipping_label_retry_warning",
+        "fingerprint": "shippingwarn001"
+      }
+    ],
+    "groupLabels": {
+      "alertname": "ShippingRetryWarning",
+      "service": "shipping"
+    },
+    "commonLabels": {
+      "alertname": "ShippingRetryWarning",
+      "service": "shipping",
+      "severity": "warning",
+      "environment": "prod",
+      "operation": "POST /api/label"
+    },
+    "commonAnnotations": {
+      "summary": "shipping POST /api/label saw transient retry warnings without sustained failure"
+    },
+    "externalURL": "http://alertmanager.example",
+    "version": "4",
+    "groupKey": "{}:{alertname=\"ShippingRetryWarning\",service=\"shipping\"}",
+    "truncatedAlerts": 0
+  }
+}

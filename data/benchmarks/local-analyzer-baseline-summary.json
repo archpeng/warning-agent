@@ -1,0 +1,86 @@
+{
+  "summary_version": "local-analyzer-benchmark-summary.v1",
+  "generated_at": "2026-04-19T06:40:15Z",
+  "corpus_path": "/home/peng/dt-git/github/warning-agent/fixtures/evidence/local-analyzer-calibration-corpus.json",
+  "metrics": {
+    "total_cases": 30,
+    "severe_case_count": 8,
+    "predicted_severe_count": 8,
+    "predicted_investigation_count": 8,
+    "severe_recall": 1.0,
+    "top10_investigation_precision": 1.0,
+    "investigation_candidate_rate": 0.27,
+    "average_confidence": 0.58
+  },
+  "threshold_snapshot": {
+    "severity_thresholds": {
+      "P1": 0.9,
+      "P2": 0.75,
+      "P3": 0.5,
+      "P4": 0.0
+    },
+    "novelty_threshold": 0.75,
+    "investigation_threshold": 0.8,
+    "confidence_threshold": 0.55,
+    "blast_radius_threshold": 0.7,
+    "minimum_calibration_cases": 10,
+    "minimum_severe_cases": 3
+  },
+  "corpus_sufficiency": {
+    "total_cases": 30,
+    "severe_case_count": 8,
+    "minimum_calibration_cases": 10,
+    "minimum_severe_cases": 3,
+    "accepted_labels": [
+      "severe",
+      "benign"
+    ],
+    "label_counts": {
+      "severe": 8,
+      "benign": 22
+    },
+    "ready": true,
+    "blocking_reasons": []
+  },
+  "acceptance_gate_snapshot": {
+    "sample_limited_must_be_false": true,
+    "minimum_calibration_cases": 10,
+    "minimum_severe_cases": 3,
+    "severe_recall_min": 0.85,
+    "top10_investigation_precision_min": 0.6,
+    "investigation_candidate_rate_max": 0.35
+  },
+  "acceptance": {
+    "accepted": true,
+    "blockers": [],
+    "checks": {
+      "corpus_sufficient": {
+        "actual": true,
+        "expected": true,
+        "comparator": "==",
+        "passed": true
+      },
+      "severe_recall": {
+        "actual": 1.0,
+        "expected": 0.85,
+        "comparator": ">=",
+        "passed": true
+      },
+      "top10_investigation_precision": {
+        "actual": 1.0,
+        "expected": 0.6,
+        "comparator": ">=",
+        "passed": true
+      },
+      "investigation_candidate_rate": {
+        "actual": 0.27,
+        "expected": 0.35,
+        "comparator": "<=",
+        "passed": true
+      }
+    }
+  },
+  "sample_limited": false,
+  "accepted_baseline": true,
+  "notes": []
+}

@@ -1,0 +1,179 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://warning-agent.local/schemas/local-analyzer-decision.v1.json",
+  "title": "local-analyzer-decision.v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "decision_id",
+    "packet_id",
+    "analyzer_family",
+    "analyzer_version",
+    "severity_band",
+    "severity_score",
+    "novelty_score",
+    "confidence",
+    "needs_investigation",
+    "recommended_action",
+    "reason_codes",
+    "risk_flags",
+    "retrieval_hits",
+    "investigation_trigger_reasons"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "local-analyzer-decision.v1"
+    },
+    "decision_id": {
+      "type": "string",
+      "pattern": "^lad_[a-z0-9_\\-]+$"
+    },
+    "packet_id": {
+      "type": "string",
+      "pattern": "^ipk_[a-z0-9_\\-]+$"
+    },
+    "analyzer_family": {
+      "enum": [
+        "fast_scorer",
+        "small_model",
+        "hybrid"
+      ]
+    },
+    "analyzer_version": {
+      "type": "string",
+      "minLength": 1
+    },
+    "severity_band": {
+      "enum": [
+        "P1",
+        "P2",
+        "P3",
+        "P4"
+      ]
+    },
+    "severity_score": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "novelty_score": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "confidence": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "needs_investigation": {
+      "type": "boolean"
+    },
+    "recommended_action": {
+      "enum": [
+        "observe",
+        "open_ticket",
+        "page_owner",
+        "send_to_human_review"
+      ]
+    },
+    "reason_codes": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "minItems": 1,
+      "maxItems": 8
+    },
+    "risk_flags": {
+      "type": "array",
+      "items": {
+        "enum": [
+          "rule_miss",
+          "high_blast_radius",
+          "new_template",
+          "owner_unknown",
+          "recent_deploy",
+          "service_hotspot"
+        ]
+      }
+    },
+    "retrieval_hits": {
+      "type": "array",
+      "maxItems": 5,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "packet_id",
+          "similarity",
+          "known_outcome"
+        ],
+        "properties": {
+          "packet_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "similarity": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          },
+          "known_outcome": {
+            "enum": [
+              "severe",
+              "benign",
+              "unknown"
+            ]
+          }
+        }
+      }
+    },
+    "investigation_trigger_reasons": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "needs_investigation": {
+            "const": false
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "investigation_trigger_reasons": {
+            "maxItems": 0
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "recommended_action": {
+            "const": "page_owner"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "severity_band": {
+            "enum": [
+              "P1",
+              "P2"
+            ]
+          }
+        }
+      }
+    }
+  ]
+}

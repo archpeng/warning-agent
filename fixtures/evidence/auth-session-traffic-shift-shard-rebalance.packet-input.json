@@ -1,0 +1,75 @@
+{
+  "created_at": "2026-04-19T04:50:08Z",
+  "window": {
+    "start_ts": "2026-04-19T04:45:00Z",
+    "end_ts": "2026-04-19T04:50:00Z",
+    "duration_sec": 300
+  },
+  "prometheus": {
+    "alerts_firing": [
+      "auth_traffic_shift",
+      "auth_soft_latency_warning"
+    ],
+    "error_rate": 0.02,
+    "error_rate_baseline": 0.02,
+    "error_rate_delta": 0.0,
+    "latency_p95_ms": 282.0,
+    "latency_p95_baseline_ms": 180,
+    "latency_p95_delta": 102.0,
+    "qps": 135.0,
+    "qps_baseline": 129,
+    "qps_delta": 6.0,
+    "saturation": 0.18
+  },
+  "signoz": {
+    "top_error_templates": [
+      {
+        "template_id": "tmpl_auth_traffic_shift",
+        "template": "auth session traffic shift after upstream rebalance",
+        "count": 22,
+        "novelty_score": 0.14
+      }
+    ],
+    "top_slow_operations": [
+      {
+        "operation": "POST /api/session",
+        "p95_ms": 282.0,
+        "error_ratio": 0.01
+      }
+    ],
+    "trace_error_ratio": 0.01,
+    "sample_trace_ids": [
+      "auth_s15a",
+      "auth_s15b"
+    ],
+    "sample_log_refs": [
+      "signoz://logs/auth_session_traffic_shift_shard_rebalance/row-15"
+    ]
+  },
+  "topology": {
+    "tier": "tier2",
+    "owner": "auth-oncall",
+    "repo_candidates": [
+      "auth-service"
+    ],
+    "upstream_count": 2,
+    "downstream_count": 2,
+    "blast_radius_score": 0.24
+  },
+  "history": {
+    "recent_deploy": false,
+    "similar_incident_ids": [],
+    "similar_packet_ids": [
+      "ipk_auth_post_api_session_20260413t111008z"
+    ]
+  },
+  "evidence_refs": {
+    "prometheus_query_refs": [
+      "prom://query/auth_session_traffic_shift_shard_rebalance_window_300s"
+    ],
+    "signoz_query_refs": [
+      "signoz://trace/auth_session_traffic_shift_shard_rebalance",
+      "signoz://logs/auth_session_traffic_shift_shard_rebalance"
+    ]
+  }
+}

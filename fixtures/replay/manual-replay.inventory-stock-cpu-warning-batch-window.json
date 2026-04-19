@@ -1,0 +1,47 @@
+{
+  "protocol_version": "manual-replay.v1",
+  "candidate_source": "manual_replay",
+  "environment": "prod",
+  "replay_label": "inventory-stock-cpu-warning-batch-window-fixture",
+  "alert_payload": {
+    "receiver": "warning-agent",
+    "status": "firing",
+    "alerts": [
+      {
+        "status": "firing",
+        "labels": {
+          "alertname": "InventoryCPUWarning",
+          "service": "inventory",
+          "operation": "GET /api/stock",
+          "severity": "warning",
+          "environment": "prod"
+        },
+        "annotations": {
+          "summary": "inventory GET /api/stock CPU and latency are slightly elevated [inventory_stock_cpu_warning_batch_window]"
+        },
+        "startsAt": "2026-04-19T00:25:00Z",
+        "endsAt": "0001-01-01T00:00:00Z",
+        "generatorURL": "http://prometheus.example/graph?g0.expr=inventory_stock_cpu_warning",
+        "fingerprint": "inventory_stock_cpu_11"
+      }
+    ],
+    "groupLabels": {
+      "alertname": "InventoryCPUWarning",
+      "service": "inventory"
+    },
+    "commonLabels": {
+      "alertname": "InventoryCPUWarning",
+      "service": "inventory",
+      "severity": "warning",
+      "environment": "prod",
+      "operation": "GET /api/stock"
+    },
+    "commonAnnotations": {
+      "summary": "inventory GET /api/stock CPU and latency are slightly elevated [inventory_stock_cpu_warning_batch_window]"
+    },
+    "externalURL": "http://alertmanager.example",
+    "version": "4",
+    "groupKey": "{}:{alertname=\"InventoryCPUWarning\",service=\"inventory\"}",
+    "truncatedAlerts": 0
+  }
+}

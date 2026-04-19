@@ -1,0 +1,30 @@
+defaults:
+  window_sec: 300
+  prometheus_endpoint: primary
+  signoz_time_range: 30m
+  signoz_logs_limit: 3
+  signoz_traces_limit: 5
+  signoz_top_operations_limit: 3
+  signoz_trace_details_limit: 2
+  signoz_trace_logs_limit: 3
+  fallback_novelty_score: 0.5
+  fallback_error_template_count: 1
+services:
+  checkout:
+    prometheus_queries:
+      error_rate: checkout_error_rate
+      error_rate_baseline: checkout_error_rate_baseline
+      latency_p95_ms: checkout_latency_p95_ms
+      latency_p95_baseline_ms: checkout_latency_p95_baseline_ms
+      qps: checkout_qps
+      qps_baseline: checkout_qps_baseline
+      saturation: checkout_saturation
+  prod-hq-bff-service:
+    prometheus_queries:
+      error_rate: 1 - avg(max by (pod) (kube_pod_container_status_ready{namespace="dw-prod-a",pod=~"hq-bff-service-v[12]-.*",container!="POD"}))
+      error_rate_baseline: avg_over_time((1 - avg(max by (pod) (kube_pod_container_status_ready{namespace="dw-prod-a",pod=~"hq-bff-service-v[12]-.*",container!="POD"})))[30m:5m])
+      qps: sum(rate(container_network_receive_bytes_total{namespace="dw-prod-a",pod=~"hq-bff-service-v[12]-.*",interface="eth0"}[5m]))
+      qps_baseline: sum(rate(container_network_receive_bytes_total{namespace="dw-prod-a",pod=~"hq-bff-service-v[12]-.*",interface="eth0"}[30m]))
+      saturation: sum(rate(container_cpu_usage_seconds_total{namespace="dw-prod-a",pod=~"hq-bff-service-v[12]-.*",container!="POD",image!=""}[5m])) / clamp_min(sum(kube_pod_container_resource_requests{namespace="dw-prod-a",pod=~"hq-bff-service-v[12]-.*",resource="cpu",unit="core",container!="POD"}), 0.001)
+  default:
+    prometheus_queries: {}

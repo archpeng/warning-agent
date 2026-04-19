@@ -1,0 +1,152 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "warning-agent/schemas/incident-outcome.v1.json",
+  "title": "Incident Outcome v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "outcome_id",
+    "source",
+    "recorded_at",
+    "service",
+    "operation",
+    "environment",
+    "input_refs",
+    "summary",
+    "notes"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "incident-outcome.v1"
+    },
+    "outcome_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "source": {
+      "type": "string",
+      "enum": [
+        "operator",
+        "replay_label",
+        "postmortem"
+      ]
+    },
+    "recorded_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "service": {
+      "type": "string",
+      "minLength": 1
+    },
+    "operation": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "environment": {
+      "type": "string",
+      "minLength": 1
+    },
+    "input_refs": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "packet_id",
+        "decision_id",
+        "investigation_id",
+        "report_id"
+      ],
+      "properties": {
+        "packet_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "decision_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "investigation_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "report_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "known_outcome",
+        "final_severity_band",
+        "final_recommended_action",
+        "resolution_summary"
+      ],
+      "properties": {
+        "known_outcome": {
+          "type": "string",
+          "enum": [
+            "severe",
+            "benign",
+            "unknown"
+          ]
+        },
+        "final_severity_band": {
+          "type": "string",
+          "enum": [
+            "P1",
+            "P2",
+            "P3",
+            "P4"
+          ]
+        },
+        "final_recommended_action": {
+          "type": "string",
+          "enum": [
+            "observe",
+            "open_ticket",
+            "page_owner",
+            "send_to_human_review"
+          ]
+        },
+        "resolution_summary": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "notes": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "evidence_links": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "ticket_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "postmortem_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "replay_case_id": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    }
+  }
+}

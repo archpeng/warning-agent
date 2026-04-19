@@ -1,0 +1,48 @@
+{
+  "protocol_version": "manual-replay.v1",
+  "candidate_source": "manual_replay",
+  "environment": "prod",
+  "replay_label": "checkout-high-error-rate-cache-timeout-regression-fixture",
+  "alert_payload": {
+    "receiver": "warning-agent",
+    "status": "firing",
+    "alerts": [
+      {
+        "status": "firing",
+        "labels": {
+          "alertname": "HighErrorRate",
+          "service": "checkout",
+          "operation": "POST /api/pay",
+          "severity": "critical",
+          "environment": "prod"
+        },
+        "annotations": {
+          "summary": "checkout POST /api/pay error rate is above threshold [checkout_high_error_rate_cache_timeout_regression]",
+          "runbook": "https://internal.example/runbooks/checkout-high-error-rate"
+        },
+        "startsAt": "2026-04-18T13:55:00Z",
+        "endsAt": "0001-01-01T00:00:00Z",
+        "generatorURL": "http://prometheus.example/graph?g0.expr=high_error_rate",
+        "fingerprint": "checkout_high_error_02"
+      }
+    ],
+    "groupLabels": {
+      "alertname": "HighErrorRate",
+      "service": "checkout"
+    },
+    "commonLabels": {
+      "alertname": "HighErrorRate",
+      "service": "checkout",
+      "severity": "critical",
+      "environment": "prod",
+      "operation": "POST /api/pay"
+    },
+    "commonAnnotations": {
+      "summary": "checkout POST /api/pay error rate is above threshold [checkout_high_error_rate_cache_timeout_regression]"
+    },
+    "externalURL": "http://alertmanager.example",
+    "version": "4",
+    "groupKey": "{}:{alertname=\"HighErrorRate\",service=\"checkout\"}",
+    "truncatedAlerts": 0
+  }
+}

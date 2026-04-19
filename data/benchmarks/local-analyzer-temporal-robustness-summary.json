@@ -1,0 +1,36 @@
+{
+  "summary_version": "local-analyzer-temporal-robustness-summary.v1",
+  "feature_set_version": "fast-scorer-baseline-features.v1",
+  "analyzer_version": "fast-scorer-2026-04-19",
+  "runner_version": "warning-agent-trust-benchmark-runner.v1",
+  "generated_at": "2026-04-19T06:02:37Z",
+  "corpus_path": "fixtures/evidence/local-analyzer-temporal-robustness-corpus.json",
+  "corpus_contract": {
+    "schema_version": "local-analyzer-temporal-robustness-corpus.v1",
+    "minimum_base_cases": 12,
+    "minimum_variants_per_case": 3,
+    "total_base_cases": 12,
+    "minimum_variants_observed": 3,
+    "measurement_ready": true,
+    "blocking_reasons": []
+  },
+  "metrics": {
+    "total_base_cases": 12,
+    "minimum_variants_observed": 3
+  },
+  "acceptance": {
+    "accepted": true,
+    "blockers": [],
+    "checks": {
+      "benchmark_measurement_ready": {
+        "actual": true,
+        "expected": true,
+        "comparator": "==",
+        "passed": true
+      }
+    }
+  },
+  "notes": [
+    "scaffold summary only; temporal robustness corpus is not yet materialized to W3 planning minima"
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "decision_version": "local-analyzer-promotion-decision.v1",
+  "compare_summary_path": "/home/peng/dt-git/github/warning-agent/data/benchmarks/local-analyzer-feedback-compare-summary.json",
+  "generated_at": "2026-04-19T07:45:20Z",
+  "final_decision": "hold_current",
+  "candidate_artifact_path": "/home/peng/dt-git/github/warning-agent/data/models/local-analyzer-trained-scorer.candidate.json",
+  "current_analyzer_version": "trained-scorer-2026-04-19",
+  "candidate_analyzer_version": "trained-scorer-feedback-candidate-2026-04-19",
+  "rationale": [
+    "landed_outcome_cases_below_promotion_minimum",
+    "config_auto_promote_disabled"
+  ]
+}

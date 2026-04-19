@@ -1,0 +1,100 @@
+{
+  "summary_version": "local-primary-benchmark-summary.v1",
+  "generated_at": "2026-04-19T06:58:11Z",
+  "corpus_path": "/home/peng/dt-git/github/warning-agent/fixtures/evidence/local-primary-routing-eval-corpus.json",
+  "corpus_contract": {
+    "schema_version": "local-primary-routing-eval-corpus.v1",
+    "total_cases": 20,
+    "expected_investigation_case_count": 4,
+    "minimum_cases": 10,
+    "minimum_investigation_cases": 2,
+    "measurement_ready": true,
+    "blocking_reasons": []
+  },
+  "routing_snapshot": {
+    "default_mode": "local_first",
+    "require_needs_investigation": true,
+    "allowed_provider_order": [
+      "local_primary"
+    ],
+    "allow_cloud_fallback": true,
+    "local_primary_model_provider": "local_vllm",
+    "local_primary_model_name": "local-primary-pending",
+    "local_primary_budget": {
+      "wall_time_seconds": 120,
+      "max_tool_calls": 8,
+      "max_prompt_tokens": 2400,
+      "max_completion_tokens": 600,
+      "max_retrieval_refs": 10,
+      "max_trace_refs": 5,
+      "max_log_refs": 5,
+      "max_code_refs": 5
+    }
+  },
+  "gate_snapshot": {
+    "required_corpus_schema_version": "local-primary-routing-eval-corpus.v1",
+    "minimum_cases": 10,
+    "minimum_investigation_cases": 2,
+    "local_primary_invocation_rate_max": 0.2,
+    "local_primary_p95_wall_time_sec_max": 120,
+    "average_tool_calls_per_investigation_max": 8,
+    "structured_completeness_min": 0.95,
+    "degraded_fallback_validity_required": 1.0
+  },
+  "metrics": {
+    "total_cases": 20,
+    "expected_investigation_case_count": 4,
+    "actual_local_primary_invocation_count": 4,
+    "local_primary_invocation_rate": 0.2,
+    "routing_label_alignment_rate": 1.0,
+    "local_primary_p95_wall_time_sec": 0.2091,
+    "average_tool_calls_per_investigation": 1.0,
+    "structured_completeness_rate": 1.0,
+    "degraded_fallback_case_count": 4,
+    "degraded_fallback_validity_rate": 1.0
+  },
+  "acceptance": {
+    "accepted": true,
+    "blockers": [],
+    "checks": {
+      "benchmark_measurement_ready": {
+        "actual": true,
+        "expected": true,
+        "comparator": "==",
+        "passed": true
+      },
+      "local_primary_invocation_rate": {
+        "actual": 0.2,
+        "expected": 0.2,
+        "comparator": "<=",
+        "passed": true
+      },
+      "local_primary_p95_wall_time_sec": {
+        "actual": 0.2091,
+        "expected": 120,
+        "comparator": "<=",
+        "passed": true
+      },
+      "average_tool_calls_per_investigation": {
+        "actual": 1.0,
+        "expected": 8,
+        "comparator": "<=",
+        "passed": true
+      },
+      "structured_completeness_rate": {
+        "actual": 1.0,
+        "expected": 0.95,
+        "comparator": ">=",
+        "passed": true
+      },
+      "degraded_fallback_validity_rate": {
+        "actual": 1.0,
+        "expected": 1.0,
+        "comparator": "==",
+        "passed": true
+      }
+    }
+  },
+  "accepted_local_primary_baseline": true,
+  "notes": []
+}

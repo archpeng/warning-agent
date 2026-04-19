@@ -1,0 +1,47 @@
+{
+  "summary_version": "local-analyzer-calibration-summary.v1",
+  "feature_set_version": "fast-scorer-baseline-features.v1",
+  "analyzer_version": "trained-scorer-2026-04-19",
+  "runner_version": "warning-agent-trust-benchmark-runner.v1",
+  "total_cases": 30,
+  "severe_case_count": 8,
+  "predicted_severe_count": 8,
+  "predicted_investigation_count": 8,
+  "severe_recall": 1.0,
+  "investigation_precision": 1.0,
+  "investigation_candidate_rate": 0.27,
+  "average_confidence": 0.58,
+  "threshold_snapshot": {
+    "severity_thresholds": {
+      "P1": 0.9,
+      "P2": 0.75,
+      "P3": 0.5,
+      "P4": 0.0
+    },
+    "novelty_threshold": 0.75,
+    "investigation_threshold": 0.8,
+    "confidence_threshold": 0.55,
+    "blast_radius_threshold": 0.7,
+    "minimum_calibration_cases": 10,
+    "minimum_severe_cases": 3
+  },
+  "corpus_sufficiency": {
+    "total_cases": 30,
+    "severe_case_count": 8,
+    "minimum_calibration_cases": 10,
+    "minimum_severe_cases": 3,
+    "accepted_labels": [
+      "severe",
+      "benign"
+    ],
+    "label_counts": {
+      "severe": 8,
+      "benign": 22
+    },
+    "ready": true,
+    "blocking_reasons": []
+  },
+  "sample_limited": false,
+  "gate_ready": true,
+  "notes": []
+}

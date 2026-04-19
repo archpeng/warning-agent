@@ -1,0 +1,48 @@
+{
+  "summary_version": "local-handoff-quality-summary.v1",
+  "feature_set_version": "temporal-context-v2.features.v1",
+  "analyzer_version": "trained-scorer-2026-04-19",
+  "runner_version": "warning-agent-trust-benchmark-runner.v1",
+  "generated_at": "2026-04-19T06:58:09Z",
+  "corpus_path": "fixtures/evidence/local-handoff-eval-corpus.json",
+  "corpus_contract": {
+    "schema_version": "local-handoff-eval-corpus.v1",
+    "minimum_cases": 12,
+    "measurement_ready": true,
+    "blocking_reasons": []
+  },
+  "metrics": {
+    "total_cases": 12,
+    "expected_cloud_fallback_case_count": 4,
+    "actual_cloud_fallback_case_count": 4,
+    "handoff_target_alignment_rate": 1.0,
+    "carry_reason_code_alignment_rate": 1.0
+  },
+  "acceptance": {
+    "accepted": true,
+    "blockers": [],
+    "checks": {
+      "benchmark_measurement_ready": {
+        "actual": true,
+        "expected": true,
+        "comparator": "==",
+        "passed": true
+      },
+      "handoff_target_alignment_rate": {
+        "actual": 1.0,
+        "expected": 1.0,
+        "comparator": "==",
+        "passed": true
+      },
+      "carry_reason_code_alignment_rate": {
+        "actual": 1.0,
+        "expected": 1.0,
+        "comparator": "==",
+        "passed": true
+      }
+    }
+  },
+  "notes": [
+    "trained scorer handoff benchmark reflects actual runtime target alignment and carried reason-code alignment"
+  ]
+}

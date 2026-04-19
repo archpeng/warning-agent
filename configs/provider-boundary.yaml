@@ -1,0 +1,6 @@
+local_primary:
+  mode: deterministic_smoke
+  fail_closed_recommended_action: send_to_human_review
+cloud_fallback:
+  mode: deterministic_smoke
+  fail_closed_recommended_action: send_to_human_review

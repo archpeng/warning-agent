@@ -1,0 +1,47 @@
+{
+  "protocol_version": "manual-replay.v1",
+  "candidate_source": "manual_replay",
+  "environment": "prod",
+  "replay_label": "profile-read-latency-warning-background-scan-fixture",
+  "alert_payload": {
+    "receiver": "warning-agent",
+    "status": "firing",
+    "alerts": [
+      {
+        "status": "firing",
+        "labels": {
+          "alertname": "ProfileLatencyWarning",
+          "service": "profile",
+          "operation": "GET /api/profile",
+          "severity": "warning",
+          "environment": "prod"
+        },
+        "annotations": {
+          "summary": "profile GET /api/profile latency is slightly above warning threshold [profile_read_latency_warning_background_scan]"
+        },
+        "startsAt": "2026-04-18T22:15:00Z",
+        "endsAt": "0001-01-01T00:00:00Z",
+        "generatorURL": "http://prometheus.example/graph?g0.expr=profile_read_latency_warning",
+        "fingerprint": "profile_read_latency09"
+      }
+    ],
+    "groupLabels": {
+      "alertname": "ProfileLatencyWarning",
+      "service": "profile"
+    },
+    "commonLabels": {
+      "alertname": "ProfileLatencyWarning",
+      "service": "profile",
+      "severity": "warning",
+      "environment": "prod",
+      "operation": "GET /api/profile"
+    },
+    "commonAnnotations": {
+      "summary": "profile GET /api/profile latency is slightly above warning threshold [profile_read_latency_warning_background_scan]"
+    },
+    "externalURL": "http://alertmanager.example",
+    "version": "4",
+    "groupKey": "{}:{alertname=\"ProfileLatencyWarning\",service=\"profile\"}",
+    "truncatedAlerts": 0
+  }
+}

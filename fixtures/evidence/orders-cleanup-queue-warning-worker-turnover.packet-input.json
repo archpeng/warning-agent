@@ -1,0 +1,77 @@
+{
+  "created_at": "2026-04-19T08:00:08Z",
+  "window": {
+    "start_ts": "2026-04-19T07:55:00Z",
+    "end_ts": "2026-04-19T08:00:00Z",
+    "duration_sec": 300
+  },
+  "prometheus": {
+    "alerts_firing": [
+      "orders_queue_warning",
+      "orders_worker_soft_latency"
+    ],
+    "error_rate": 0.027,
+    "error_rate_baseline": 0.02,
+    "error_rate_delta": 0.007,
+    "latency_p95_ms": 380.0,
+    "latency_p95_baseline_ms": 240,
+    "latency_p95_delta": 140.0,
+    "qps": 33.0,
+    "qps_baseline": 32,
+    "qps_delta": 1.0,
+    "saturation": 0.33
+  },
+  "signoz": {
+    "top_error_templates": [
+      {
+        "template_id": "tmpl_orders_queue_backlog",
+        "template": "orders cleanup queue backlog cleared without paging",
+        "count": 31,
+        "novelty_score": 0.16
+      }
+    ],
+    "top_slow_operations": [
+      {
+        "operation": "POST /api/cleanup",
+        "p95_ms": 380.0,
+        "error_ratio": 0.01
+      }
+    ],
+    "trace_error_ratio": 0.01,
+    "sample_trace_ids": [
+      "orders18a",
+      "orders18b"
+    ],
+    "sample_log_refs": [
+      "signoz://logs/orders_cleanup_queue_warning_worker_turnover/row-18"
+    ]
+  },
+  "topology": {
+    "tier": "tier2",
+    "owner": "orders-oncall",
+    "repo_candidates": [
+      "orders-service"
+    ],
+    "upstream_count": 1,
+    "downstream_count": 3,
+    "blast_radius_score": 0.22
+  },
+  "history": {
+    "recent_deploy": false,
+    "similar_incident_ids": [
+      "INC-1431"
+    ],
+    "similar_packet_ids": [
+      "ipk_orders_post_api_cleanup_20260413t121008z"
+    ]
+  },
+  "evidence_refs": {
+    "prometheus_query_refs": [
+      "prom://query/orders_cleanup_queue_warning_worker_turnover_window_300s"
+    ],
+    "signoz_query_refs": [
+      "signoz://trace/orders_cleanup_queue_warning_worker_turnover",
+      "signoz://logs/orders_cleanup_queue_warning_worker_turnover"
+    ]
+  }
+}

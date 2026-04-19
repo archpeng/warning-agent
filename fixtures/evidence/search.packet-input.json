@@ -1,0 +1,77 @@
+{
+  "created_at": "2026-04-18T13:10:08Z",
+  "window": {
+    "start_ts": "2026-04-18T13:05:00Z",
+    "end_ts": "2026-04-18T13:10:00Z",
+    "duration_sec": 300
+  },
+  "prometheus": {
+    "alerts_firing": [
+      "query_error_burst",
+      "query_latency_high"
+    ],
+    "error_rate": 0.21,
+    "error_rate_baseline": 0.03,
+    "error_rate_delta": 0.18,
+    "latency_p95_ms": 1950,
+    "latency_p95_baseline_ms": 450,
+    "latency_p95_delta": 1500,
+    "qps": 210,
+    "qps_baseline": 209,
+    "qps_delta": 1,
+    "saturation": 0.78
+  },
+  "signoz": {
+    "top_error_templates": [
+      {
+        "template_id": "tmpl_search_5xx",
+        "template": "search backend returned 5xx for query shard",
+        "count": 210,
+        "novelty_score": 0.81
+      }
+    ],
+    "top_slow_operations": [
+      {
+        "operation": "GET /api/query",
+        "p95_ms": 1950,
+        "error_ratio": 0.24
+      }
+    ],
+    "trace_error_ratio": 0.24,
+    "sample_trace_ids": [
+      "src5aa1",
+      "src5aa2"
+    ],
+    "sample_log_refs": [
+      "signoz://logs/query-search-1310/row-7"
+    ]
+  },
+  "topology": {
+    "tier": "tier1",
+    "owner": "search-oncall",
+    "repo_candidates": [
+      "search-service"
+    ],
+    "upstream_count": 4,
+    "downstream_count": 11,
+    "blast_radius_score": 0.82
+  },
+  "history": {
+    "recent_deploy": true,
+    "similar_incident_ids": [
+      "INC-1498"
+    ],
+    "similar_packet_ids": [
+      "ipk_search_get_api_query_20260416t141008z"
+    ]
+  },
+  "evidence_refs": {
+    "prometheus_query_refs": [
+      "prom://query/search_query_error_burst_window_300s"
+    ],
+    "signoz_query_refs": [
+      "signoz://trace/query-search-1310",
+      "signoz://logs/query-search-1310"
+    ]
+  }
+}

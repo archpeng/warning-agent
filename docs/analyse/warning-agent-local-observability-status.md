@@ -43,11 +43,11 @@
 
 这意味着 `warning-agent` 第一阶段可以直接依赖：
 
-- `SigNoz MCP` 作为 cloud investigator 的工具层
+- `SigNoz MCP` 作为 investigator interface 的工具层
 
 同时也意味着：
 
-- `SigNoz` 可作为当前本地最可靠的 observability 深挖入口
+- `SigNoz` 可作为当前最可靠的 observability 深挖入口
 
 ## 3. Prometheus 当前可用性
 

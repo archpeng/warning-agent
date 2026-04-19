@@ -1,0 +1,89 @@
+{
+  "schema_version": "local-handoff-eval-corpus.v1",
+  "cases": [
+    {
+      "case_id": "checkout_high_error_rate",
+      "replay_fixture": "fixtures/replay/manual-replay.checkout.high-error-rate.json",
+      "evidence_fixture": "fixtures/evidence/checkout.packet-input.json",
+      "expected_handoff_target": "cloud_fallback",
+      "expected_reason_codes": ["error_rate_spike", "template_novelty_high"]
+    },
+    {
+      "case_id": "payments_charge_timeout_spike",
+      "replay_fixture": "fixtures/replay/manual-replay.payments.charge-timeout-spike.json",
+      "evidence_fixture": "fixtures/evidence/payments.packet-input.json",
+      "expected_handoff_target": "cloud_fallback",
+      "expected_reason_codes": ["error_rate_spike", "template_novelty_high"]
+    },
+    {
+      "case_id": "checkout_high_error_rate_db_retry_regression",
+      "replay_fixture": "fixtures/replay/manual-replay.checkout-high-error-rate-db-retry-regression.json",
+      "evidence_fixture": "fixtures/evidence/checkout-high-error-rate-db-retry-regression.packet-input.json",
+      "expected_handoff_target": "cloud_fallback",
+      "expected_reason_codes": ["error_rate_spike", "template_novelty_high"]
+    },
+    {
+      "case_id": "payments_charge_timeout_spike_gateway_drain",
+      "replay_fixture": "fixtures/replay/manual-replay.payments-charge-timeout-spike-gateway-drain.json",
+      "evidence_fixture": "fixtures/evidence/payments-charge-timeout-spike-gateway-drain.packet-input.json",
+      "expected_handoff_target": "cloud_fallback",
+      "expected_reason_codes": ["error_rate_spike", "template_novelty_high"]
+    },
+    {
+      "case_id": "search_query_error_burst",
+      "replay_fixture": "fixtures/replay/manual-replay.search.query-error-burst.json",
+      "evidence_fixture": "fixtures/evidence/search.packet-input.json",
+      "expected_handoff_target": "none",
+      "expected_reason_codes": ["error_rate_spike", "template_novelty_high"]
+    },
+    {
+      "case_id": "search_query_error_burst_shard_regression",
+      "replay_fixture": "fixtures/replay/manual-replay.search-query-error-burst-shard-regression.json",
+      "evidence_fixture": "fixtures/evidence/search-query-error-burst-shard-regression.packet-input.json",
+      "expected_handoff_target": "none",
+      "expected_reason_codes": ["error_rate_spike", "template_novelty_high"]
+    },
+    {
+      "case_id": "catalog_latency_warning",
+      "replay_fixture": "fixtures/replay/manual-replay.catalog.latency-warning.json",
+      "evidence_fixture": "fixtures/evidence/catalog.packet-input.json",
+      "expected_handoff_target": "none",
+      "expected_reason_codes": ["baseline_triage"]
+    },
+    {
+      "case_id": "catalog_latency_warning_cache_refresh",
+      "replay_fixture": "fixtures/replay/manual-replay.catalog-latency-warning-cache-refresh.json",
+      "evidence_fixture": "fixtures/evidence/catalog-latency-warning-cache-refresh.packet-input.json",
+      "expected_handoff_target": "none",
+      "expected_reason_codes": ["baseline_triage"]
+    },
+    {
+      "case_id": "profile_read_latency_warning_background_scan",
+      "replay_fixture": "fixtures/replay/manual-replay.profile-read-latency-warning-background-scan.json",
+      "evidence_fixture": "fixtures/evidence/profile-read-latency-warning-background-scan.packet-input.json",
+      "expected_handoff_target": "none",
+      "expected_reason_codes": ["baseline_triage"]
+    },
+    {
+      "case_id": "inventory_stock_cpu_warning_batch_window",
+      "replay_fixture": "fixtures/replay/manual-replay.inventory-stock-cpu-warning-batch-window.json",
+      "evidence_fixture": "fixtures/evidence/inventory-stock-cpu-warning-batch-window.packet-input.json",
+      "expected_handoff_target": "none",
+      "expected_reason_codes": ["baseline_triage"]
+    },
+    {
+      "case_id": "shipping_label_retry_warning_provider_jitter",
+      "replay_fixture": "fixtures/replay/manual-replay.shipping-label-retry-warning-provider-jitter.json",
+      "evidence_fixture": "fixtures/evidence/shipping-label-retry-warning-provider-jitter.packet-input.json",
+      "expected_handoff_target": "none",
+      "expected_reason_codes": ["baseline_triage"]
+    },
+    {
+      "case_id": "gateway_edge_cache_warning_soft_refresh",
+      "replay_fixture": "fixtures/replay/manual-replay.gateway-edge-cache-warning-soft-refresh.json",
+      "evidence_fixture": "fixtures/evidence/gateway-edge-cache-warning-soft-refresh.packet-input.json",
+      "expected_handoff_target": "none",
+      "expected_reason_codes": ["baseline_triage"]
+    }
+  ]
+}

@@ -1,0 +1,78 @@
+{
+  "created_at": "2026-04-18T13:00:08Z",
+  "window": {
+    "start_ts": "2026-04-18T12:55:00Z",
+    "end_ts": "2026-04-18T13:00:00Z",
+    "duration_sec": 300
+  },
+  "prometheus": {
+    "alerts_firing": [
+      "charge_timeout_spike",
+      "latency_p95_high"
+    ],
+    "error_rate": 0.2,
+    "error_rate_baseline": 0.03,
+    "error_rate_delta": 0.17,
+    "latency_p95_ms": 2100,
+    "latency_p95_baseline_ms": 450,
+    "latency_p95_delta": 1650,
+    "qps": 95,
+    "qps_baseline": 92,
+    "qps_delta": 3,
+    "saturation": 0.76
+  },
+  "signoz": {
+    "top_error_templates": [
+      {
+        "template_id": "tmpl_payments_timeout",
+        "template": "gateway timeout during charge authorization",
+        "count": 200,
+        "novelty_score": 0.83
+      }
+    ],
+    "top_slow_operations": [
+      {
+        "operation": "POST /api/charge",
+        "p95_ms": 2100,
+        "error_ratio": 0.29
+      }
+    ],
+    "trace_error_ratio": 0.29,
+    "sample_trace_ids": [
+      "pay1a2b",
+      "pay1a2c"
+    ],
+    "sample_log_refs": [
+      "signoz://logs/query-payments-1300/row-11"
+    ]
+  },
+  "topology": {
+    "tier": "tier1",
+    "owner": "payments-oncall",
+    "repo_candidates": [
+      "payments-service",
+      "card-gateway-client"
+    ],
+    "upstream_count": 5,
+    "downstream_count": 9,
+    "blast_radius_score": 0.84
+  },
+  "history": {
+    "recent_deploy": true,
+    "similar_incident_ids": [
+      "INC-1491"
+    ],
+    "similar_packet_ids": [
+      "ipk_payments_post_api_charge_20260415t131008z"
+    ]
+  },
+  "evidence_refs": {
+    "prometheus_query_refs": [
+      "prom://query/payments_charge_timeout_window_300s"
+    ],
+    "signoz_query_refs": [
+      "signoz://trace/query-payments-1300",
+      "signoz://logs/query-payments-1300"
+    ]
+  }
+}

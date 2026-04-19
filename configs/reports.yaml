@@ -1,0 +1,18 @@
+section_order:
+  - Executive Summary
+  - Why This Alert Exists
+  - Metric Signals
+  - Logs And Traces
+  - Investigation
+  - Impact And Routing
+  - Recommended Action
+  - Evidence Refs
+  - Unknowns
+severity_delivery_class:
+  P1: page_owner
+  P2: open_ticket
+  P3: observe
+  P4: observe
+labels:
+  product: warning-agent
+  output: markdown_alert_report

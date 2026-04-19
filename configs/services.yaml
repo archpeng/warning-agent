@@ -1,0 +1,35 @@
+services:
+  checkout:
+    canonical_name: checkout
+    tier: tier1
+    owner_hint: payments-oncall
+    repo_hints:
+      - checkout-service
+      - payment-gateway-client
+    operation_allowlist:
+      - POST /api/pay
+    upstream_count: 6
+    downstream_count: 12
+    blast_radius_score: 0.88
+  prod-hq-bff-service:
+    canonical_name: prod-hq-bff-service
+    tier: tier1
+    owner_hint: hq-oncall
+    repo_hints:
+      - hq-bff-service
+    operation_allowlist:
+      - POST
+      - GET
+      - grpc.center.CenterService/DeviceInfo
+    upstream_count: 2
+    downstream_count: 6
+    blast_radius_score: 0.82
+  default:
+    canonical_name: default
+    tier: unknown
+    owner_hint: null
+    repo_hints: []
+    operation_allowlist: []
+    upstream_count: 0
+    downstream_count: 0
+    blast_radius_score: 0.3

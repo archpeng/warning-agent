@@ -1,0 +1,47 @@
+{
+  "protocol_version": "manual-replay.v1",
+  "candidate_source": "manual_replay",
+  "environment": "prod",
+  "replay_label": "gateway-edge-cache-warning-fixture",
+  "alert_payload": {
+    "receiver": "warning-agent",
+    "status": "firing",
+    "alerts": [
+      {
+        "status": "firing",
+        "labels": {
+          "alertname": "GatewayEdgeCacheWarning",
+          "service": "gateway",
+          "operation": "GET /api/edge",
+          "severity": "warning",
+          "environment": "prod"
+        },
+        "annotations": {
+          "summary": "gateway GET /api/edge cache churn caused a soft latency warning"
+        },
+        "startsAt": "2026-04-18T14:05:00Z",
+        "endsAt": "0001-01-01T00:00:00Z",
+        "generatorURL": "http://prometheus.example/graph?g0.expr=gateway_edge_cache_warning",
+        "fingerprint": "gatewaywarn001"
+      }
+    ],
+    "groupLabels": {
+      "alertname": "GatewayEdgeCacheWarning",
+      "service": "gateway"
+    },
+    "commonLabels": {
+      "alertname": "GatewayEdgeCacheWarning",
+      "service": "gateway",
+      "severity": "warning",
+      "environment": "prod",
+      "operation": "GET /api/edge"
+    },
+    "commonAnnotations": {
+      "summary": "gateway GET /api/edge cache churn caused a soft latency warning"
+    },
+    "externalURL": "http://alertmanager.example",
+    "version": "4",
+    "groupKey": "{}:{alertname=\"GatewayEdgeCacheWarning\",service=\"gateway\"}",
+    "truncatedAlerts": 0
+  }
+}

@@ -1,0 +1,12 @@
+severity_thresholds:
+  P1: 0.9
+  P2: 0.75
+  P3: 0.5
+  P4: 0.0
+novelty_threshold: 0.75
+investigation_threshold: 0.8
+confidence_threshold: 0.55
+blast_radius_threshold: 0.7
+minimum_calibration_cases: 10
+minimum_severe_cases: 3
+false_page_ceiling: 0.05

@@ -1,0 +1,33 @@
+{
+  "schema_version": "local-analyzer-decision.v1",
+  "decision_id": "lad_checkout_post_pay_20260418t120010z",
+  "packet_id": "ipk_checkout_post_api_pay_20260418t120008z",
+  "analyzer_family": "fast_scorer",
+  "analyzer_version": "fast-scorer-2026-04-19",
+  "severity_band": "P1",
+  "severity_score": 0.94,
+  "novelty_score": 0.87,
+  "confidence": 0.61,
+  "needs_investigation": true,
+  "recommended_action": "page_owner",
+  "reason_codes": [
+    "error_rate_spike",
+    "template_novelty_high",
+    "similar_to_past_severe"
+  ],
+  "risk_flags": [
+    "high_blast_radius",
+    "recent_deploy"
+  ],
+  "retrieval_hits": [
+    {
+      "packet_id": "ipk_checkout_post_pay_20260411t110000z",
+      "similarity": 0.82,
+      "known_outcome": "severe"
+    }
+  ],
+  "investigation_trigger_reasons": [
+    "novelty_high",
+    "blast_radius_high"
+  ]
+}

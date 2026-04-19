@@ -1,0 +1,77 @@
+{
+  "created_at": "2026-04-19T02:40:08Z",
+  "window": {
+    "start_ts": "2026-04-19T02:35:00Z",
+    "end_ts": "2026-04-19T02:40:00Z",
+    "duration_sec": 300
+  },
+  "prometheus": {
+    "alerts_firing": [
+      "shipping_retry_warning",
+      "shipping_latency_warning"
+    ],
+    "error_rate": 0.037,
+    "error_rate_baseline": 0.02,
+    "error_rate_delta": 0.017,
+    "latency_p95_ms": 430.0,
+    "latency_p95_baseline_ms": 300,
+    "latency_p95_delta": 130.0,
+    "qps": 28.0,
+    "qps_baseline": 28,
+    "qps_delta": 0.0,
+    "saturation": 0.28
+  },
+  "signoz": {
+    "top_error_templates": [
+      {
+        "template_id": "tmpl_shipping_retry_noise",
+        "template": "carrier retry warning with successful fallback",
+        "count": 41,
+        "novelty_score": 0.1
+      }
+    ],
+    "top_slow_operations": [
+      {
+        "operation": "POST /api/label",
+        "p95_ms": 430.0,
+        "error_ratio": 0.02
+      }
+    ],
+    "trace_error_ratio": 0.02,
+    "sample_trace_ids": [
+      "shippi13a",
+      "shippi13b"
+    ],
+    "sample_log_refs": [
+      "signoz://logs/shipping_label_retry_warning_provider_jitter/row-13"
+    ]
+  },
+  "topology": {
+    "tier": "tier2",
+    "owner": "shipping-oncall",
+    "repo_candidates": [
+      "shipping-service"
+    ],
+    "upstream_count": 1,
+    "downstream_count": 2,
+    "blast_radius_score": 0.27
+  },
+  "history": {
+    "recent_deploy": false,
+    "similar_incident_ids": [
+      "INC-1450"
+    ],
+    "similar_packet_ids": [
+      "ipk_shipping_post_api_label_20260413t101008z"
+    ]
+  },
+  "evidence_refs": {
+    "prometheus_query_refs": [
+      "prom://query/shipping_label_retry_warning_provider_jitter_window_300s"
+    ],
+    "signoz_query_refs": [
+      "signoz://trace/shipping_label_retry_warning_provider_jitter",
+      "signoz://logs/shipping_label_retry_warning_provider_jitter"
+    ]
+  }
+}

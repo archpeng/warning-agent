@@ -1,0 +1,64 @@
+{
+  "summary_version": "local-analyzer-training-scaffold-summary.v1",
+  "generated_at": "2026-04-19T06:15:02Z",
+  "feature_set_version": "temporal-context-v2.features.v1",
+  "base_analyzer_version": "fast-scorer-2026-04-19",
+  "candidate_model_family": "logistic_regression",
+  "candidate_calibration_method": "platt_scaling",
+  "corpus_paths": {
+    "calibration": "fixtures/evidence/local-analyzer-calibration-corpus.json",
+    "temporal_robustness": "fixtures/evidence/local-analyzer-temporal-robustness-corpus.json"
+  },
+  "corpus_contract": {
+    "accepted_labeled_case_count": 30,
+    "accepted_labeled_case_minimum": 30,
+    "accepted_labeled_severe_case_count": 8,
+    "accepted_labeled_severe_case_minimum": 8,
+    "temporal_base_case_count": 12,
+    "temporal_base_case_minimum": 12,
+    "training_ready": true,
+    "blocking_reasons": []
+  },
+  "artifact_preview": {
+    "artifact_version": "local-analyzer-trained-scorer.scaffold.v1",
+    "feature_columns": [
+      "error_rate_regression",
+      "latency_regression",
+      "qps_shift",
+      "anomaly_persistence",
+      "deploy_recency",
+      "rollback_recency",
+      "template_churn"
+    ],
+    "weights": null,
+    "bias": null,
+    "calibration_parameters": null
+  },
+  "acceptance": {
+    "accepted": true,
+    "blockers": [],
+    "checks": {
+      "accepted_labeled_case_count": {
+        "actual": 30,
+        "expected": 30,
+        "comparator": ">=",
+        "passed": true
+      },
+      "accepted_labeled_severe_case_count": {
+        "actual": 8,
+        "expected": 8,
+        "comparator": ">=",
+        "passed": true
+      },
+      "temporal_base_case_count": {
+        "actual": 12,
+        "expected": 12,
+        "comparator": ">=",
+        "passed": true
+      }
+    }
+  },
+  "notes": [
+    "training scaffold only; artifact preview is frozen before sufficient data and runtime integration"
+  ]
+}

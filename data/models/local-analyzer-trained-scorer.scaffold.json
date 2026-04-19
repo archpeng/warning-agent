@@ -1,0 +1,21 @@
+{
+  "artifact_version": "local-analyzer-trained-scorer.scaffold.v1",
+  "generated_at": "2026-04-19T06:15:02Z",
+  "feature_set_version": "temporal-context-v2.features.v1",
+  "base_analyzer_version": "fast-scorer-2026-04-19",
+  "model_family": "logistic_regression",
+  "calibration_method": "platt_scaling",
+  "training_state": "ready",
+  "feature_columns": [
+    "error_rate_regression",
+    "latency_regression",
+    "qps_shift",
+    "anomaly_persistence",
+    "deploy_recency",
+    "rollback_recency",
+    "template_churn"
+  ],
+  "weights": null,
+  "bias": null,
+  "calibration_parameters": null
+}

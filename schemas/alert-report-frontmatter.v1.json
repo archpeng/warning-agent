@@ -1,0 +1,114 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://warning-agent.local/schemas/alert-report-frontmatter.v1.json",
+  "title": "alert-report-frontmatter.v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "report_id",
+    "packet_id",
+    "decision_id",
+    "generated_at",
+    "severity_band",
+    "delivery_class",
+    "investigation_stage",
+    "service",
+    "operation",
+    "owner",
+    "repo_candidates",
+    "prometheus_ref_ids",
+    "signoz_ref_ids"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "alert-report.v1"
+    },
+    "report_id": {
+      "type": "string",
+      "pattern": "^rpt_[a-z0-9_\\-]+$"
+    },
+    "packet_id": {
+      "type": "string",
+      "pattern": "^ipk_[a-z0-9_\\-]+$"
+    },
+    "decision_id": {
+      "type": "string",
+      "pattern": "^lad_[a-z0-9_\\-]+$"
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "severity_band": {
+      "enum": [
+        "P1",
+        "P2",
+        "P3",
+        "P4"
+      ]
+    },
+    "delivery_class": {
+      "enum": [
+        "observe",
+        "open_ticket",
+        "page_owner",
+        "send_to_human_review"
+      ]
+    },
+    "investigation_stage": {
+      "enum": [
+        "none",
+        "local_primary",
+        "cloud_fallback"
+      ]
+    },
+    "service": {
+      "type": "string",
+      "minLength": 1
+    },
+    "operation": {
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "string",
+          "minLength": 1
+        }
+      ]
+    },
+    "owner": {
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "string",
+          "minLength": 1
+        }
+      ]
+    },
+    "repo_candidates": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "prometheus_ref_ids": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "signoz_ref_ids": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    }
+  }
+}

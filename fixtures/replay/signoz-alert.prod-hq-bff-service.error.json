@@ -1,0 +1,18 @@
+{
+  "alert": "signoz error",
+  "state": "firing",
+  "ruleId": "019d1fad-feb8-74c3-9610-dd894c6390d0",
+  "serviceName": "prod-hq-bff-service",
+  "endpoint": "POST /api/datamesh/v1/charts/data",
+  "severity": "error",
+  "evalWindow": "5m0s",
+  "source": "http://signoz-prod.eshine.cn:32341/alerts/overview?ruleId=019d1fad-feb8-74c3-9610-dd894c6390d0",
+  "labels": {
+    "environment": "prod",
+    "severity": "error"
+  },
+  "annotations": {
+    "summary": "current error rate crossed threshold",
+    "description": "error rate for prod-hq-bff-service POST is above threshold"
+  }
+}

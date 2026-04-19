@@ -4,119 +4,66 @@
 
 它只做一件事：
 
-> 接收 `Prometheus + SigNoz` 告警与观测证据，
-> 用本地高频分析器做 first-pass 分诊，
-> 只把少量高风险问题升级给云端大模型深挖，
-> 最终输出一份稳定的 Markdown 警报报文。
+> 接收 `Prometheus + SigNoz` 告警与有界观测证据，
+> 先用本地 `retrieval + analyzer` 做高频 first-pass，
+> 只有在需要时才进入单一 investigator 接口，
+> investigator 默认 `local-first`，只有 unresolved case 才使用 cloud fallback，
+> 最终输出稳定的 Markdown 警报报文。
 
-## 为什么这样设计
-
-这个项目严格按 `The Bitter Lesson` 的方向来收缩：
-
-- 高频路径优先 `search + learning`
-- 不把复杂世界直接塞进 prompt
-- 不让大模型进入 every-alert 热路径
-- 不把系统做成更大的 AIOps 平台
-
-这意味着：
-
-- 先统一表示，再统一分析
-- 先让本地 analyzer 快速、稳定、可回放
-- 再让云端 investigator 只处理 hard cases
-
-## 系统主路径
+## 当前统一主线
 
 ```text
 Prometheus / Alertmanager alert
   -> bounded evidence collection
   -> incident packet
   -> local retrieval + local analyzer
-  -> optional cloud investigator
+  -> optional investigator (default local-first)
+  -> optional cloud fallback
   -> markdown alert report
   -> outcome feedback
 ```
 
-## 四个核心模块
+这条主线的重点是：
 
-### 1. `incident packet`
+- 高频路径优先 `search + learning`
+- investigator 只有一个接口，不再拆成两个重子系统
+- cloud 只做 fallback，不做默认推理平面
+- 结构化对象是真相，Markdown 是投影
 
-这是系统唯一的 canonical unit。
+## SSOT 约定
 
-它把一段 bounded 时间窗内的：
+当前仓库的 source-of-truth 分层固定为：
 
-- 指标变化
-- 日志异常
-- traces 线索
-- owner / repo / blast radius
-- 历史相似问题
+- 产品 SSOT: [warning-agent 架构设计](./docs/warning-agent-architecture.md)
+- 契约 SSOT: [schema 草案](./docs/warning-agent-schema-draft.md)
+- 契约映射 SSOT: [contract inventory](./docs/warning-agent-contract-inventory.md)
+- 交付控制面 SSOT:
+  - [PLAN](./docs/plan/warning-agent-autopilot-delivery-2026-04-18_PLAN.md)
+  - [STATUS](./docs/plan/warning-agent-autopilot-delivery-2026-04-18_STATUS.md)
+  - [WORKSET](./docs/plan/warning-agent-autopilot-delivery-2026-04-18_WORKSET.md)
+- `docs/analyse/*` 是派生分析，不允许覆盖以上文档
 
-压成一个统一对象。
+## 当前阶段模型
 
-### 2. 本地 `local analyzer`
+后续实现顺序现在统一为：
 
-本地 analyzer 是高频路径核心。
+- `P1`: repo bootstrap + contract materialization
+- `P2`: deterministic packet/report baseline
+- `P3`: local analyzer baseline
+- `P4`: 单一 investigator 接口，默认 `local-first`
+- `P5`: cloud fallback only
 
-它先做：
-
-- 本地检索历史相似 packets / reports / outcomes
-
-再做：
-
-- 本地快速评分
-
-输出固定结构结果，例如：
-
-- `severity_band`
-- `severity_score`
-- `novelty_score`
-- `confidence`
-- `needs_cloud_investigation`
-- `recommended_action`
-- `reason_codes`
-
-### 3. 云端 `cloud investigator`
-
-云端大模型不是第一层判官，而是第二层专家。
-
-它只在这些场景触发：
-
-- 本地判断没把握
-- 问题很新
-- blast radius 很高
-- 本地判断和历史/规则冲突
-
-它会做：
-
-- `SigNoz MCP` 深挖
-- bounded Prometheus follow-up
-- repo 代码确认
-
-### 4. Markdown 报文
-
-最终产品输出不是聊天记录，而是一份稳定的 Markdown 警报文档。
-
-每条告警都会收敛成固定结构的报文，至少包括：
-
-- Executive Summary
-- Why This Alert Exists
-- Metric Signals
-- Logs And Traces
-- Cloud Investigation
-- Impact And Routing
-- Recommended Action
-- Evidence Refs
-- Unknowns
+`P5` 完成后才讨论更后的 benchmark hardening、shadow 或小模型替换；它们不再作为默认主线的一部分。
 
 ## 当前设计边界
 
-这个项目当前明确不做：
+这个项目明确不做：
 
-- 自动执行 / remediation
-- autopilot
-- promotion ladder
+- remediation / 自动执行
 - workflow engine
-- 多 agent 编排
-- observability UI
+- multi-agent orchestration
+- observability UI / APM suite
+- general agent runtime
 
 项目只聚焦：
 
@@ -124,13 +71,31 @@ Prometheus / Alertmanager alert
 - 精准升级
 - 标准报文
 
-## 当前文档
+## 当前仓库基线
 
-- [warning-agent 架构设计](./docs/warning-agent-architecture.md)
+当前仓库已经具备：
+
+- `pyproject.toml`
+- `app/` 最小 Python runtime 骨架
+- `schemas/*.json` contract artifacts
+- `configs/*.yaml` baseline 样例
+- `tests/` smoke + contract harness
+
+最小本地验证：
+
+```bash
+uv run --extra dev pytest -q
+uv run --extra dev ruff check .
+python3 -m compileall app
+uv run warning-agent
+```
+
+## 补充文档
+
 - [最小 repo skeleton](./docs/warning-agent-minimal-repo-skeleton.md)
-- [schema 草案](./docs/warning-agent-schema-draft.md)
 - [设计决策表](./docs/analyse/warning-agent-design-decision-table.md)
 - [技术栈建议](./docs/analyse/warning-agent-tech-stack-recommendation.md)
+- [local-first investigator path](./docs/analyse/warning-agent-local-first-investigation-path.md)
 - [本地可用性检查](./docs/analyse/warning-agent-local-observability-status.md)
 
 ## 一句话总结
@@ -139,4 +104,4 @@ Prometheus / Alertmanager alert
 
 它是一个围绕下面这条主线构建的极窄产品：
 
-> `incident packet -> local search + learning -> sparse cloud investigation -> markdown alert report`
+> `incident packet -> local search + learning -> local-first investigation -> cloud fallback only when needed -> markdown alert report`

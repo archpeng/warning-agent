@@ -1,0 +1,405 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://warning-agent.local/schemas/investigation-result.v1.json",
+  "title": "investigation-result.v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "investigation_id",
+    "packet_id",
+    "decision_id",
+    "investigator_tier",
+    "model_provider",
+    "model_name",
+    "generated_at",
+    "input_refs",
+    "summary",
+    "hypotheses",
+    "analysis_updates",
+    "routing",
+    "evidence_refs",
+    "unknowns"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "investigation-result.v1"
+    },
+    "investigation_id": {
+      "type": "string",
+      "pattern": "^cir_[a-z0-9_\\-]+$"
+    },
+    "packet_id": {
+      "type": "string",
+      "pattern": "^ipk_[a-z0-9_\\-]+$"
+    },
+    "decision_id": {
+      "type": "string",
+      "pattern": "^lad_[a-z0-9_\\-]+$"
+    },
+    "parent_investigation_id": {
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "^cir_[a-z0-9_\\-]+$"
+        }
+      ]
+    },
+    "investigator_tier": {
+      "enum": [
+        "local_primary_investigator",
+        "cloud_fallback_investigator"
+      ]
+    },
+    "model_provider": {
+      "enum": [
+        "local_vllm",
+        "openai",
+        "other"
+      ]
+    },
+    "model_name": {
+      "type": "string",
+      "minLength": 1
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "input_refs": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "packet_id",
+        "decision_id"
+      ],
+      "properties": {
+        "packet_id": {
+          "type": "string",
+          "pattern": "^ipk_[a-z0-9_\\-]+$"
+        },
+        "decision_id": {
+          "type": "string",
+          "pattern": "^lad_[a-z0-9_\\-]+$"
+        },
+        "retrieval_packet_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "prometheus_query_refs": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "signoz_query_refs": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "code_search_refs": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "upstream_report_id": {
+          "anyOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "string",
+              "minLength": 1
+            }
+          ]
+        }
+      }
+    },
+    "summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "investigation_used",
+        "severity_band",
+        "recommended_action",
+        "confidence",
+        "reason_codes",
+        "suspected_primary_cause",
+        "failure_chain_summary"
+      ],
+      "properties": {
+        "investigation_used": {
+          "type": "boolean"
+        },
+        "severity_band": {
+          "enum": [
+            "P1",
+            "P2",
+            "P3",
+            "P4"
+          ]
+        },
+        "recommended_action": {
+          "enum": [
+            "observe",
+            "open_ticket",
+            "page_owner",
+            "send_to_human_review"
+          ]
+        },
+        "confidence": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "reason_codes": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minItems": 1,
+          "maxItems": 10
+        },
+        "suspected_primary_cause": {
+          "type": "string",
+          "minLength": 1
+        },
+        "failure_chain_summary": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "hypotheses": {
+      "type": "array",
+      "maxItems": 5,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "rank",
+          "hypothesis",
+          "confidence",
+          "supporting_reason_codes"
+        ],
+        "properties": {
+          "rank": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "hypothesis": {
+            "type": "string",
+            "minLength": 1
+          },
+          "confidence": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          },
+          "supporting_reason_codes": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        }
+      }
+    },
+    "analysis_updates": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "severity_band_changed",
+        "recommended_action_changed",
+        "notes"
+      ],
+      "properties": {
+        "severity_band_changed": {
+          "type": "boolean"
+        },
+        "recommended_action_changed": {
+          "type": "boolean"
+        },
+        "fallback_invocation_was_correct": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "notes": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "routing": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "owner_hint",
+        "repo_candidates",
+        "suspected_code_paths",
+        "escalation_target"
+      ],
+      "properties": {
+        "owner_hint": {
+          "anyOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "string",
+              "minLength": 1
+            }
+          ]
+        },
+        "repo_candidates": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "suspected_code_paths": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "escalation_target": {
+          "anyOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "string",
+              "minLength": 1
+            }
+          ]
+        }
+      }
+    },
+    "evidence_refs": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "prometheus_ref_ids",
+        "signoz_ref_ids",
+        "trace_ids",
+        "code_refs"
+      ],
+      "properties": {
+        "prometheus_ref_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "signoz_ref_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "trace_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "code_refs": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "unknowns": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "minItems": 1
+    },
+    "compressed_handoff": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "handoff_markdown"
+      ],
+      "properties": {
+        "handoff_markdown": {
+          "type": "string",
+          "minLength": 1
+        },
+        "handoff_tokens_estimate": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "carry_reason_codes": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "investigator_tier": {
+            "const": "cloud_fallback_investigator"
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "parent_investigation_id"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "investigator_tier": {
+            "const": "local_primary_investigator"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "model_provider": {
+            "const": "local_vllm"
+          }
+        }
+      }
+    }
+  ]
+}
