@@ -32,6 +32,8 @@ class SignozAlertRefs(TypedDict):
     rule_id: str | None
     source_url: str | None
     eval_window: str | None
+    starts_at: str | None
+    ends_at: str | None
     service: str | None
     endpoint: str | None
     severity: str | None
@@ -56,6 +58,8 @@ def extract_signoz_alert_refs(payload: SignozAlertPayload) -> SignozAlertRefs:
         "rule_id": _first_non_empty(payload.get("ruleId"), payload.get("rule_id")),
         "source_url": _first_non_empty(payload.get("source")),
         "eval_window": _first_non_empty(payload.get("evalWindow")),
+        "starts_at": _first_non_empty(payload.get("startsAt"), labels.get("startsAt")),
+        "ends_at": _first_non_empty(payload.get("endsAt"), labels.get("endsAt")),
         "service": _first_non_empty(
             payload.get("serviceName"),
             payload.get("service"),
@@ -77,6 +81,8 @@ def _normalized_source_refs(refs: SignozAlertRefs) -> NormalizedSourceRefs:
         "rule_id": refs["rule_id"],
         "source_url": refs["source_url"],
         "eval_window": refs["eval_window"],
+        "starts_at": refs["starts_at"],
+        "ends_at": refs["ends_at"],
         "severity": refs["severity"],
     }
 
@@ -118,3 +124,20 @@ def normalize_signoz_alert_payload(payload: SignozAlertPayload) -> NormalizedAle
         "common_annotations": annotations,
         "source_refs": _normalized_source_refs(refs),
     }
+
+
+def missing_required_signoz_fields(payload: SignozAlertPayload) -> list[str]:
+    refs = extract_signoz_alert_refs(payload)
+    labels = _string_map(payload.get("labels"))
+    missing: list[str] = []
+    if _first_non_empty(payload.get("alertname"), payload.get("alert"), labels.get("alertname")) is None:
+        missing.append("alert")
+    if _first_non_empty(payload.get("state"), payload.get("status")) is None:
+        missing.append("state")
+    if refs["rule_id"] is None:
+        missing.append("ruleId")
+    if refs["service"] is None:
+        missing.append("serviceName")
+    if refs["endpoint"] is None:
+        missing.append("endpoint")
+    return missing

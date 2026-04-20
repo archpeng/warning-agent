@@ -1,74 +1,74 @@
 # warning-agent local autopilot active plan
 
 - status: `active-machine-pack`
-- source_pack: `warning-agent-production-integration-bridge-2026-04-20`
+- source_pack: `warning-agent-signoz-warning-production-2026-04-20`
 - mirror_last_updated: `2026-04-20`
 
 ## Goal
 
-- enable `pi-sdk` local autopilot to read/write repo-local active control-plane truth for the current W6 bridge workstream
-- keep the runnable machine truth aligned with the richer W6 source pack while the repo progresses from `W6.S4a` to `W6.RV1`
+- enable `pi-sdk` local autopilot to read/write repo-local active control-plane truth for the closed W7 Signoz warning production workstream
+- keep the runnable machine truth aligned with the richer W7 source pack at terminal slice `W7.RV1`
 
 ## In Scope
 
 - repo-local active pack files under `docs/plan/active_*`
-- current active slice `W6.S4a`
-- immediate successor slice `W6.RV1`
-- deterministic local autopilot writeback compatibility
+- terminal closeout slice `W7.RV1`
+- preceding operator-governance slice `W7.S4a`
+- deterministic local autopilot writeback compatibility for the terminal W7 pack
 
 ## Non-Goals
 
-- replacing the richer W6 source pack
+- replacing the richer W7 source pack
 - bypassing the `pi-sdk` local dirty-repo initial-run guard
-- widening product scope beyond the current W6 bridge and review boundary
+- widening product scope beyond W7 closeout and successor handoff truth
 
 ## Verification Ladder
 
 1. targeted control-plane compatibility tests
-2. `uv run pytest`
-3. `uv run ruff check app tests scripts`
+2. closeout / reality-audit validation
+3. `uv run pytest`
+4. `uv run ruff check app tests scripts`
 
 ## Slice Definitions
 
-#### `W6.S4a`
+#### `W7.S4a`
 
 - Owner: `execute-plan`
-- State: `READY`
-- Priority: `highest`
-
-目标：
-
-- materialize operator-visible rollout evidence for the landed external integration surfaces
-- keep webhook/runtime proof surfaces aligned with the real delivery env gate and provider runtime gate truth
-
-交付物：
-
-1. operator-visible health/readiness/evidence baseline for outcome admission, delivery env gate, and provider runtime gate
-2. machine-readable closeout evidence that can be carried into `W6.RV1`
-
-必须避免：
-
-1. multi-environment deployment platform drift
-2. secret-manager or remote rollout expansion
-3. observability-suite broadening beyond the current W6 boundary
-
-#### `W6.RV1`
-
-- Owner: `execution-reality-audit`
 - State: `READY`
 - Priority: `high`
 
 目标：
 
-- run an evidence-driven W6 reality audit against the landed external integration bridge
-- freeze honest residuals and W7 replan inputs after W6 execution completes
+- expose operator-visible ingress / queue / backlog / deferred / fallback truth for the new warning plane
+- freeze a rollout checklist that remains honest about current readiness
 
 交付物：
 
-1. reality audit verdict for W6
-2. residual freeze and W7 replan input
+1. readiness / checklist surface for warning-plane governance
+2. direct operator-visible proof for queue and ingress gate truth
 
 必须避免：
 
-1. claiming production-ready rollout without evidence
-2. reopening earlier W6 execution slices unless the audit proves a real drift
+1. reporting only service liveness while hiding warning-plane backlog or failure truth
+2. claiming production-ready rollout before audit evidence exists
+
+#### `W7.RV1`
+
+- Owner: `execution-reality-audit`
+- State: `READY`
+- Priority: `highest`
+
+目标：
+
+- run an evidence-driven W7 reality audit against the landed warning-plane work
+- freeze honest residuals and successor replan inputs after W7 execution closes
+
+交付物：
+
+1. W7 audit verdict
+2. residual freeze and successor replan input
+
+必须避免：
+
+1. claiming production-ready rollout without audit-grade evidence
+2. reopening earlier W7 slices unless the audit proves real drift

@@ -8,7 +8,7 @@
 
 ## Current Active Slice
 
-- `W6.RV1`
+- `W7.RV1`
 
 ## Intended Handoff
 
@@ -16,14 +16,16 @@
 
 ## Source Pack
 
-- `docs/plan/warning-agent-production-integration-bridge-2026-04-20_PLAN.md`
-- `docs/plan/warning-agent-production-integration-bridge-2026-04-20_STATUS.md`
-- `docs/plan/warning-agent-production-integration-bridge-2026-04-20_WORKSET.md`
+- `docs/plan/warning-agent-signoz-warning-production-2026-04-20_PLAN.md`
+- `docs/plan/warning-agent-signoz-warning-production-2026-04-20_STATUS.md`
+- `docs/plan/warning-agent-signoz-warning-production-2026-04-20_WORKSET.md`
 
 ## Notes
 
 This `README.md` plus `active_PLAN.md`, `active_STATUS.md`, and `active_WORKSET.md` is the repo-local machine control-plane for `pi-sdk` local autopilot.
 
-It intentionally mirrors the richer W6 source pack above instead of replacing it. If the machine pack and the source pack diverge, update the machine pack first before starting `/autopilot-run` in local mode.
+It intentionally mirrors the richer W7 source pack above instead of replacing it. If the machine pack and the source pack diverge, update the machine pack first before starting `/autopilot-run` in local mode.
+
+The current W7 machine pack is terminal truth: `W7.RV1` is completed and the next required handoff is `plan-creator`, not more execution inside W7.
 
 Local extension mode still has a clean-start requirement: the first `/autopilot-run` in a new local autopilot session should start from a clean repo state, otherwise the dirty-repo initial-run guard is expected to halt before the first dispatch.

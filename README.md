@@ -13,7 +13,7 @@
 ## 当前统一主线
 
 ```text
-Prometheus / Alertmanager alert
+Signoz warning / Alertmanager webhook / replay input
   -> bounded evidence collection
   -> incident packet
   -> local retrieval + local analyzer

@@ -1,29 +1,29 @@
 # warning-agent local autopilot active status
 
-- source_pack: `warning-agent-production-integration-bridge-2026-04-20`
+- source_pack: `warning-agent-signoz-warning-production-2026-04-20`
 - state: `completed`
 - mirror_last_updated: `2026-04-20`
 
 ## Current Step
 
-- active_step: `W6.RV1`
-- active_wave: `closeout / W6 complete`
+- active_step: `W7.RV1`
+- active_wave: `closeout / W7 complete`
 - intended_handoff: `plan-creator`
 
 ## Planned Stages
 
-- [x] `W6.S1a` external outcome admission API baseline
-- [x] `W6.S1b` durable outcome receipt + feedback refresh glue
-- [x] `W6.S2a` live delivery adapter contract + env config seam
-- [x] `W6.S2b` first vendor delivery smoke bridge
-- [x] `W6.S3a` real provider adapter contract freeze
-- [x] `W6.S3b` provider runtime glue + fail-closed rollout gate
-- [x] `W6.S4a` integration observability + rollout evidence baseline
-- [x] `W6.RV1` reality audit + W7 replan input
+- [x] `W7.S1a` governed Signoz ingress route + caller contract freeze
+- [x] `W7.S1b` durable warning admission ledger + provenance truth
+- [x] `W7.S2a` dedupe key + queue ledger contract
+- [x] `W7.S2b` worker lease / retry / dead-letter boundary
+- [x] `W7.S3a` admitted warning -> packet / analyzer / report handoff
+- [x] `W7.S3b` partial-evidence / delivery-deferred failure contract
+- [x] `W7.S4a` operator readiness + rollout checklist truth
+- [x] `W7.RV1` reality audit + W8 replan input
 
 ## Immediate Focus
 
-### `W6.RV1`
+### `W7.RV1`
 
 - Owner: `execution-reality-audit`
 - State: `COMPLETED`
@@ -31,19 +31,24 @@
 
 结果：
 
-- W6 closeout verdict = `accept_with_residuals`
-- W7 replan input written
+- W7 closeout verdict = `accept_with_residuals`
+- W8 replan input written
 - next handoff = `plan-creator`
 
 ## Machine State
 
-- active_step: `W6.RV1`
-- latest_completed_step: `W6.RV1`
+- active_step: `W7.RV1`
+- latest_completed_step: `W7.RV1`
 - intended_handoff: `plan-creator`
-- latest_closeout_summary: W6 closeout accepted the landed external integration bridge with residuals routed to W7 rollout-governance planning; operator-visible baseline and runtime/webhook rollout evidence are now part of current repo truth
+- latest_closeout_summary: W7 closed with a governed Signoz warning plane, durable admission + queue/worker truth, operator-visible readiness, and successor residuals routed to W8 hardening planning
 - latest_verification:
-  - `uv run pytest tests/test_integration_evidence.py tests/test_alertmanager_webhook.py tests/test_runtime_entry.py tests/test_live_runtime_entry.py tests/test_provider_boundary.py -> 21 passed`
-  - `uv run python - <<'PY' ... build_integration_baseline(...) + execute_runtime_entrypoint(...) ... PY` proved readiness truth and persisted `integration-rollout-evidence.v1` sidecar
-  - `npx tsx -e "loadLocalControlPlaneSnapshot(...)"` proved `activeSlice=W6.RV1`, `activeOwner=execution-reality-audit`, `intendedHandoff=plan-creator`
-  - `uv run pytest -> 160 passed`
+  - `uv run pytest tests/test_signoz_alert_receiver.py tests/test_signoz_ingress_api.py tests/test_signoz_admission_storage.py tests/test_signoz_queue_contract.py tests/test_signoz_worker_runtime.py tests/test_signoz_warning_readiness.py tests/test_alertmanager_webhook.py tests/test_integration_evidence.py tests/test_live_signoz_runtime.py -> 29 passed`
+  - `uv run pytest tests/test_autopilot_control_plane.py tests/test_autopilot_runbook.py tests/test_bootstrap.py -> 12 passed`
+  - `uv run pytest -> 174 passed`
   - `uv run ruff check app tests scripts -> pass`
+
+## Latest Evidence
+
+- terminal W7 control-plane truth now points to `W7.RV1` with next handoff `plan-creator`
+- closeout doc written at `docs/plan/warning-agent-signoz-warning-production-2026-04-20_CLOSEOUT.md`
+- successor replan input written at `docs/plan/warning-agent-w8-successor-replan-input-2026-04-20.md`

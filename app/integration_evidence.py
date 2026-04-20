@@ -83,6 +83,31 @@ def _build_provider_gate_baseline(boundary, *, env: Mapping[str, str | None]) ->
 
 
 
+def _build_signoz_warning_plane_baseline(*, data_root: Path, env: Mapping[str, str | None]) -> dict[str, object]:
+    from app.receiver.signoz_ingress import (
+        SIGNOZ_CALLER_HEADER,
+        SIGNOZ_INGRESS_PATH,
+        SIGNOZ_INGRESS_RECEIPT_SCHEMA_VERSION,
+        resolve_signoz_ingress_auth,
+    )
+    from app.storage.signoz_warning_store import SignozWarningStore
+
+    warning_store = SignozWarningStore(root=data_root)
+    auth = resolve_signoz_ingress_auth(env={k: v for k, v in env.items() if isinstance(v, str)})
+    return {
+        "route_path": SIGNOZ_INGRESS_PATH,
+        "receipt_schema_version": SIGNOZ_INGRESS_RECEIPT_SCHEMA_VERSION,
+        "caller_header": SIGNOZ_CALLER_HEADER,
+        "auth_mode": "shared_token",
+        "auth_state": auth.state,
+        "shared_token_env": auth.shared_token_env,
+        "artifact_root": str(warning_store.warning_root),
+        "index_db_path": str(warning_store.db_path),
+        "queue": warning_store.queue_metrics(),
+    }
+
+
+
 def build_integration_baseline(
     *,
     repo_root: str | Path = Path("."),
@@ -90,6 +115,7 @@ def build_integration_baseline(
     env: Mapping[str, str | None] = os.environ,
 ) -> dict[str, object]:
     from app.investigator.provider_boundary import load_provider_boundary_config
+    from app.receiver.signoz_ingress import SIGNOZ_INGRESS_PATH
 
     repo_root = Path(repo_root)
     data_root = _resolve_data_root(data_root)
@@ -102,8 +128,10 @@ def build_integration_baseline(
             "health": HEALTH_PATH,
             "readiness": READINESS_PATH,
             "outcome_admit": OUTCOME_ADMIT_PATH,
+            "signoz_ingress": SIGNOZ_INGRESS_PATH,
         },
         "outcome_admission": _build_outcome_admission_baseline(data_root=data_root),
+        "signoz_warning_plane": _build_signoz_warning_plane_baseline(data_root=data_root, env=env),
         "delivery_bridge": _build_delivery_bridge_baseline(repo_root=repo_root, env=env),
         "provider_runtime": {
             "local_primary": _build_provider_gate_baseline(boundary.local_primary, env=env),

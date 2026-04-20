@@ -19,8 +19,8 @@ from app.storage.sqlite_store import MetadataStore
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 REPLAY_FIXTURE = REPO_ROOT / "fixtures" / "replay" / "manual-replay.checkout.high-error-rate.json"
-CURRENT_STATUS = REPO_ROOT / "docs" / "plan" / "warning-agent-production-integration-bridge-2026-04-20_STATUS.md"
-CURRENT_WORKSET = REPO_ROOT / "docs" / "plan" / "warning-agent-production-integration-bridge-2026-04-20_WORKSET.md"
+CURRENT_STATUS = REPO_ROOT / "docs" / "plan" / "warning-agent-signoz-warning-production-2026-04-20_STATUS.md"
+CURRENT_WORKSET = REPO_ROOT / "docs" / "plan" / "warning-agent-signoz-warning-production-2026-04-20_WORKSET.md"
 
 
 
@@ -43,9 +43,10 @@ def test_pyproject_metadata_matches_package() -> None:
     assert pyproject["project"]["scripts"]["warning-agent"] == "app.main:main"
     assert metadata.name == "warning-agent"
     assert metadata.version == app.__version__
-    assert metadata.phase == "production-integration-bridge"
+    assert metadata.phase == "signoz-warning-production"
     assert metadata.active_slice == _read_plan_header_value(CURRENT_WORKSET, "active_slice")
     assert _read_plan_header_value(CURRENT_STATUS, "status") in {"ready", "in_progress", "completed"}
+
 
 
 def test_build_runtime_entrypoint_creates_replay_first_contract() -> None:
@@ -72,6 +73,7 @@ def test_build_runtime_entrypoint_creates_replay_first_contract() -> None:
 def test_build_runtime_entrypoint_rejects_invalid_cli_shapes(argv: list[str], error_text: str) -> None:
     with pytest.raises(ValueError, match=error_text):
         build_runtime_entrypoint(argv, cwd=REPO_ROOT)
+
 
 
 def _assert_replay_runtime_artifacts(tmp_path: Path, stdout: str) -> None:

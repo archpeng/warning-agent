@@ -33,9 +33,13 @@ def test_build_integration_baseline_reports_operator_visible_gate_truth(tmp_path
         "health": "/healthz",
         "readiness": "/readyz",
         "outcome_admit": "/outcome/admit",
+        "signoz_ingress": "/webhook/signoz",
     }
     assert baseline["outcome_admission"]["status"] == "ready"
     assert baseline["outcome_admission"]["receipt_schema_version"] == "outcome-admission-receipt.v1"
+    assert baseline["signoz_warning_plane"]["route_path"] == "/webhook/signoz"
+    assert baseline["signoz_warning_plane"]["auth_state"] == "missing_env"
+    assert baseline["signoz_warning_plane"]["queue"]["backlog_size"] == 0
     assert baseline["delivery_bridge"]["route_adapter"] == "adapter_feishu"
     assert baseline["delivery_bridge"]["env_gate_state"] == "missing_env"
     assert baseline["delivery_bridge"]["provider_key"] == "warning-agent"

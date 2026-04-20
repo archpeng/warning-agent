@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 from dataclasses import asdict
+import os
 from pathlib import Path
 from typing import Final, Literal, NotRequired, TypedDict
 
@@ -25,10 +26,12 @@ READINESS_PATH: Final = "/readyz"
 WEBHOOK_RECEIPT_SCHEMA_VERSION: Final = "alertmanager-webhook-receipt.v1"
 
 
-class NormalizedSourceRefs(TypedDict):
+class NormalizedSourceRefs(TypedDict, total=False):
     rule_id: str | None
     source_url: str | None
     eval_window: str | None
+    starts_at: str | None
+    ends_at: str | None
     severity: str | None
 
 
@@ -208,7 +211,7 @@ def create_app(
     evidence_now: str | None = None,
 ) -> FastAPI:
     repo_root = Path(repo_root)
-    app = FastAPI(title="warning-agent alertmanager webhook stub")
+    app = FastAPI(title="warning-agent governed warning ingress")
 
     @app.get(HEALTH_PATH)
     def healthz() -> WebhookHealth:
@@ -257,17 +260,31 @@ def create_app(
             )
 
     from app.feedback.outcome_api import build_outcome_router, register_outcome_exception_handlers
+    from app.receiver.signoz_ingress import build_signoz_ingress_router
+    from app.receiver.signoz_queue import enqueue_admitted_warning
     from app.storage.artifact_store import JSONLArtifactStore
+    from app.storage.signoz_warning_store import SignozWarningStore
 
     outcome_artifact_store = JSONLArtifactStore(root=Path(data_root)) if data_root else JSONLArtifactStore()
     outcome_metadata_store = MetadataStore(db_path=outcome_artifact_store.root / "metadata.sqlite3")
     outcome_retrieval_index = RetrievalIndex(db_path=outcome_artifact_store.root / "retrieval" / "retrieval.sqlite3")
+    signoz_warning_store = SignozWarningStore(root=outcome_artifact_store.root)
     register_outcome_exception_handlers(app)
     app.include_router(
         build_outcome_router(
             artifact_store=outcome_artifact_store,
             metadata_store=outcome_metadata_store,
             retrieval_index=outcome_retrieval_index,
+        )
+    )
+    app.include_router(
+        build_signoz_ingress_router(
+            warning_store=signoz_warning_store,
+            post_accept_handler=lambda persisted: enqueue_admitted_warning(
+                str(persisted["warning_id"]),
+                store=signoz_warning_store,
+            ),
+            env=dict(os.environ),
         )
     )
 

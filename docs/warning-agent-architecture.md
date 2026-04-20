@@ -58,7 +58,7 @@
 
 | 层 | 组件 | 作用 | 是否热路径 |
 |---|---|---|---|
-| 输入层 | `Alert Receiver` | 接收 Alertmanager webhook 或 replay 输入 | 是 |
+| 输入层 | `Alert Receiver` | 接收 governed Signoz warning、Alertmanager webhook 或 replay 输入 | 是 |
 | 采证层 | `Evidence Collector` | 用固定查询模板采集 `Prometheus` 与 `SigNoz` 证据 | 是 |
 | 表示层 | `Incident Packet Builder` | 生成统一事件表示 `incident packet` | 是 |
 | 本地计算层 | `Local Analyzer` | 本地检索与快速评分，给出结构化 first-pass 结论 | 是 |
@@ -101,7 +101,7 @@
 ### 6.1 热路径
 
 ```text
-Alertmanager webhook / replay input
+Signoz warning / Alertmanager webhook / replay input
   -> bounded evidence collection
   -> incident packet
   -> local retrieval
