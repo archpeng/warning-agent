@@ -2,9 +2,9 @@
 
 - plan_id: `warning-agent-production-integration-bridge-2026-04-20`
 - plan_class: `execution-plan`
-- status: `in_progress`
+- status: `completed`
 - mode: `autopilot-control-plane`
-- current_wave: `wave-4 / W6 rollout evidence hardening`
+- current_wave: `closeout / W6 complete`
 - last_updated: `2026-04-20`
 
 ## 1. Goal

@@ -16,6 +16,7 @@ from app.collectors.evidence_bundle import build_live_evidence_bundle, build_sig
 from app.delivery.runtime import persist_report_delivery
 from app.collectors.prometheus import PrometheusCollector
 from app.collectors.signoz import SignozCollector
+from app.integration_evidence import persist_integration_rollout_evidence
 from app.investigator.runtime import run_investigation_runtime
 from app.packet.builder import build_incident_packet_from_bundle
 from app.receiver.alertmanager_webhook import normalize_alertmanager_payload
@@ -52,6 +53,7 @@ class PersistedRuntimeArtifacts:
     delivery_dispatches_path: Path | None = None
     metadata_db_path: Path | None = None
     retrieval_db_path: Path | None = None
+    rollout_evidence_path: Path | None = None
 
 
 @dataclass(frozen=True)
@@ -73,6 +75,7 @@ class RuntimeExecutionSummary:
     investigation_id: str | None
     investigation_stage: Literal["none", "local_primary", "cloud_fallback"]
     report_id: str
+    rollout_evidence_path: str | None = None
 
 
 def build_runtime_execution_summary(execution: ReplayRuntimeExecution) -> RuntimeExecutionSummary:
@@ -87,12 +90,17 @@ def build_runtime_execution_summary(execution: ReplayRuntimeExecution) -> Runtim
             else "local_primary"
         )
 
+    rollout_evidence_path = None
+    if execution.persisted_artifacts is not None and execution.persisted_artifacts.rollout_evidence_path is not None:
+        rollout_evidence_path = str(execution.persisted_artifacts.rollout_evidence_path)
+
     return RuntimeExecutionSummary(
         packet_id=str(execution.packet["packet_id"]),
         decision_id=str(execution.decision["decision_id"]),
         investigation_id=investigation_id,
         investigation_stage=investigation_stage,
         report_id=str(report_record["report_id"]),
+        rollout_evidence_path=rollout_evidence_path,
     )
 
 
@@ -295,6 +303,7 @@ def persist_runtime_execution(
     execution: ReplayRuntimeExecution,
     *,
     artifact_store: JSONLArtifactStore,
+    repo_root: str | Path = Path("."),
     metadata_store: MetadataStore | None = None,
     retrieval_index: RetrievalIndex | None = None,
     delivery_config_path: str | Path = Path("configs/delivery.yaml"),
@@ -313,12 +322,23 @@ def persist_runtime_execution(
         config_path=delivery_config_path,
     )
 
+    rollout_evidence_path = persist_integration_rollout_evidence(
+        artifact_root=artifact_store.root,
+        repo_root=repo_root,
+        data_root=artifact_store.root,
+        packet_id=str(execution.packet["packet_id"]),
+        decision_id=str(execution.decision["decision_id"]),
+        report_id=str(report_record["report_id"]),
+        generated_at=str(report_record["generated_at"]),
+    )
+
     persisted_artifacts = PersistedRuntimeArtifacts(
         packet_path=packet_path,
         decision_path=decision_path,
         investigation_path=investigation_path,
         report_path=report_path,
         delivery_dispatches_path=delivery_dispatch.dispatch_path,
+        rollout_evidence_path=rollout_evidence_path,
     )
     metadata_store = metadata_store or _build_metadata_store(artifact_store)
     retrieval_index = retrieval_index or _build_retrieval_index(artifact_store)
@@ -341,6 +361,7 @@ def persist_runtime_execution(
         delivery_dispatches_path=delivery_dispatch.dispatch_path,
         metadata_db_path=metadata_store.db_path,
         retrieval_db_path=retrieval_index.db_path,
+        rollout_evidence_path=rollout_evidence_path,
     )
 
 
@@ -436,6 +457,7 @@ def execute_runtime_inputs(
     persisted_artifacts = persist_runtime_execution(
         runtime_execution,
         artifact_store=artifact_store,
+        repo_root=repo_root,
         metadata_store=metadata_store,
         retrieval_index=runtime_retrieval_index,
         delivery_config_path=repo_root / "configs" / "delivery.yaml",

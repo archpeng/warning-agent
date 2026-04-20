@@ -8,11 +8,11 @@
 
 ## Current Active Slice
 
-- `W6.S4a`
+- `W6.RV1`
 
 ## Intended Handoff
 
-- `execution-reality-audit`
+- `plan-creator`
 
 ## Source Pack
 

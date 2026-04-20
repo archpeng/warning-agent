@@ -59,8 +59,8 @@ def test_machine_control_plane_readme_exposes_active_pack_and_local_mode_require
         "docs/plan/active_STATUS.md",
         "docs/plan/active_WORKSET.md",
     ]
-    assert _bullet_values(_section(readme, "Current Active Slice")) == ["W6.S4a"]
-    assert _bullet_values(_section(readme, "Intended Handoff")) == ["execution-reality-audit"]
+    assert _bullet_values(_section(readme, "Current Active Slice")) == ["W6.RV1"]
+    assert _bullet_values(_section(readme, "Intended Handoff")) == ["plan-creator"]
     assert _bullet_values(_section(readme, "Source Pack")) == [
         "docs/plan/warning-agent-production-integration-bridge-2026-04-20_PLAN.md",
         "docs/plan/warning-agent-production-integration-bridge-2026-04-20_STATUS.md",
@@ -88,7 +88,7 @@ def test_machine_pack_is_parser_compatible_and_stage_order_is_serial() -> None:
     active_workset = _read(ACTIVE_WORKSET_PATH)
 
     active_slice = _match(r"^- active_step:\s+`([^`]+)`$", active_status)
-    assert active_slice == "W6.S4a"
+    assert active_slice == "W6.RV1"
 
     workset_active_stage = _match(r"## Active Stage\s+### `([^`]+)`", active_workset)
     assert workset_active_stage == active_slice
@@ -124,7 +124,7 @@ def test_machine_pack_mirrors_current_w6_source_pack_active_truth() -> None:
     machine_active_step = _match(r"^- active_step:\s+`([^`]+)`$", active_status)
     source_active_slice = _match(r"^- active_slice:\s+`([^`]+)`$", source_workset)
 
-    assert machine_active_slice == "W6.S4a"
+    assert machine_active_slice == "W6.RV1"
     assert machine_active_step == machine_active_slice
     assert source_active_slice.startswith(machine_active_slice)
-    assert "W6.RV1" in source_workset
+    assert "W6.S4a" in source_workset

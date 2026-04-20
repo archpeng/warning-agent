@@ -108,6 +108,7 @@ cp .env.example .env
 
 ## 补充文档
 
+- [integration rollout evidence baseline](./docs/warning-agent-integration-rollout-evidence.md)
 - [本地 autopilot clean-start runbook](./docs/warning-agent-local-autopilot-clean-start-runbook.md)
 - [最小 repo skeleton](./docs/warning-agent-minimal-repo-skeleton.md)
 - [设计决策表](./docs/analyse/warning-agent-design-decision-table.md)

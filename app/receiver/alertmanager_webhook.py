@@ -13,6 +13,7 @@ from fastapi.responses import JSONResponse
 from app.collectors.evidence_bundle import build_live_evidence_bundle
 from app.collectors.prometheus import PrometheusCollector
 from app.collectors.signoz import SignozCollector
+from app.integration_evidence import build_integration_baseline
 from app.packet.contracts import CandidateSource
 from app.receiver.replay_loader import AlertmanagerWebhookPayload
 from app.retrieval.index import RetrievalIndex
@@ -52,6 +53,7 @@ class WebhookRuntimeSummary(TypedDict):
     investigation_id: str | None
     investigation_stage: Literal["none", "local_primary", "cloud_fallback"]
     report_id: str
+    rollout_evidence_path: str | None
 
 
 class WebhookError(TypedDict):
@@ -71,6 +73,7 @@ class WebhookReadiness(TypedDict):
     surface: str
     evidence_source: Literal["fixture", "live"]
     checks: dict[str, bool]
+    integration_baseline: dict[str, object]
 
 
 class WebhookReceipt(TypedDict):
@@ -157,6 +160,7 @@ def _build_health_payload() -> WebhookHealth:
 def _build_readiness_payload(
     *,
     repo_root: Path,
+    data_root: str | Path | None,
     evidence_source: Literal["fixture", "live"],
 ) -> WebhookReadiness:
     checks = {
@@ -170,6 +174,7 @@ def _build_readiness_payload(
         "surface": "alertmanager_webhook",
         "evidence_source": evidence_source,
         "checks": checks,
+        "integration_baseline": build_integration_baseline(repo_root=repo_root, data_root=data_root),
     }
 
 
@@ -211,7 +216,11 @@ def create_app(
 
     @app.get(READINESS_PATH, response_model=None)
     def readyz():
-        readiness = _build_readiness_payload(repo_root=repo_root, evidence_source=evidence_source)
+        readiness = _build_readiness_payload(
+            repo_root=repo_root,
+            data_root=data_root,
+            evidence_source=evidence_source,
+        )
         if readiness["status"] == "ready":
             return readiness
         return JSONResponse(status_code=503, content=readiness)
