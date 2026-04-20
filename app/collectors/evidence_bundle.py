@@ -14,7 +14,7 @@ from app.collectors.prometheus import PrometheusCollector
 from app.collectors.signoz import SignozCollector
 
 if TYPE_CHECKING:
-    from app.receiver.alertmanager_webhook import NormalizedAlertGroup
+    from app.receiver.contracts import NormalizedAlertGroup
 
 _CONFIG_DEFAULT_PATH: Final = Path("configs/evidence.yaml")
 _SERVICES_CONFIG_PATH: Final = Path("configs/services.yaml")

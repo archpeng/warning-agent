@@ -17,7 +17,7 @@ from app.packet.contracts import (
     TemporalContextV2,
     TopologyEvidence,
 )
-from app.receiver.alertmanager_webhook import NormalizedAlertGroup
+from app.receiver.contracts import NormalizedAlertGroup
 
 _NON_ALNUM = re.compile(r"[^a-z0-9]+")
 

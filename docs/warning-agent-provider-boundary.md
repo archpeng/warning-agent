@@ -19,6 +19,9 @@
 - `configs/provider-boundary.yaml`
 - `app/investigator/provider_boundary.py`
 - `app/investigator/local_primary.py`
+- `app/investigator/local_primary_resident.py`
+- `app/investigator/cloud_fallback.py`
+- `app/investigator/cloud_fallback_brief.py`
 - `app/runtime_entry.py`
 - `app/receiver/alertmanager_webhook.py`
 - `app/live_local_primary_smoke.py`
@@ -166,6 +169,32 @@ runtime gate semantics：
   - target model name: `gpt-5.4-xhigh`
 
 由于 canonical `investigation-result.v1` 的 `model_provider` 仍保持旧 enum boundary，runtime result 里的 `model_provider` 继续诚实使用 contract-safe value；**Neko target identity 则通过 operator-visible contract + analysis notes 暴露**，而不是偷偷改 canonical contract。
+
+## Current architecture-clarity split rule
+
+在当前 architecture-clarity pack 中，`3.6` 的 boundary 优化必须遵守下面这条 split rule：
+
+1. `local_primary` 可以按内部职责拆分为：
+   - resident lifecycle / prewarm cache
+   - abnormal-path policy
+   - smoke provider behavior
+   - real-adapter materialization seam
+2. `cloud_fallback` 可以按内部职责拆分为：
+   - bounded brief / request mapping
+   - guard / fallback evaluation
+   - transport client
+   - result mapping
+3. 上述拆分都必须保持当前 provider truth 不变：
+   - `local_primary` 仍是 default `3.6` provider
+   - `cloud_fallback` 仍是 sparse fallback only
+4. 当前 pack 不允许把这些 seam 抽象成 generic provider SDK 或 orchestration framework。
+
+当前已经 landed 的 clarity split 形态是：
+
+- `local_primary_resident.py` 负责 resident lifecycle / abnormal-path machine truth
+- `local_primary.py` 保持 investigator-facing entrypoint 与 provider construction seam
+- `cloud_fallback_brief.py` 负责 bounded brief / request mapping
+- `cloud_fallback.py` 保持 provider execution、guards、fallback materialization
 
 ## Why this boundary exists
 

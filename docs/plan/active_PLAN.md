@@ -1,38 +1,41 @@
 # warning-agent local autopilot active plan
 
 - status: `active-machine-pack`
-- source_pack: `warning-agent-warning-plane-production-stability-2026-04-20`
+- source_pack: `warning-agent-architecture-clarity-optimization-2026-04-20`
 - mirror_last_updated: `2026-04-20`
 
 ## Goal
 
-- enable `pi-sdk` local autopilot to read/write repo-local active control-plane truth for the warning-plane production-stability workstream
-- keep the runnable machine truth aligned with the richer source pack while the repo advances toward `Gemma4 26B resident local-primary + Neko GPT-5.4 xhigh cloud-fallback` production-operable stable output inside the current architecture boundary
+- enable `pi-sdk` local autopilot to read/write repo-local active control-plane truth for the architecture-clarity optimization workstream
+- keep the runnable machine truth aligned with the richer source pack while the repo performs bounded code-architecture clarity optimization with `3.5` / `3.6` as the primary focus
+- prepare the smallest safe groundwork for `docs/future/warning-agent-3.5-3.6-learning-optimization-minimal-engineering.md` without widening product scope or overengineering the repo
 
 ## In Scope
 
 - repo-local active pack files under `docs/plan/active_*`
-- current active slice `PS.RV1`
-- queued PS slices through `PS.RV1`
-- deterministic local autopilot writeback compatibility for the production-stability pack
+- current active slice `AC.RV1`
+- queued AC slices through `AC.RV1`
+- deterministic local autopilot writeback compatibility for the architecture-clarity pack
+- terminal closeout truth and successor routing after architecture-clarity completion
 
 ## Non-Goals
 
 - replacing the richer source pack
 - bypassing the `pi-sdk` local dirty-repo initial-run guard
-- widening product scope beyond the current warning-plane / triage / investigation architecture boundary
+- changing canonical contracts or current provider topology inside the planning pack itself
+- widening into `warning-core`, generic policy framework, or platform work
 
 ## Verification Ladder
 
 1. targeted control-plane compatibility tests
 2. active slice targeted validation
-3. benchmark / smoke proofs when the current slice requires them
+3. relevant analyzer / investigator targeted tests for the current slice
 4. `uv run pytest`
 5. `uv run ruff check app tests scripts`
 
 ## Slice Definitions
 
-#### `PS.S1a`
+#### `AC.S1a`
 
 - Owner: `execute-plan`
 - State: `READY`
@@ -40,20 +43,20 @@
 
 目标：
 
-- freeze the model-role split and resident runtime contract before runtime implementation starts
-- make `Gemma4 26B resident local-primary` and `Neko GPT-5.4 xhigh cloud-fallback` machine-readable
+- freeze architecture-clarity guardrails before code motion starts
+- make the hotspot/seam inventory for `3.5` and `3.6` explicit and operator-readable
 
 交付物：
 
-1. explicit provider role split and readiness semantics
-2. targeted proof for fallback-or-queue contract and operator-visible readiness truth
+1. explicit no-overengineering and protected-surface truth
+2. hotspot / seam map for later `3.5` / `3.6` refactor slices
 
 必须避免：
 
-1. claiming live rollout complete before runtime proof exists
-2. changing canonical runtime contracts in a contract-freeze slice
+1. starting broad refactor before the boundary is frozen
+2. inventing generic `app/state/*` or `app/policies/*` trees in a design slice
 
-#### `PS.S1b`
+#### `AC.S1b`
 
 - Owner: `execute-plan`
 - State: `READY`
@@ -61,20 +64,20 @@
 
 目标：
 
-- greatly expand local-primary budget for the 26B resident role
-- align rollout evidence fields with the new model topology
+- convert current dependency/import concerns into an explicit move map
+- separate runtime ownership from benchmark/training ownership at the planning boundary
 
 交付物：
 
-1. explicit high-budget local-primary contract
-2. operator-visible evidence alignment for the new provider split
+1. dependency hygiene target map
+2. runtime-vs-benchmark ownership inventory
 
 必须避免：
 
-1. sneaking runtime lifecycle implementation into a budget-contract slice
-2. leaving downstream slices with budget ambiguity
+1. silently turning the inventory slice into full refactor
+2. leaving move targets ambiguous for execute-plan
 
-#### `PS.S2a`
+#### `AC.S2a`
 
 - Owner: `execute-plan`
 - State: `READY`
@@ -82,20 +85,20 @@
 
 目标：
 
-- materialize the Gemma4 26B resident local-primary lifecycle
-- keep warning-agent on a no-cold-start normal path for 3.6 calls
+- clean up `3.5` runtime vs training/benchmark boundaries
+- keep `local-analyzer-decision.v1` and analyzer behavior stable while structure gets clearer
 
 交付物：
 
-1. boot-prewarm-once and resident-service semantics
-2. 3.6-only invocation path with ready/not-ready truth
+1. clearer analyzer module ownership
+2. passing targeted analyzer + benchmark proofs
 
 必须避免：
 
-1. turning warning-agent into a full model-serving platform
-2. exposing per-warning cold-start as the normal path
+1. changing external decision semantics
+2. mixing structural cleanup with unrelated scorer redesign
 
-#### `PS.S2b`
+#### `AC.S2b`
 
 - Owner: `execute-plan`
 - State: `READY`
@@ -103,20 +106,20 @@
 
 目标：
 
-- define and land local not-ready -> fallback or queue behavior
-- keep the abnormal path machine-readable and operator-visible
+- add minimal `3.5` assist/audit groundwork
+- prepare future-note internal objects without growing a new runtime layer
 
 交付物：
 
-1. explicit fallback-or-queue runtime policy
-2. targeted proof for queue-wait and degraded fallback behavior
+1. narrow assist/audit internal seams
+2. targeted proof that canonical analyzer output remains unchanged
 
 必须避免：
 
-1. hidden blocking behavior when the resident model is unavailable
-2. turning queue semantics into generic workflow orchestration
+1. turning `3.5` into a second chat-agent system
+2. introducing online-learning semantics
 
-#### `PS.S2c`
+#### `AC.S3a`
 
 - Owner: `execute-plan`
 - State: `READY`
@@ -124,20 +127,20 @@
 
 目标：
 
-- convert cloud fallback to the Neko GPT-5.4 xhigh identity and bounded adapter path
-- preserve compressed handoff semantics and sparse fallback behavior
+- split `3.6` local-primary internals by responsibility
+- isolate resident lifecycle, abnormal-path policy, and provider materialization seams
 
 交付物：
 
-1. cloud fallback model/runtime contract for Neko GPT-5.4 xhigh
-2. targeted bounded handoff proof
+1. clearer local-primary internal modules or ownership slices
+2. targeted runtime/local tests proving semantics still hold
 
 必须避免：
 
-1. making cloud the default investigation plane
-2. widening into generic multi-provider SDK work
+1. changing current resident/fallback semantics
+2. implying external serving-platform work is now required
 
-#### `PS.S2d`
+#### `AC.S3b`
 
 - Owner: `execute-plan`
 - State: `READY`
@@ -145,20 +148,20 @@
 
 目标：
 
-- re-anchor the `3.5 -> 3.6` gates under the new model split
-- make invocation/fallback/queue-wait/latency behavior measurable
+- split `3.6` cloud-fallback internals by responsibility
+- isolate handoff/compression, guard logic, transport, and response mapping
 
 交付物：
 
-1. benchmark-backed stability gates
-2. targeted proof for degraded validity and latency budgets
+1. clearer cloud-fallback internal seams
+2. targeted cloud/runtime proofs still passing
 
 必须避免：
 
-1. hand-waving stability without measurable evidence
-2. rewriting first-pass into a prompt-heavy system
+1. turning cloud into the default investigation plane
+2. widening into generic vendor SDK work
 
-#### `PS.S3a`
+#### `AC.S3c`
 
 - Owner: `execute-plan`
 - State: `READY`
@@ -166,20 +169,20 @@
 
 目标：
 
-- update warning-plane governance for the new resident-local / fallback / queue-wait topology
-- keep ingress, queue, delivery, and feedback truth operator-visible
+- reduce execution-spine cross-layer coupling
+- clean up normalized-alert / packet / runtime glue directions
 
 交付物：
 
-1. governance contract updates for the new model topology
-2. targeted queue/delivery/feedback/readiness proof
+1. narrower import directions across packet / receiver / runtime
+2. passing runtime/receiver/bootstrap proofs
 
 必须避免：
 
-1. turning the repo into a deployment/orchestration platform
-2. hiding operational semantics only in prose
+1. bundling unrelated product behavior changes
+2. leaving the runtime spine harder to reason about than before
 
-#### `PS.S3b`
+#### `AC.S4a`
 
 - Owner: `execute-plan`
 - State: `READY`
@@ -187,20 +190,20 @@
 
 目标：
 
-- assemble the end-to-end production evidence pack and operator runbook
-- make the current model topology claim auditable without session memory
+- land the smallest future-note groundwork that supports later learning optimization
+- align docs/benchmarks/runbook with the clarified module boundaries
 
 交付物：
 
-1. end-to-end evidence pack for the new topology
-2. operator runbook for enable/disable/rollback/triage
+1. minimal internal learning objects / seams for `3.6`
+2. aligned docs and benchmark surfaces
 
 必须避免：
 
-1. claiming beyond the current evidence boundary
-2. leaving operational procedure only in conversation context
+1. introducing a heavy state/policy framework
+2. claiming learning-loop completion in a groundwork slice
 
-#### `PS.RV1`
+#### `AC.RV1`
 
 - Owner: `execution-reality-audit`
 - State: `READY`
@@ -208,15 +211,15 @@
 
 目标：
 
-- run an evidence-driven audit against the production-stability claim
-- freeze honest residuals and successor routing after execution closes
+- audit whether the architecture became clearer without overengineering drift
+- freeze honest residuals and successor routing after the clarity pack closes
 
 交付物：
 
-1. audit verdict for the current architecture boundary
+1. architecture-clarity audit verdict
 2. residual freeze and successor handoff note
 
 必须避免：
 
-1. claiming production-ready completion without audit-grade evidence
-2. reopening earlier PS slices unless the audit proves real drift
+1. claiming clarity uplift without proof-carrying evidence
+2. smuggling unlanded future-learning ambitions into closeout truth

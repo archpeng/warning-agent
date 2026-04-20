@@ -8,7 +8,7 @@ from dataclasses import dataclass
 import httpx
 
 from app.analyzer.base import round_score
-from app.investigator.cloud_fallback import (
+from app.investigator.cloud_fallback_brief import (
     CloudFallbackClientRequest,
     CloudFallbackClientResponse,
     CloudFallbackHypothesis,

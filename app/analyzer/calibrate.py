@@ -8,11 +8,9 @@ from typing import Final, Protocol, TypedDict, cast
 
 from app.analyzer.base import AnalyzerFeatures, AnalyzerThresholds, round_score
 from app.analyzer.contracts import RetrievalHit
+from app.analyzer.corpus_packets import build_manual_replay_packet
 from app.analyzer.versioning import FAST_SCORER_FEATURE_SET_VERSION
 from app.benchmarks.contracts import build_surface_header
-from app.packet.builder import build_incident_packet_from_bundle
-from app.receiver.alertmanager_webhook import normalize_alertmanager_payload
-from app.receiver.replay_loader import load_manual_replay_fixture
 
 CALIBRATION_CORPUS_SCHEMA_VERSION: Final = "local-analyzer-calibration-corpus.v1"
 ACCEPTED_CALIBRATION_LABELS: Final[tuple[str, ...]] = ("severe", "benign")
@@ -233,12 +231,10 @@ def build_calibration_summary(
     severe_case_count = corpus_sufficiency["severe_case_count"]
 
     for case in corpus:
-        replay = load_manual_replay_fixture(repo_root / case["replay_fixture"])
-        with (repo_root / case["evidence_fixture"]).open("r", encoding="utf-8") as handle:
-            evidence = json.load(handle)
-        packet = build_incident_packet_from_bundle(
-            normalize_alertmanager_payload(replay["alert_payload"], candidate_source="manual_replay"),
-            evidence,
+        packet = build_manual_replay_packet(
+            repo_root=repo_root,
+            replay_fixture=case["replay_fixture"],
+            evidence_fixture=case["evidence_fixture"],
         )
         decision = scorer.score_packet(packet, retrieval_hits=case["retrieval_hits"])
 

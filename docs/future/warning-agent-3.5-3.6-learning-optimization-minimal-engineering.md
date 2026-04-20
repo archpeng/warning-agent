@@ -14,6 +14,12 @@
   - 当前 active execution truth 仍以 `docs/plan/*` 为唯一 SSOT
   - 本文只回答：**如果继续在 `warning-agent` 内部做 3.5/3.6 学习优化，最小工程路线应该是什么**
   - 若后续要真的执行本路线，必须新开 explicit `PLAN / STATUS / WORKSET`
+  - 当前与本文最直接对应的 active groundwork pack 是：
+    - `docs/plan/warning-agent-architecture-clarity-optimization-2026-04-20_PLAN.md`
+    - 它的职责是先收紧代码结构边界与 minimal internal groundwork，而不是直接把本文愿景全部一次性落地
+    - 当前最小 groundwork 代码落点优先是：
+      - `app/analyzer/internal_records.py`
+      - `app/investigator/internal_records.py`
 
 ## 1. One-sentence decision
 
@@ -301,6 +307,12 @@ app/runtime/
 - 有 clean branch / worktree
 - 有基线 benchmark / test 引用点
 - 有明确 protected surfaces
+
+当前执行时还必须额外遵守：
+
+- 先用 `docs/warning-agent-architecture-clarity-guardrails.md` 冻结 no-overengineering 边界
+- 先用 `docs/warning-agent-architecture-clarity-target-map.md` 明确 move map
+- 只有当 architecture-clarity pack 已证明 `3.5 / 3.6` ownership 更清楚时，才继续扩写本文里的更深学习优化 slices
 
 ## 6.2 Step 1 — Add internal observability and learning objects before changing policy behavior
 

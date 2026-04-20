@@ -8,7 +8,7 @@
 
 ## Current Active Slice
 
-- `PS.RV1`
+- `AC.RV1`
 
 ## Intended Handoff
 
@@ -16,16 +16,16 @@
 
 ## Source Pack
 
-- `docs/plan/warning-agent-warning-plane-production-stability-2026-04-20_PLAN.md`
-- `docs/plan/warning-agent-warning-plane-production-stability-2026-04-20_STATUS.md`
-- `docs/plan/warning-agent-warning-plane-production-stability-2026-04-20_WORKSET.md`
+- `docs/plan/warning-agent-architecture-clarity-optimization-2026-04-20_PLAN.md`
+- `docs/plan/warning-agent-architecture-clarity-optimization-2026-04-20_STATUS.md`
+- `docs/plan/warning-agent-architecture-clarity-optimization-2026-04-20_WORKSET.md`
 
 ## Notes
 
 This `README.md` plus `active_PLAN.md`, `active_STATUS.md`, and `active_WORKSET.md` is the repo-local machine control-plane for `pi-sdk` local autopilot.
 
-It intentionally mirrors the richer warning-plane production-stability source pack above instead of replacing it. If the machine pack and the source pack diverge, update the machine pack first before starting `/autopilot-run` in local mode.
+It intentionally mirrors the richer architecture-clarity source pack above instead of replacing it. If the machine pack and the source pack diverge, update the machine pack first before starting `/autopilot-run` in local mode.
 
-This active pack supersedes the terminal MM machine truth for new execution. It is now in terminal closeout truth at `PS.RV1`, with verdict `accept_with_residuals` and next handoff `plan-creator`.
+This active pack supersedes the terminal production-stability machine truth for new execution. It is now in terminal closeout truth at `AC.RV1`, with verdict `accept_with_residuals` and next handoff `plan-creator`.
 
 Local extension mode still has a clean-start requirement: the first `/autopilot-run` in a new local autopilot session should start from a clean repo state, otherwise the dirty-repo initial-run guard is expected to halt before the first dispatch.

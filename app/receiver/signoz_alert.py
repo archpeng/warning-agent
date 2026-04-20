@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import TypedDict
 
-from app.receiver.alertmanager_webhook import NormalizedAlertGroup, NormalizedSourceRefs
+from app.receiver.contracts import NormalizedAlertGroup, NormalizedSourceRefs
 
 
 class SignozAlertPayload(TypedDict, total=False):

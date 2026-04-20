@@ -16,7 +16,7 @@ from app.collectors.evidence_bundle import build_live_evidence_bundle
 from app.collectors.prometheus import PrometheusCollector
 from app.collectors.signoz import SignozCollector
 from app.integration_evidence import build_integration_baseline
-from app.packet.contracts import CandidateSource
+from app.receiver.contracts import NormalizedAlertGroup
 from app.receiver.replay_loader import AlertmanagerWebhookPayload
 from app.retrieval.index import RetrievalIndex
 from app.storage.sqlite_store import MetadataStore
@@ -25,30 +25,6 @@ WEBHOOK_PATH: Final = "/webhook/alertmanager"
 HEALTH_PATH: Final = "/healthz"
 READINESS_PATH: Final = "/readyz"
 WEBHOOK_RECEIPT_SCHEMA_VERSION: Final = "alertmanager-webhook-receipt.v1"
-
-
-class NormalizedSourceRefs(TypedDict, total=False):
-    rule_id: str | None
-    source_url: str | None
-    eval_window: str | None
-    starts_at: str | None
-    ends_at: str | None
-    severity: str | None
-
-
-class NormalizedAlertGroup(TypedDict):
-    candidate_source: CandidateSource
-    receiver: str
-    status: str
-    alert_count: int
-    alertname: str | None
-    environment: str | None
-    service: str | None
-    operation: str | None
-    group_key: str
-    common_labels: dict[str, str]
-    common_annotations: dict[str, str]
-    source_refs: NotRequired[NormalizedSourceRefs]
 
 
 class WebhookRuntimeSummary(TypedDict):

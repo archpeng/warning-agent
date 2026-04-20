@@ -28,13 +28,13 @@
 
 当前 source pack：
 
-- `docs/plan/warning-agent-warning-plane-production-stability-2026-04-20_PLAN.md`
-- `docs/plan/warning-agent-warning-plane-production-stability-2026-04-20_STATUS.md`
-- `docs/plan/warning-agent-warning-plane-production-stability-2026-04-20_WORKSET.md`
+- `docs/plan/warning-agent-architecture-clarity-optimization-2026-04-20_PLAN.md`
+- `docs/plan/warning-agent-architecture-clarity-optimization-2026-04-20_STATUS.md`
+- `docs/plan/warning-agent-architecture-clarity-optimization-2026-04-20_WORKSET.md`
 
 这层 truth 供人类执行、审阅、replan、closeout 使用。
 
-当前 pack 已切到 terminal closeout truth；`PS.S1a` -> `PS.RV1` 已全部完成，下一步默认不是继续执行当前 pack，而是沿 successor replan boundary 进入新的 planning。
+当前 pack 已切到 terminal closeout truth；`AC.S1a` -> `AC.RV1` 已全部完成，下一步默认不是继续执行当前 pack，而是沿 successor replan boundary 进入新的 planning。
 
 ### 1.3 hard rule
 
@@ -77,7 +77,7 @@ uv run pytest tests/test_autopilot_control_plane.py
 rg -n "Current Active Slice|active_step:|active_slice:" \
   docs/plan/README.md \
   docs/plan/active_STATUS.md \
-  docs/plan/warning-agent-warning-plane-production-stability-2026-04-20_WORKSET.md
+  docs/plan/warning-agent-architecture-clarity-optimization-2026-04-20_WORKSET.md
 ```
 
 预期：
@@ -107,10 +107,10 @@ pi
 /autopilot-status
 ```
 
-若 command 可用，再启动：
+如果 active pack 仍是 terminal closeout truth，不要继续旧 pack；改为：
 
 ```text
-/autopilot-run land the current active slice from docs/plan/README.md and continue serially until blocker, closeout, or mandatory replan
+use plan-creator to build the next successor pack from docs/plan/warning-agent-architecture-clarity-optimization-successor-replan-input-2026-04-20.md
 ```
 
 ### 5.2 启动后的 operator 约束
@@ -194,8 +194,8 @@ git diff > /tmp/warning-agent-pre-autopilot.patch
 每次 autopilot 因为 `pause / stop / blocked / closeout` 停下来后，先做这三件事：
 
 1. 检查 richer source pack：
-   - `docs/plan/warning-agent-warning-plane-production-stability-2026-04-20_STATUS.md`
-   - `docs/plan/warning-agent-warning-plane-production-stability-2026-04-20_WORKSET.md`
+   - `docs/plan/warning-agent-architecture-clarity-optimization-2026-04-20_STATUS.md`
+   - `docs/plan/warning-agent-architecture-clarity-optimization-2026-04-20_WORKSET.md`
 2. 检查 machine pack：
    - `docs/plan/README.md`
    - `docs/plan/active_STATUS.md`
@@ -238,18 +238,10 @@ git commit -m "checkpoint: post-autopilot <slice-or-closeout>"
 最小稳定日常循环：
 
 ```text
-finish current operator edits
-  -> checkpoint commit
-  -> git status clean
-  -> run control-plane preflight
-  -> pi
-  -> /autopilot-run ...
-  -> let same-session redispatch continue
+clean repo
+  -> verify machine pack
+  -> if active pack is terminal, replan instead of execute
   -> pause/stop/closeout
-  -> review richer + machine packs
-  -> checkpoint commit again
+  -> checkpoint commit if changing session
+  -> next session clean-start again
 ```
-
-这条循环的关键不是“零 dirty”，而是：
-
-> **new local run 前 clean；same-session 继续时 resume；session 之间用 checkpoint commit 交接。**

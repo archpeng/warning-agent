@@ -52,6 +52,13 @@
 4. `docs/plan/*`：交付控制面 SSOT
 5. `docs/analyse/*`：派生分析，不允许覆盖 1-4
 
+当前 architecture-clarity family 的结构优化 guardrail / target map 还额外由以下文档支配：
+
+- [warning-agent-architecture-clarity-guardrails.md](./warning-agent-architecture-clarity-guardrails.md)
+- [warning-agent-architecture-clarity-target-map.md](./warning-agent-architecture-clarity-target-map.md)
+
+它们只定义 **当前代码结构优化边界与 move map**，不覆盖 canonical contracts 或产品边界。
+
 ## 4. 最小正确结构
 
 最小正确系统现在理解为 6 个在线组件和 1 个反馈闭环。
@@ -255,7 +262,22 @@ Markdown 报文就是产品输出，不是调试副产物。
 4. `P5` 完成前，不把 shadow-mode、runbook、复杂 rollout 作为主线目标。
 5. 小模型替换只有在 replay / benchmark 证明优于 `retrieval + fast scorer` 后才讨论。
 
-## 10. 一句话总结
+## 10. Current architecture-clarity rule
+
+当前如果继续优化 `3.5 / 3.6`，优先遵守下面这条结构规则：
+
+- keep the shell
+- tighten module ownership
+- add minimal internal objects only when they improve replay / compare / attribution
+- extract later, not now
+
+这意味着：
+
+1. 先收紧 `3.5` runtime / benchmark / assist / audit 的 ownership。
+2. 先收紧 `3.6` local resident lifecycle / abnormal path / cloud brief+transport seam 的 ownership。
+3. 不要把当前结构优化 pack 漂移成 `warning-core` 抽离或 generic policy framework。
+
+## 11. 一句话总结
 
 `warning-agent` 的统一架构现在固定为：
 

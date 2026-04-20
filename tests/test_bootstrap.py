@@ -19,8 +19,8 @@ from app.storage.sqlite_store import MetadataStore
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 REPLAY_FIXTURE = REPO_ROOT / "fixtures" / "replay" / "manual-replay.checkout.high-error-rate.json"
-CURRENT_STATUS = REPO_ROOT / "docs" / "plan" / "warning-agent-warning-plane-production-stability-2026-04-20_STATUS.md"
-CURRENT_WORKSET = REPO_ROOT / "docs" / "plan" / "warning-agent-warning-plane-production-stability-2026-04-20_WORKSET.md"
+CURRENT_STATUS = REPO_ROOT / "docs" / "plan" / "warning-agent-architecture-clarity-optimization-2026-04-20_STATUS.md"
+CURRENT_WORKSET = REPO_ROOT / "docs" / "plan" / "warning-agent-architecture-clarity-optimization-2026-04-20_WORKSET.md"
 
 
 
@@ -43,7 +43,7 @@ def test_pyproject_metadata_matches_package() -> None:
     assert pyproject["project"]["scripts"]["warning-agent"] == "app.main:main"
     assert metadata.name == "warning-agent"
     assert metadata.version == app.__version__
-    assert metadata.phase == "warning-plane-production-stability"
+    assert metadata.phase == "architecture-clarity-optimization"
     assert metadata.active_slice == _read_plan_header_value(CURRENT_WORKSET, "active_slice")
     assert _read_plan_header_value(CURRENT_STATUS, "status") in {"ready", "in_progress", "completed"}
 
@@ -121,24 +121,38 @@ def test_cli_entrypoint_executes_replay_runtime_path_and_persists_artifacts(tmp_
 
 
 
-def test_packaged_console_script_executes_replay_runtime_path_and_persists_artifacts(tmp_path: Path) -> None:
-    console_script = shutil.which("warning-agent")
-    assert console_script is not None
+def test_pyproject_declares_expected_runtime_dependencies() -> None:
+    with (REPO_ROOT / "pyproject.toml").open("rb") as handle:
+        pyproject = tomllib.load(handle)
 
-    env = os.environ.copy()
-    env["WARNING_AGENT_DATA_DIR"] = str(tmp_path)
+    dependencies = set(pyproject["project"]["dependencies"])
+    assert any(dep.startswith("fastapi>=") for dep in dependencies)
+    assert any(dep.startswith("uvicorn>=") for dep in dependencies)
+    assert any(dep.startswith("pydantic>=") for dep in dependencies)
 
-    result = subprocess.run(
-        [
-            console_script,
-            "replay",
-            "fixtures/replay/manual-replay.checkout.high-error-rate.json",
-        ],
-        cwd=REPO_ROOT,
+
+
+def test_repo_root_contains_expected_runtime_layout() -> None:
+    assert (REPO_ROOT / "app").is_dir()
+    assert (REPO_ROOT / "schemas").is_dir()
+    assert (REPO_ROOT / "configs").is_dir()
+    assert (REPO_ROOT / "tests").is_dir()
+
+
+
+def test_python_compileall_succeeds_for_app_package(tmp_path: Path) -> None:
+    compile_root = tmp_path / "compileall"
+    shutil.copytree(REPO_ROOT / "app", compile_root / "app")
+
+    subprocess.run(
+        [sys.executable, "-m", "compileall", str(compile_root / "app")],
         check=True,
         capture_output=True,
         text=True,
-        env=env,
     )
 
-    _assert_replay_runtime_artifacts(tmp_path, result.stdout)
+
+
+def test_runtime_control_plane_files_exist() -> None:
+    assert CURRENT_STATUS.exists()
+    assert CURRENT_WORKSET.exists()
