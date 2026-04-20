@@ -28,6 +28,19 @@ class CrashingLocalPrimaryProvider:
         raise RuntimeError("local tool budget exhausted before follow-up completed")
 
 
+class FakeOpenAICompatibleResponse:
+    def __init__(self, payload: dict[str, object], *, status_code: int = 200) -> None:
+        self._payload = payload
+        self.status_code = status_code
+
+    def raise_for_status(self) -> None:
+        if self.status_code >= 400:
+            raise RuntimeError(f"unexpected status code: {self.status_code}")
+
+    def json(self) -> dict[str, object]:
+        return self._payload
+
+
 def _load_json(path: Path) -> dict:
     with path.open("r", encoding="utf-8") as handle:
         return json.load(handle)
@@ -80,6 +93,72 @@ def test_run_investigation_runtime_keeps_local_result_when_cloud_gate_is_not_hit
     assert execution.cloud_audit is None
     assert not errors
     assert execution.final_result["investigator_tier"] == "local_primary_investigator"
+
+
+def test_run_investigation_runtime_auto_wires_real_local_primary_provider_when_gate_ready(
+    monkeypatch,
+) -> None:
+    import json as json_module
+
+    def fake_post(url: str, *, json: dict[str, object], headers: dict[str, str], timeout: float):
+        return FakeOpenAICompatibleResponse(
+            {
+                "choices": [
+                    {
+                        "message": {
+                            "content": json_module.dumps(
+                                {
+                                    "summary": {
+                                        "severity_band": "P1",
+                                        "recommended_action": "page_owner",
+                                        "confidence": 0.81,
+                                        "reason_codes": ["error_rate_spike", "runtime_auto_wire"],
+                                        "suspected_primary_cause": "payment gateway timeout saturation",
+                                        "failure_chain_summary": "run_investigation_runtime auto-wired the local-primary real adapter.",
+                                    },
+                                    "hypotheses": [
+                                        {
+                                            "hypothesis": "payment gateway timeout saturation is driving checkout POST /api/pay failures",
+                                            "confidence": 0.81,
+                                            "supporting_reason_codes": ["error_rate_spike", "runtime_auto_wire"],
+                                        }
+                                    ],
+                                    "unknowns": ["runtime auto-wired fake OpenAI-compatible response"],
+                                }
+                            )
+                        }
+                    }
+                ]
+            }
+        )
+
+    monkeypatch.setenv("WARNING_AGENT_LOCAL_PRIMARY_REAL_ADAPTER_ENABLED", "true")
+    monkeypatch.setenv("WARNING_AGENT_LOCAL_PRIMARY_BASE_URL", "http://127.0.0.1:8000/v1")
+    monkeypatch.setenv("WARNING_AGENT_LOCAL_PRIMARY_MODEL", "minimax-m2.7-highspeed")
+    monkeypatch.setattr("app.investigator.local_primary_openai_compat.httpx.post", fake_post)
+
+    packet = _build_packet()
+    decision = _load_json(DECISION_FIXTURE)
+    execution = run_investigation_runtime(
+        packet,
+        decision,
+        config_path=REPO_ROOT / "configs" / "escalation.yaml",
+        repo_root=REPO_ROOT,
+    )
+
+    validator = Draft202012Validator(load_investigation_schema())
+    errors = sorted(validator.iter_errors(execution.final_result), key=lambda error: error.json_path)
+
+    assert execution.route_plan.should_investigate is True
+    assert execution.local_result is not None
+    assert execution.cloud_plan is not None
+    assert execution.cloud_plan.should_escalate is False
+    assert execution.cloud_audit is None
+    assert not errors
+    assert execution.final_result["investigator_tier"] == "local_primary_investigator"
+    assert execution.final_result["model_name"] == "minimax-m2.7-highspeed"
+    assert "local_primary_real_adapter_response_mapped" in execution.final_result["analysis_updates"]["notes"]
+
 
 
 def test_run_investigation_runtime_escalates_degraded_local_result_to_cloud() -> None:

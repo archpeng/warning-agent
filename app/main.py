@@ -41,10 +41,37 @@ def _parse_plan_header_value(path: Path, key: str) -> str | None:
 
 
 
+def _load_machine_source_pack_metadata(plan_root: Path) -> AppMetadata | None:
+    active_status_path = plan_root / "active_STATUS.md"
+    source_pack = _parse_plan_header_value(active_status_path, "source_pack")
+    if not source_pack:
+        return None
+
+    status_path = plan_root / f"{source_pack}_STATUS.md"
+    workset_path = plan_root / f"{source_pack}_WORKSET.md"
+    plan_id = _parse_plan_header_value(status_path, "plan_id") or source_pack
+    match = PLAN_ID_PATTERN.match(plan_id)
+    if not match:
+        return None
+
+    active_slice = _parse_plan_header_value(workset_path, "active_slice") or DEFAULT_APP_ACTIVE_SLICE
+    return AppMetadata(
+        name="warning-agent",
+        version=__version__,
+        phase=match.group("phase"),
+        active_slice=active_slice,
+    )
+
+
+
 def _load_control_plane_metadata(repo_root: Path | None = None) -> AppMetadata | None:
     plan_root = (repo_root or Path(__file__).resolve().parents[1]) / "docs" / "plan"
     if not plan_root.exists():
         return None
+
+    machine_metadata = _load_machine_source_pack_metadata(plan_root)
+    if machine_metadata is not None:
+        return machine_metadata
 
     active_candidates: list[tuple[str, AppMetadata]] = []
     completed_candidates: list[tuple[str, AppMetadata]] = []

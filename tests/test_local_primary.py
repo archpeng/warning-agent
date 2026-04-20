@@ -29,6 +29,19 @@ class FakeRealLocalPrimaryProvider:
         return result
 
 
+class FakeOpenAICompatibleResponse:
+    def __init__(self, payload: dict[str, object], *, status_code: int = 200) -> None:
+        self._payload = payload
+        self.status_code = status_code
+
+    def raise_for_status(self) -> None:
+        if self.status_code >= 400:
+            raise RuntimeError(f"unexpected status code: {self.status_code}")
+
+    def json(self) -> dict[str, object]:
+        return self._payload
+
+
 def _load_json(path: Path) -> dict:
     with path.open("r", encoding="utf-8") as handle:
         return json.load(handle)
@@ -95,6 +108,119 @@ def test_local_primary_can_use_real_adapter_provider_when_gate_ready() -> None:
     assert not errors
     assert result["model_name"] == "local-primary-real-v1"
     assert "local_primary_real_adapter_runtime_invoked" in result["analysis_updates"]["notes"]
+
+
+
+def test_local_primary_auto_builds_real_adapter_provider_when_gate_ready(monkeypatch) -> None:
+    import json as json_module
+
+    captured: dict[str, object] = {}
+
+    def fake_post(url: str, *, json: dict[str, object], headers: dict[str, str], timeout: float):
+        captured["url"] = url
+        captured["headers"] = headers
+        captured["timeout"] = timeout
+        captured["payload"] = json
+        return FakeOpenAICompatibleResponse(
+            {
+                "choices": [
+                    {
+                        "message": {
+                            "content": json_module.dumps(
+                                {
+                                    "summary": {
+                                        "severity_band": "P1",
+                                        "recommended_action": "page_owner",
+                                        "confidence": 0.83,
+                                        "reason_codes": ["error_rate_spike", "real_adapter_runtime"],
+                                        "suspected_primary_cause": "payment gateway timeout saturation",
+                                        "failure_chain_summary": "runtime auto-wired local-primary real adapter into checkout investigation.",
+                                    },
+                                    "hypotheses": [
+                                        {
+                                            "hypothesis": "payment gateway timeout saturation is driving checkout POST /api/pay failures",
+                                            "confidence": 0.83,
+                                            "supporting_reason_codes": ["error_rate_spike", "real_adapter_runtime"],
+                                        }
+                                    ],
+                                    "unknowns": ["runtime auto-wire used fake OpenAI-compatible response"],
+                                }
+                            )
+                        }
+                    }
+                ]
+            }
+        )
+
+    monkeypatch.setattr("app.investigator.local_primary_openai_compat.httpx.post", fake_post)
+
+    packet = _build_packet()
+    decision = _load_json(DECISION_FIXTURE)
+    config = load_investigator_routing_config(REPO_ROOT / "configs" / "escalation.yaml")
+
+    plan = plan_investigation(packet, decision, config=config)
+    provider = LocalPrimaryInvestigator.from_config(
+        REPO_ROOT / "configs" / "escalation.yaml",
+        repo_root=REPO_ROOT,
+        env={
+            "WARNING_AGENT_LOCAL_PRIMARY_REAL_ADAPTER_ENABLED": "true",
+            "WARNING_AGENT_LOCAL_PRIMARY_BASE_URL": "http://127.0.0.1:8000/v1",
+            "WARNING_AGENT_LOCAL_PRIMARY_MODEL": "minimax-m2.7-highspeed",
+        },
+    )
+    result = provider.investigate(plan.request)
+
+    validator = Draft202012Validator(load_investigation_schema())
+    errors = sorted(validator.iter_errors(result), key=lambda error: error.json_path)
+
+    assert provider.real_adapter_provider is None
+    assert not errors
+    assert captured["url"] == "http://127.0.0.1:8000/v1/chat/completions"
+    assert captured["headers"] == {"Content-Type": "application/json"}
+    assert captured["timeout"] == 45.0
+    assert result["model_name"] == "minimax-m2.7-highspeed"
+    assert "local_primary_real_adapter_response_mapped" in result["analysis_updates"]["notes"]
+    assert result["unknowns"] == ["runtime auto-wire used fake OpenAI-compatible response"]
+
+
+
+def test_local_primary_real_adapter_fail_closes_when_upstream_unavailable(monkeypatch) -> None:
+    def fake_post(url: str, *, json: dict[str, object], headers: dict[str, str], timeout: float):
+        raise RuntimeError("local_primary real adapter upstream unavailable")
+
+    monkeypatch.setattr("app.investigator.local_primary_openai_compat.httpx.post", fake_post)
+
+    packet = _build_packet()
+    decision = _load_json(DECISION_FIXTURE)
+    config = load_investigator_routing_config(REPO_ROOT / "configs" / "escalation.yaml")
+
+    plan = plan_investigation(packet, decision, config=config)
+    provider = LocalPrimaryInvestigator.from_config(
+        REPO_ROOT / "configs" / "escalation.yaml",
+        repo_root=REPO_ROOT,
+        env={
+            "WARNING_AGENT_LOCAL_PRIMARY_REAL_ADAPTER_ENABLED": "true",
+            "WARNING_AGENT_LOCAL_PRIMARY_BASE_URL": "http://127.0.0.1:8000/v1",
+            "WARNING_AGENT_LOCAL_PRIMARY_MODEL": "minimax-m2.7-highspeed",
+        },
+    )
+    result = run_local_primary_with_fallback(packet, decision, plan.request, provider=provider)
+
+    validator = Draft202012Validator(load_investigation_schema())
+    errors = sorted(validator.iter_errors(result), key=lambda error: error.json_path)
+
+    assert not errors
+    assert result["investigator_tier"] == "local_primary_investigator"
+    assert result["summary"]["recommended_action"] == "send_to_human_review"
+    assert result["model_name"] == "local-primary-degraded-fallback"
+    assert any(
+        "local_primary real adapter upstream unavailable" in note
+        for note in result["analysis_updates"]["notes"]
+    )
+    assert any(
+        "local_primary real adapter upstream unavailable" in item
+        for item in result["unknowns"]
+    )
 
 
 

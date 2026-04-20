@@ -24,7 +24,8 @@ def test_provider_boundary_config_freezes_smoke_boundary_and_real_adapter_contra
     assert boundary.local_primary.real_adapter.activation == "env_opt_in"
     assert boundary.local_primary.real_adapter.enabled_env == "WARNING_AGENT_LOCAL_PRIMARY_REAL_ADAPTER_ENABLED"
     assert boundary.local_primary.real_adapter.endpoint_env == "WARNING_AGENT_LOCAL_PRIMARY_BASE_URL"
-    assert boundary.local_primary.real_adapter.api_key_env is None
+    assert boundary.local_primary.real_adapter.api_key_env == "WARNING_AGENT_LOCAL_PRIMARY_API_KEY"
+    assert boundary.local_primary.real_adapter.api_key_mode == "optional"
     assert boundary.local_primary.real_adapter.model_env == "WARNING_AGENT_LOCAL_PRIMARY_MODEL"
     assert boundary.local_primary.real_adapter.timeout_seconds == 45
 
@@ -39,12 +40,13 @@ def test_provider_boundary_config_freezes_smoke_boundary_and_real_adapter_contra
     assert boundary.cloud_fallback.real_adapter.enabled_env == "WARNING_AGENT_CLOUD_FALLBACK_REAL_ADAPTER_ENABLED"
     assert boundary.cloud_fallback.real_adapter.endpoint_env == "OPENAI_BASE_URL"
     assert boundary.cloud_fallback.real_adapter.api_key_env == "OPENAI_API_KEY"
+    assert boundary.cloud_fallback.real_adapter.api_key_mode == "required"
     assert boundary.cloud_fallback.real_adapter.model_env == "WARNING_AGENT_CLOUD_FALLBACK_MODEL"
     assert boundary.cloud_fallback.real_adapter.timeout_seconds == 90
 
 
 
-def test_real_adapter_gate_requires_opt_in_and_required_env_contract() -> None:
+def test_real_adapter_gate_requires_opt_in_and_honors_optional_local_api_key_contract() -> None:
     boundary = load_provider_boundary_config(REPO_ROOT / "configs" / "provider-boundary.yaml")
 
     local_smoke = resolve_real_adapter_gate(boundary.local_primary, env={})
@@ -52,12 +54,29 @@ def test_real_adapter_gate_requires_opt_in_and_required_env_contract() -> None:
         boundary.local_primary,
         env={"WARNING_AGENT_LOCAL_PRIMARY_REAL_ADAPTER_ENABLED": "true"},
     )
-    local_ready = resolve_real_adapter_gate(
+    local_ready_without_key = resolve_real_adapter_gate(
         boundary.local_primary,
         env={
             "WARNING_AGENT_LOCAL_PRIMARY_REAL_ADAPTER_ENABLED": "true",
             "WARNING_AGENT_LOCAL_PRIMARY_BASE_URL": "http://127.0.0.1:8000/",
             "WARNING_AGENT_LOCAL_PRIMARY_MODEL": "local-primary-real-v1",
+        },
+    )
+    local_ready_with_key = resolve_real_adapter_gate(
+        boundary.local_primary,
+        env={
+            "WARNING_AGENT_LOCAL_PRIMARY_REAL_ADAPTER_ENABLED": "true",
+            "WARNING_AGENT_LOCAL_PRIMARY_BASE_URL": "http://127.0.0.1:8000/",
+            "WARNING_AGENT_LOCAL_PRIMARY_API_KEY": "local-secret",
+            "WARNING_AGENT_LOCAL_PRIMARY_MODEL": "local-primary-real-v1",
+        },
+    )
+    cloud_missing_key = resolve_real_adapter_gate(
+        boundary.cloud_fallback,
+        env={
+            "WARNING_AGENT_CLOUD_FALLBACK_REAL_ADAPTER_ENABLED": "true",
+            "OPENAI_BASE_URL": "https://api.openai.example/v1/",
+            "WARNING_AGENT_CLOUD_FALLBACK_MODEL": "gpt-4o-mini",
         },
     )
     cloud_ready = resolve_real_adapter_gate(
@@ -71,6 +90,8 @@ def test_real_adapter_gate_requires_opt_in_and_required_env_contract() -> None:
     )
 
     assert local_smoke.state == "smoke_default"
+    assert local_smoke.api_key_env == "WARNING_AGENT_LOCAL_PRIMARY_API_KEY"
+    assert local_smoke.api_key_mode == "optional"
     assert local_smoke.missing_env == ()
 
     assert local_missing.state == "missing_env"
@@ -79,9 +100,20 @@ def test_real_adapter_gate_requires_opt_in_and_required_env_contract() -> None:
         "WARNING_AGENT_LOCAL_PRIMARY_MODEL",
     }
 
-    assert local_ready.state == "ready"
-    assert local_ready.endpoint == "http://127.0.0.1:8000"
-    assert local_ready.model_name == "local-primary-real-v1"
+    assert local_ready_without_key.state == "ready"
+    assert local_ready_without_key.endpoint == "http://127.0.0.1:8000"
+    assert local_ready_without_key.api_key is None
+    assert local_ready_without_key.api_key_env == "WARNING_AGENT_LOCAL_PRIMARY_API_KEY"
+    assert local_ready_without_key.api_key_mode == "optional"
+    assert local_ready_without_key.model_name == "local-primary-real-v1"
+
+    assert local_ready_with_key.state == "ready"
+    assert local_ready_with_key.api_key == "local-secret"
+
+    assert cloud_missing_key.state == "missing_env"
+    assert cloud_missing_key.api_key_env == "OPENAI_API_KEY"
+    assert cloud_missing_key.api_key_mode == "required"
+    assert cloud_missing_key.missing_env == ("OPENAI_API_KEY",)
 
     assert cloud_ready.state == "ready"
     assert cloud_ready.endpoint == "https://api.openai.example/v1"

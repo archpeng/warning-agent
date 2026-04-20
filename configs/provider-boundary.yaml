@@ -10,7 +10,8 @@ local_primary:
     activation: env_opt_in
     enabled_env: WARNING_AGENT_LOCAL_PRIMARY_REAL_ADAPTER_ENABLED
     endpoint_env: WARNING_AGENT_LOCAL_PRIMARY_BASE_URL
-    api_key_env:
+    api_key_env: WARNING_AGENT_LOCAL_PRIMARY_API_KEY
+    api_key_mode: optional
     model_env: WARNING_AGENT_LOCAL_PRIMARY_MODEL
     timeout_seconds: 45
 cloud_fallback:
@@ -26,5 +27,6 @@ cloud_fallback:
     enabled_env: WARNING_AGENT_CLOUD_FALLBACK_REAL_ADAPTER_ENABLED
     endpoint_env: OPENAI_BASE_URL
     api_key_env: OPENAI_API_KEY
+    api_key_mode: required
     model_env: WARNING_AGENT_CLOUD_FALLBACK_MODEL
     timeout_seconds: 90

@@ -34,7 +34,7 @@
 
 | provider | frozen real adapter | transport | activation seam | required env seam | timeout |
 |---|---|---|---|---|---|
-| `local_primary` | `local_vllm_openai_compat` | `openai_compatible_http` | `env_opt_in` via `WARNING_AGENT_LOCAL_PRIMARY_REAL_ADAPTER_ENABLED` | `WARNING_AGENT_LOCAL_PRIMARY_BASE_URL`, `WARNING_AGENT_LOCAL_PRIMARY_MODEL` | `45s` |
+| `local_primary` | `local_vllm_openai_compat` | `openai_compatible_http` | `env_opt_in` via `WARNING_AGENT_LOCAL_PRIMARY_REAL_ADAPTER_ENABLED` | `WARNING_AGENT_LOCAL_PRIMARY_BASE_URL`, `WARNING_AGENT_LOCAL_PRIMARY_MODEL`, optional `WARNING_AGENT_LOCAL_PRIMARY_API_KEY` | `45s` |
 | `cloud_fallback` | `openai_responses_api` | `openai_responses_api` | `env_opt_in` via `WARNING_AGENT_CLOUD_FALLBACK_REAL_ADAPTER_ENABLED` | `OPENAI_BASE_URL`, `OPENAI_API_KEY`, `WARNING_AGENT_CLOUD_FALLBACK_MODEL` | `90s` |
 
 runtime gate semantics：
@@ -42,7 +42,22 @@ runtime gate semantics：
 1. gate off → `smoke_default`
 2. gate on but env missing → explicit fail-closed fallback
 3. gate ready but runtime client missing → explicit fail-closed fallback
-4. gate ready + injected client → local proof path can consume the frozen real adapter contract
+4. gate ready + injected/auto-built client → local proof path can consume the frozen real adapter contract
+
+## Optional local-primary env-opt smoke
+
+当本地 `neko api:minimax-m2.7-highspeed` endpoint 可用时，可以显式设置：
+
+- `WARNING_AGENT_LOCAL_PRIMARY_REAL_ADAPTER_ENABLED=true`
+- `WARNING_AGENT_LOCAL_PRIMARY_BASE_URL=<openai-compatible-base-url>`
+- `WARNING_AGENT_LOCAL_PRIMARY_MODEL=minimax-m2.7-highspeed`
+- `WARNING_AGENT_LOCAL_PRIMARY_API_KEY=<optional>`
+
+然后通过：
+
+- `app/live_local_primary_smoke.py`
+
+运行一个基于现有 checkout replay/evidence fixture 的 bounded smoke，验证 `run_investigation_runtime(...)` 是否会自动走 local-primary real adapter seam。
 
 ## Why this boundary exists
 

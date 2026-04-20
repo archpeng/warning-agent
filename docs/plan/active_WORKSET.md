@@ -1,23 +1,20 @@
 # warning-agent local autopilot active workset
 
-- source_pack: `warning-agent-signoz-warning-production-2026-04-20`
+- source_pack: `warning-agent-minimax-local-primary-real-adapter-2026-04-20`
 - queue_mode: `strict-serial`
 - mirror_last_updated: `2026-04-20`
 
 ## Stage Order
 
-- [x] `W7.S1a` governed Signoz ingress route + caller contract freeze
-- [x] `W7.S1b` durable warning admission ledger + provenance truth
-- [x] `W7.S2a` dedupe key + queue ledger contract
-- [x] `W7.S2b` worker lease / retry / dead-letter boundary
-- [x] `W7.S3a` admitted warning -> packet / analyzer / report handoff
-- [x] `W7.S3b` partial-evidence / delivery-deferred failure contract
-- [x] `W7.S4a` operator readiness + rollout checklist truth
-- [x] `W7.RV1` reality audit + W8 replan input
+- [x] `MM.S1a` boundary contract freeze + API-key semantics
+- [x] `MM.S1b` OpenAI-compatible local-primary adapter client baseline
+- [x] `MM.S2a` local_primary auto-wiring + runtime seam
+- [x] `MM.S2b` runtime verification + env-opt smoke surface
+- [x] `MM.RV1` reality audit + successor residual freeze
 
 ## Active Stage
 
-### `W7.RV1`
+### `MM.RV1`
 
 - Owner: `execution-reality-audit`
 - State: `COMPLETED`
@@ -25,18 +22,17 @@
 
 结果：
 
-1. W7 reality audit closed with `accept_with_residuals`
-2. successor residuals were frozen into W8 replan input
-3. next handoff is `plan-creator`
+- current pack reached terminal closeout truth
+- bounded Minimax/local-primary seam is finished inside this pack
+- next action must be successor planning rather than continued execution
 
 ## Machine Queue
 
-- active_step: `W7.RV1`
-- latest_completed_step: `W7.RV1`
+- active_step: `MM.RV1`
+- latest_completed_step: `MM.RV1`
 - intended_handoff: `plan-creator`
-- latest_closeout_summary: W7 completed with governed Signoz ingress, durable queue/worker truth, operator-visible readiness, and successor residuals routed to W8 hardening planning
+- latest_planning_input: `docs/plan/warning-agent-minimax-local-primary-successor-replan-input-2026-04-20.md`
 - latest_verification:
-  - `uv run pytest tests/test_signoz_alert_receiver.py tests/test_signoz_ingress_api.py tests/test_signoz_admission_storage.py tests/test_signoz_queue_contract.py tests/test_signoz_worker_runtime.py tests/test_signoz_warning_readiness.py tests/test_alertmanager_webhook.py tests/test_integration_evidence.py tests/test_live_signoz_runtime.py -> 29 passed`
-  - `uv run pytest tests/test_autopilot_control_plane.py tests/test_autopilot_runbook.py tests/test_bootstrap.py -> 12 passed`
-  - `uv run pytest -> 174 passed`
+  - `uv run pytest tests/test_provider_boundary.py tests/test_local_primary.py tests/test_local_primary_openai_compat.py tests/test_investigation_runtime.py -> 14 passed`
+  - `uv run pytest -> 179 passed`
   - `uv run ruff check app tests scripts -> pass`

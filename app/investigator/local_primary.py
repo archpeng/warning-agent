@@ -13,7 +13,12 @@ from urllib.parse import parse_qs, unquote, urlparse
 from app.analyzer.base import round_score
 from app.investigator.base import InvestigationRequest, InvestigatorBudget, ProviderName
 from app.investigator.contracts import InvestigationResult
-from app.investigator.provider_boundary import load_provider_boundary_config, resolve_real_adapter_gate
+from app.investigator.provider_boundary import (
+    ProviderBoundary,
+    ResolvedRealAdapterGate,
+    load_provider_boundary_config,
+    resolve_real_adapter_gate,
+)
 from app.investigator.router import load_investigator_routing_config
 from app.investigator.tools import BoundedInvestigatorTools
 
@@ -76,6 +81,30 @@ class RealAdapterProviderProtocol(Protocol):
         ...
 
 
+def build_real_local_primary_provider(
+    *,
+    boundary: ProviderBoundary,
+    gate: ResolvedRealAdapterGate,
+    model_provider: str,
+) -> RealAdapterProviderProtocol:
+    if gate.state != "ready":
+        raise ValueError("real local-primary provider can only be built when gate state is ready")
+    if gate.transport != "openai_compatible_http":
+        raise RuntimeError(f"unsupported local_primary real adapter transport: {gate.transport}")
+    if gate.endpoint is None or gate.model_name is None:
+        raise RuntimeError("local_primary real adapter gate ready but endpoint/model_name missing")
+
+    from app.investigator.local_primary_openai_compat import LocalPrimaryOpenAICompatibleProvider
+
+    return LocalPrimaryOpenAICompatibleProvider(
+        endpoint=gate.endpoint,
+        model_name=gate.model_name,
+        timeout_seconds=boundary.real_adapter.timeout_seconds,
+        api_key=gate.api_key,
+        model_provider=model_provider,
+    )
+
+
 @dataclass(frozen=True)
 class LocalPrimaryInvestigator:
     budget: InvestigatorBudget
@@ -84,6 +113,7 @@ class LocalPrimaryInvestigator:
     tools: BoundedInvestigatorTools | None = None
     env: Mapping[str, str | None] = field(default_factory=lambda: os.environ)
     real_adapter_provider: RealAdapterProviderProtocol | None = None
+    provider_boundary_path: Path = Path("configs/provider-boundary.yaml")
     provider_name: ProviderName = "local_primary"
 
     @classmethod
@@ -104,13 +134,14 @@ class LocalPrimaryInvestigator:
             tools=tools or BoundedInvestigatorTools.from_config(repo_root=Path(repo_root)),
             env=env,
             real_adapter_provider=real_adapter_provider,
+            provider_boundary_path=Path(repo_root) / "configs" / "provider-boundary.yaml",
         )
 
     def investigate(self, request: InvestigationRequest) -> InvestigationResult:
         if request.budget != self.budget:
             raise ValueError("request budget must match local-primary provider budget")
 
-        boundary = load_provider_boundary_config().local_primary
+        boundary = load_provider_boundary_config(self.provider_boundary_path).local_primary
         gate = resolve_real_adapter_gate(boundary, env=self.env)
         if gate.state == "missing_env":
             raise RuntimeError(
@@ -118,11 +149,12 @@ class LocalPrimaryInvestigator:
                 + ", ".join(gate.missing_env)
             )
         if gate.state == "ready":
-            if self.real_adapter_provider is None:
-                raise RuntimeError(
-                    f"local_primary real adapter gate ready but client unavailable for {gate.adapter}"
-                )
-            return self.real_adapter_provider.investigate(request)
+            real_adapter_provider = self.real_adapter_provider or build_real_local_primary_provider(
+                boundary=boundary,
+                gate=gate,
+                model_provider=self.model_provider,
+            )
+            return real_adapter_provider.investigate(request)
 
         if _is_signoz_first_packet(request.packet):
             return self._investigate_signoz_first(request)

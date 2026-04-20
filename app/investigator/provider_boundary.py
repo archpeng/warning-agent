@@ -14,6 +14,7 @@ from app.investigator.contracts import RecommendedAction
 ProviderMode = Literal["deterministic_smoke"]
 ProviderTransport = Literal["openai_compatible_http", "openai_responses_api"]
 AdapterActivation = Literal["env_opt_in"]
+ApiKeyMode = Literal["not_used", "optional", "required"]
 RealAdapterGateState = Literal["smoke_default", "missing_env", "ready"]
 
 
@@ -31,6 +32,7 @@ class RealProviderAdapterContract:
     enabled_env: str
     endpoint_env: str
     api_key_env: str | None
+    api_key_mode: ApiKeyMode
     model_env: str
     timeout_seconds: int
 
@@ -55,6 +57,8 @@ class ResolvedRealAdapterGate:
     adapter: str
     transport: ProviderTransport
     enabled_env: str
+    api_key_env: str | None
+    api_key_mode: ApiKeyMode
     endpoint: str | None
     api_key: str | None
     model_name: str | None
@@ -64,6 +68,7 @@ class ResolvedRealAdapterGate:
 _ALLOWED_MODES = {"deterministic_smoke"}
 _ALLOWED_TRANSPORTS = {"openai_compatible_http", "openai_responses_api"}
 _ALLOWED_ACTIVATIONS = {"env_opt_in"}
+_ALLOWED_API_KEY_MODES = {"not_used", "optional", "required"}
 _ENABLED_VALUES = {"1", "true", "yes", "on", "enabled"}
 
 
@@ -124,10 +129,21 @@ def _load_real_adapter(boundary_payload: dict[str, object], *, key: str) -> Real
         adapter_payload.get("activation"),
         label=f"{key}.real_adapter.activation",
     )
+    api_key_env = _optional_non_empty_str(adapter_payload.get("api_key_env"))
+    api_key_mode = _expect_non_empty_str(
+        adapter_payload.get("api_key_mode"),
+        label=f"{key}.real_adapter.api_key_mode",
+    )
     if transport not in _ALLOWED_TRANSPORTS:
         raise ValueError(f"{key}.real_adapter.transport is unsupported: {transport}")
     if activation not in _ALLOWED_ACTIVATIONS:
         raise ValueError(f"{key}.real_adapter.activation is unsupported: {activation}")
+    if api_key_mode not in _ALLOWED_API_KEY_MODES:
+        raise ValueError(f"{key}.real_adapter.api_key_mode is unsupported: {api_key_mode}")
+    if api_key_mode == "not_used" and api_key_env is not None:
+        raise ValueError(f"{key}.real_adapter.api_key_env must be empty when api_key_mode=not_used")
+    if api_key_mode != "not_used" and api_key_env is None:
+        raise ValueError(f"{key}.real_adapter.api_key_env must be set when api_key_mode={api_key_mode}")
 
     return RealProviderAdapterContract(
         adapter=_expect_non_empty_str(
@@ -144,7 +160,8 @@ def _load_real_adapter(boundary_payload: dict[str, object], *, key: str) -> Real
             adapter_payload.get("endpoint_env"),
             label=f"{key}.real_adapter.endpoint_env",
         ),
-        api_key_env=_optional_non_empty_str(adapter_payload.get("api_key_env")),
+        api_key_env=api_key_env,
+        api_key_mode=api_key_mode,
         model_env=_expect_non_empty_str(
             adapter_payload.get("model_env"),
             label=f"{key}.real_adapter.model_env",
@@ -199,6 +216,8 @@ def resolve_real_adapter_gate(
             adapter=adapter.adapter,
             transport=adapter.transport,
             enabled_env=adapter.enabled_env,
+            api_key_env=adapter.api_key_env,
+            api_key_mode=adapter.api_key_mode,
             endpoint=None,
             api_key=None,
             model_name=None,
@@ -214,7 +233,7 @@ def resolve_real_adapter_gate(
     missing_env: list[str] = []
     if endpoint is None:
         missing_env.append(adapter.endpoint_env)
-    if adapter.api_key_env and api_key is None:
+    if adapter.api_key_mode == "required" and adapter.api_key_env and api_key is None:
         missing_env.append(adapter.api_key_env)
     if model_name is None:
         missing_env.append(adapter.model_env)
@@ -225,6 +244,8 @@ def resolve_real_adapter_gate(
         adapter=adapter.adapter,
         transport=adapter.transport,
         enabled_env=adapter.enabled_env,
+        api_key_env=adapter.api_key_env,
+        api_key_mode=adapter.api_key_mode,
         endpoint=endpoint,
         api_key=api_key,
         model_name=model_name,
