@@ -8,6 +8,11 @@ from typing import Any, Callable
 from app.collectors.evidence_bundle import build_signoz_first_evidence_bundle
 from app.collectors.prometheus import PrometheusCollector
 from app.collectors.signoz import SignozCollector
+from app.investigator.local_primary import (
+    local_primary_abnormal_path_payload,
+    local_primary_resident_lifecycle_payload,
+)
+from app.investigator.runtime import LocalPrimaryRecoveryRequired
 from app.runtime_entry import build_runtime_execution_summary, execute_runtime_inputs
 from app.storage.artifact_store import JSONLArtifactStore
 from app.storage.signoz_warning_store import SignozWarningStore, _utc_now
@@ -96,6 +101,7 @@ def execute_admitted_signoz_warning(
         evidence_bundle=evidence_bundle,
         repo_root=repo_root,
         artifact_store=artifact_store,
+        runtime_context="warning_worker",
     )
     return build_completed_processing_result(
         execution=execution,
@@ -138,6 +144,22 @@ def run_signoz_worker_once(
 
     try:
         result = processor(claimed.warning_id)
+    except LocalPrimaryRecoveryRequired as exc:
+        queue_entry = store.mark_warning_waiting_for_local_primary_recovery(
+            claimed.warning_id,
+            now=now_value,
+            retry_backoff_sec=retry_backoff_sec,
+            resident_lifecycle=local_primary_resident_lifecycle_payload(exc.signal.resident_lifecycle),
+            abnormal_path=local_primary_abnormal_path_payload(exc.signal.abnormal_path),
+        )
+        return {
+            "warning_id": claimed.warning_id,
+            "queue": queue_entry,
+            "recovery_wait": {
+                "resident_lifecycle": local_primary_resident_lifecycle_payload(exc.signal.resident_lifecycle),
+                "abnormal_path": local_primary_abnormal_path_payload(exc.signal.abnormal_path),
+            },
+        }
     except Exception as exc:
         queue_entry = store.mark_warning_failed(
             claimed.warning_id,

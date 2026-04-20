@@ -1,0 +1,236 @@
+{
+  "schema_version": "integration-rollout-evidence.v1",
+  "packet_id": "ipk_checkout_post_api_pay_20260418t120008z",
+  "decision_id": "lad_checkout_post_pay_20260418t120010z",
+  "report_id": "rpt_checkout_post_api_pay_20260418t120008z",
+  "generated_at": "2026-04-18T12:00:24Z",
+  "integration_baseline": {
+    "schema_version": "integration-rollout-baseline.v1",
+    "surface": "warning-agent",
+    "operator_paths": {
+      "health": "/healthz",
+      "readiness": "/readyz",
+      "outcome_admit": "/outcome/admit",
+      "signoz_ingress": "/webhook/signoz"
+    },
+    "outcome_admission": {
+      "status": "ready",
+      "route_path": "/outcome/admit",
+      "receipt_schema_version": "outcome-admission-receipt.v1",
+      "artifact_root": "/home/peng/dt-git/github/warning-agent/data",
+      "metadata_db_path": "/home/peng/dt-git/github/warning-agent/data/metadata.sqlite3",
+      "retrieval_db_path": "/home/peng/dt-git/github/warning-agent/data/retrieval/retrieval.sqlite3"
+    },
+    "signoz_warning_plane": {
+      "route_path": "/webhook/signoz",
+      "receipt_schema_version": "signoz-warning-ingress-receipt.v1",
+      "caller_header": "X-Warning-Agent-Caller",
+      "auth_mode": "shared_token",
+      "auth_state": "missing_env",
+      "shared_token_env": "WARNING_AGENT_SIGNOZ_INGRESS_SHARED_TOKEN",
+      "artifact_root": "/home/peng/dt-git/github/warning-agent/data/signoz_warnings",
+      "index_db_path": "/home/peng/dt-git/github/warning-agent/data/signoz_warnings/index.sqlite3",
+      "queue": {
+        "queue_states": {
+          "pending": 0,
+          "processing": 0,
+          "waiting_local_primary_recovery": 0,
+          "completed": 0,
+          "failed": 0,
+          "dead_letter": 0,
+          "deduped": 0
+        },
+        "backlog_size": 0,
+        "oldest_pending_age_sec": null,
+        "oldest_local_primary_recovery_wait_age_sec": null,
+        "processing_failure_count": 0,
+        "local_primary_recovery_wait_count": 0,
+        "delivery_deferred_count": 0,
+        "cloud_fallback_ratio": 0.0
+      },
+      "governance": {
+        "queue_mode": "strict_serial_warning_plane",
+        "dedupe_scope": "active_warning_eval_window",
+        "state_actions": {
+          "pending": "await_worker_claim",
+          "processing": "execute_canonical_runtime_spine",
+          "waiting_local_primary_recovery": "retry_after_local_recovery_window",
+          "failed": "bounded_retry",
+          "dead_letter": "operator_intervention_required",
+          "deduped": "suppress_duplicate_processing",
+          "completed": "retain_runtime_artifacts_for_delivery_and_feedback"
+        }
+      }
+    },
+    "delivery_bridge": {
+      "delivery_class": "page_owner",
+      "route_adapter": "adapter_feishu",
+      "delivery_mode": "env_gated_live",
+      "provider_key": "warning-agent",
+      "env_gate_state": "missing_env",
+      "missing_env": [
+        "WARNING_AGENT_ADAPTER_FEISHU_BASE_URL",
+        "WARNING_AGENT_ADAPTER_FEISHU_CHAT_ID",
+        "WARNING_AGENT_ADAPTER_FEISHU_OPEN_ID"
+      ],
+      "live_endpoint": null,
+      "endpoint_env": "WARNING_AGENT_ADAPTER_FEISHU_BASE_URL",
+      "target_env": {
+        "chat_id_env": "WARNING_AGENT_ADAPTER_FEISHU_CHAT_ID",
+        "open_id_env": "WARNING_AGENT_ADAPTER_FEISHU_OPEN_ID",
+        "thread_id_env": "WARNING_AGENT_ADAPTER_FEISHU_THREAD_ID"
+      },
+      "governance": {
+        "delivery_plane": "warning-agent",
+        "routes": {
+          "observe": {
+            "delivery_mode": "local_durable",
+            "route_adapter": "markdown_only",
+            "queue": "observe",
+            "deferred_behavior": null
+          },
+          "open_ticket": {
+            "delivery_mode": "local_durable",
+            "route_adapter": "local_ticket_queue",
+            "queue": "ticket_queue",
+            "deferred_behavior": null
+          },
+          "page_owner": {
+            "delivery_mode": "env_gated_live",
+            "route_adapter": "adapter_feishu",
+            "provider_key": "warning-agent",
+            "target_channel": "feishu",
+            "deferred_behavior": "env_gate_missing_or_unready_yields_deferred_dispatch"
+          },
+          "send_to_human_review": {
+            "delivery_mode": "local_durable",
+            "route_adapter": "local_review_queue",
+            "queue": "review_queue",
+            "deferred_behavior": null
+          }
+        },
+        "deferred_delivery_policy": "operator_visible_and_runtime_persisted"
+      }
+    },
+    "feedback_loop": {
+      "cadence": {
+        "retrieval_refresh": "on_each_landed_outcome",
+        "corpus_assembly": "on_compare_review_request",
+        "retrain_compare": "on_feedback_batch_review",
+        "promotion_review": "explicit_manual_review_only"
+      },
+      "promotion": {
+        "minimum_landed_outcome_cases": 3,
+        "auto_promote": false,
+        "require_candidate_not_worse": true,
+        "require_manual_review_report": true
+      },
+      "artifact_paths": {
+        "compare_corpus": "data/feedback/feedback-compare-corpus.json",
+        "compare_summary": "data/benchmarks/local-analyzer-feedback-compare-summary.json",
+        "candidate_artifact": "data/models/local-analyzer-trained-scorer.candidate.json",
+        "promotion_decision": "data/decisions/local-analyzer-promotion-decision.json",
+        "promotion_report": "data/reports/local-analyzer-promotion-report.md",
+        "runtime_artifact": "data/models/local-analyzer-trained-scorer.v1.json",
+        "previous_runtime_artifact": "data/models/local-analyzer-trained-scorer.prev.json"
+      },
+      "rollback": {
+        "enabled": true,
+        "trigger_rule": "regression_or_runtime_smoke_failure_after_manual_promotion",
+        "rollback_to_previous_runtime_artifact": true
+      }
+    },
+    "provider_runtime": {
+      "local_primary": {
+        "mode": "deterministic_smoke",
+        "smoke_model_provider": "local_vllm",
+        "smoke_model_name": "local-primary-smoke",
+        "operating_contract": {
+          "provider_role": "primary_local_investigator",
+          "target_model_provider": "gemma4",
+          "target_model_name": "gemma4-26b",
+          "service_mode": "resident_prewarm_on_boot",
+          "invocation_scope": "needs_investigation_only",
+          "readiness_source": "resident_service",
+          "ready_action": "invoke_when_needed",
+          "not_ready_action": "fallback_or_queue",
+          "degraded_action": "fallback_or_queue",
+          "fallback_provider": "cloud_fallback",
+          "queue_policy": "wait_for_local_primary_recovery"
+        },
+        "real_adapter": "local_vllm_openai_compat",
+        "transport": "openai_compatible_http",
+        "enabled_env": "WARNING_AGENT_LOCAL_PRIMARY_REAL_ADAPTER_ENABLED",
+        "gate_state": "smoke_default",
+        "missing_env": [],
+        "model_name": null,
+        "endpoint": null,
+        "fail_closed_action": "send_to_human_review",
+        "budget_contract": {
+          "profile": "resident_26b_high_budget",
+          "scope": "per_investigation_when_resident_ready",
+          "startup_cost_policy": "excluded_from_per_warning_budget",
+          "caps": {
+            "wall_time_seconds": 300,
+            "max_tool_calls": 16,
+            "max_prompt_tokens": 12000,
+            "max_completion_tokens": 2400,
+            "max_retrieval_refs": 16,
+            "max_trace_refs": 8,
+            "max_log_refs": 8,
+            "max_code_refs": 8
+          }
+        },
+        "resident_lifecycle": {
+          "service_mode": "resident_prewarm_on_boot",
+          "invocation_scope": "needs_investigation_only",
+          "startup_cost_policy": "excluded_from_per_warning_budget",
+          "provider_mode": "smoke_resident",
+          "state": "ready",
+          "gate_state": "smoke_default",
+          "model_name": "local-primary-smoke",
+          "prewarm_completed_once": true,
+          "prewarm_attempt_count": 1,
+          "prewarm_source": "runtime_entry_boot",
+          "reason": "smoke-default resident local-primary requires no external warmup"
+        },
+        "abnormal_path_policy": {
+          "direct_runtime": {
+            "not_ready": "fallback_to_cloud_fallback",
+            "degraded": "fallback_to_cloud_fallback"
+          },
+          "warning_worker": {
+            "not_ready": "fallback_to_cloud_fallback",
+            "degraded": "queue_wait_for_local_primary_recovery"
+          }
+        }
+      },
+      "cloud_fallback": {
+        "mode": "deterministic_smoke",
+        "smoke_model_provider": "openai",
+        "smoke_model_name": "cloud-fallback-smoke",
+        "operating_contract": {
+          "provider_role": "sparse_cloud_fallback",
+          "target_model_provider": "neko_api_openai",
+          "target_model_name": "gpt-5.4-xhigh",
+          "service_mode": "env_gated_remote",
+          "invocation_scope": "fallback_only",
+          "readiness_source": "env_gate",
+          "ready_action": "invoke_when_selected",
+          "not_ready_action": "fail_closed",
+          "degraded_action": "fail_closed",
+          "fallback_provider": null,
+          "queue_policy": null
+        },
+        "real_adapter": "openai_responses_api",
+        "transport": "openai_responses_api",
+        "enabled_env": "WARNING_AGENT_CLOUD_FALLBACK_REAL_ADAPTER_ENABLED",
+        "gate_state": "smoke_default",
+        "missing_env": [],
+        "model_name": null,
+        "endpoint": null,
+        "fail_closed_action": "send_to_human_review"
+      }
+    }
+  }
+}

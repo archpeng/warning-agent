@@ -45,9 +45,24 @@ def test_escalation_and_report_configs_are_loadable() -> None:
     assert escalation["investigator"]["default_mode"] == "local_first"
     assert escalation["investigator"]["routing"]["allowed_provider_order"] == ["local_primary"]
     assert escalation["investigator"]["routing"]["allow_cloud_fallback"] is True
+    assert escalation["investigator"]["routing"]["local_readiness_requirement"] == "resident_service"
+    assert escalation["investigator"]["routing"]["local_not_ready_policy"] == "fallback_or_queue"
+    assert escalation["investigator"]["routing"]["local_not_ready_fallback_provider"] == "cloud_fallback"
+    assert escalation["investigator"]["routing"]["local_not_ready_queue_policy"] == "wait_for_local_primary_recovery"
+    assert escalation["investigator"]["routing"]["local_degraded_policy"] == "fallback_or_queue"
     assert escalation["investigator"]["local_primary"]["model_name"] == "local-primary-smoke"
-    assert escalation["investigator"]["local_primary"]["budgets"]["wall_time_seconds"] == 120
-    assert escalation["investigator"]["local_primary"]["budgets"]["max_tool_calls"] == 8
+    assert escalation["investigator"]["local_primary"]["contract_target"]["model_provider"] == "gemma4"
+    assert escalation["investigator"]["local_primary"]["contract_target"]["model_name"] == "gemma4-26b"
+    assert escalation["investigator"]["local_primary"]["budget_contract"]["profile"] == "resident_26b_high_budget"
+    assert escalation["investigator"]["local_primary"]["budget_contract"]["scope"] == "per_investigation_when_resident_ready"
+    assert (
+        escalation["investigator"]["local_primary"]["budget_contract"]["startup_cost_policy"]
+        == "excluded_from_per_warning_budget"
+    )
+    assert escalation["investigator"]["local_primary"]["budgets"]["wall_time_seconds"] == 300
+    assert escalation["investigator"]["local_primary"]["budgets"]["max_tool_calls"] == 16
+    assert escalation["investigator"]["local_primary"]["budgets"]["max_prompt_tokens"] == 12000
+    assert escalation["investigator"]["local_primary"]["budgets"]["max_completion_tokens"] == 2400
     assert escalation["investigator"]["local_primary"]["trigger_rules"]["novelty_at_or_above"] == 0.79
     assert escalation["investigator"]["local_primary"]["trigger_rules"]["severity_probability_at_or_above"] == 0.95
     assert escalation["investigator"]["local_primary"]["trigger_rules"]["blast_radius_at_or_above"] == 0.84
@@ -56,6 +71,8 @@ def test_escalation_and_report_configs_are_loadable() -> None:
     assert escalation["investigator"]["cloud_fallback"]["available_phase"] == "P5"
     assert escalation["investigator"]["cloud_fallback"]["model_provider"] == "openai"
     assert escalation["investigator"]["cloud_fallback"]["model_name"] == "cloud-fallback-smoke"
+    assert escalation["investigator"]["cloud_fallback"]["contract_target"]["model_provider"] == "neko_api_openai"
+    assert escalation["investigator"]["cloud_fallback"]["contract_target"]["model_name"] == "gpt-5.4-xhigh"
     assert escalation["investigator"]["cloud_fallback"]["budgets"]["max_invocation_rate_total"] == 0.05
     assert escalation["investigator"]["cloud_fallback"]["budgets"]["max_invocation_rate_investigated"] == 0.25
     assert escalation["investigator"]["cloud_fallback"]["budgets"]["max_wall_time_seconds"] == 90

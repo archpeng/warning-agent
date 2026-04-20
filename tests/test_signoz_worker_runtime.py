@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+import pytest
 from fastapi.testclient import TestClient
 
 from app.receiver.alertmanager_webhook import create_app
@@ -14,6 +15,15 @@ from app.storage.signoz_warning_store import SignozWarningStore
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 SIGNOZ_FIXTURE = REPO_ROOT / "fixtures" / "replay" / "signoz-alert.prod-hq-bff-service.error.json"
+
+
+@pytest.fixture(autouse=True)
+def _reset_local_primary_resident_runtime() -> None:
+    from app.investigator.local_primary import reset_local_primary_resident_service
+
+    reset_local_primary_resident_service()
+    yield
+    reset_local_primary_resident_service()
 
 
 class EmptyPrometheusCollector:
@@ -236,6 +246,43 @@ def test_signoz_worker_executes_canonical_runtime_spine_for_admitted_warning(tmp
     assert packets and packets[0]["candidate_source"] == "signoz_alert"
     assert decisions and decisions[0]["decision_id"] == result["processing_result"]["decision_id"]
     assert reports and reports[0]["report_id"] == result["processing_result"]["report_id"]
+
+
+
+def test_signoz_worker_requeues_warning_when_local_primary_needs_recovery_wait(tmp_path: Path, monkeypatch) -> None:
+    warning_id = _admit_warning(tmp_path, monkeypatch)
+    store = SignozWarningStore(root=tmp_path)
+    monkeypatch.setenv("WARNING_AGENT_LOCAL_PRIMARY_REAL_ADAPTER_ENABLED", "true")
+    monkeypatch.setenv("WARNING_AGENT_LOCAL_PRIMARY_BASE_URL", "http://127.0.0.1:8000/v1")
+    monkeypatch.setenv("WARNING_AGENT_LOCAL_PRIMARY_MODEL", "gemma4-26b")
+
+    def fail_resident_warmup(*args, **kwargs):
+        raise RuntimeError("resident endpoint refused warmup")
+
+    monkeypatch.setattr("app.investigator.local_primary.build_real_local_primary_provider", fail_resident_warmup)
+
+    result = run_signoz_worker_once(
+        store=store,
+        repo_root=REPO_ROOT,
+        now="2026-04-20T13:00:00Z",
+        retry_backoff_sec=30,
+        artifact_store=JSONLArtifactStore(root=tmp_path),
+        prometheus_collector=EmptyPrometheusCollector(),
+        signoz_collector=FakeSignozCollector(),
+        evidence_now="2026-04-20T13:00:00Z",
+    )
+
+    assert result is not None
+    assert result["warning_id"] == warning_id
+    assert result["queue"]["queue_state"] == "waiting_local_primary_recovery"
+    assert result["queue"]["deferred_reason"] == {
+        "code": "local_primary_recovery_wait",
+        "message": "local_primary resident prewarm failed: resident endpoint refused warmup",
+    }
+    assert result["recovery_wait"]["resident_lifecycle"]["state"] == "degraded"
+    assert result["recovery_wait"]["abnormal_path"]["action"] == "queue_wait_for_local_primary_recovery"
+    assert result["recovery_wait"]["abnormal_path"]["runtime_context"] == "warning_worker"
+    assert store.get_warning_row(warning_id)["queue_state"] == "waiting_local_primary_recovery"
 
 
 

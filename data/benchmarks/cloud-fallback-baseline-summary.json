@@ -1,6 +1,6 @@
 {
   "summary_version": "cloud-fallback-benchmark-summary.v1",
-  "generated_at": "2026-04-19T06:58:12Z",
+  "generated_at": "2026-04-20T09:00:19Z",
   "corpus_path": "/home/peng/dt-git/github/warning-agent/fixtures/evidence/cloud-fallback-routing-eval-corpus.json",
   "corpus_contract": {
     "schema_version": "cloud-fallback-routing-eval-corpus.v1",

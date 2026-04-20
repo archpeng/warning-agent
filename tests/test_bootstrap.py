@@ -19,8 +19,8 @@ from app.storage.sqlite_store import MetadataStore
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 REPLAY_FIXTURE = REPO_ROOT / "fixtures" / "replay" / "manual-replay.checkout.high-error-rate.json"
-CURRENT_STATUS = REPO_ROOT / "docs" / "plan" / "warning-agent-minimax-local-primary-real-adapter-2026-04-20_STATUS.md"
-CURRENT_WORKSET = REPO_ROOT / "docs" / "plan" / "warning-agent-minimax-local-primary-real-adapter-2026-04-20_WORKSET.md"
+CURRENT_STATUS = REPO_ROOT / "docs" / "plan" / "warning-agent-warning-plane-production-stability-2026-04-20_STATUS.md"
+CURRENT_WORKSET = REPO_ROOT / "docs" / "plan" / "warning-agent-warning-plane-production-stability-2026-04-20_WORKSET.md"
 
 
 
@@ -43,7 +43,7 @@ def test_pyproject_metadata_matches_package() -> None:
     assert pyproject["project"]["scripts"]["warning-agent"] == "app.main:main"
     assert metadata.name == "warning-agent"
     assert metadata.version == app.__version__
-    assert metadata.phase == "minimax-local-primary-real-adapter"
+    assert metadata.phase == "warning-plane-production-stability"
     assert metadata.active_slice == _read_plan_header_value(CURRENT_WORKSET, "active_slice")
     assert _read_plan_header_value(CURRENT_STATUS, "status") in {"ready", "in_progress", "completed"}
 

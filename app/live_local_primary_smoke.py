@@ -6,6 +6,10 @@ import json
 from pathlib import Path
 from typing import Any
 
+from app.investigator.local_primary import (
+    local_primary_resident_lifecycle_payload,
+    prewarm_local_primary_resident_service,
+)
 from app.investigator.runtime import run_investigation_runtime
 from app.packet.builder import build_incident_packet_from_bundle
 from app.receiver.alertmanager_webhook import normalize_alertmanager_payload
@@ -35,6 +39,11 @@ def run_live_local_primary_adapter_smoke(
     evidence_fixture = repo_root / Path(evidence_fixture)
     decision_fixture = repo_root / Path(decision_fixture)
 
+    resident_resolution = prewarm_local_primary_resident_service(
+        config_path=repo_root / "configs" / "escalation.yaml",
+        repo_root=repo_root,
+        prewarm_source="live_smoke_boot",
+    )
     replay = load_manual_replay_fixture(replay_fixture)
     normalized = normalize_alertmanager_payload(replay["alert_payload"], candidate_source="manual_replay")
     packet = build_incident_packet_from_bundle(normalized, _load_json(evidence_fixture))
@@ -59,4 +68,5 @@ def run_live_local_primary_adapter_smoke(
         "unknowns": final_result["unknowns"],
         "analysis_notes": final_result["analysis_updates"]["notes"],
         "cloud_escalated": execution.cloud_plan.should_escalate if execution.cloud_plan else False,
+        "resident_lifecycle": local_primary_resident_lifecycle_payload(resident_resolution.lifecycle),
     }

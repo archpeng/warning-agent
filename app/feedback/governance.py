@@ -50,6 +50,39 @@ class FeedbackGovernanceConfig:
     rollback: RollbackGovernance
 
 
+
+def feedback_governance_payload(config: FeedbackGovernanceConfig) -> dict[str, object]:
+    return {
+        "cadence": {
+            "retrieval_refresh": config.cadence.retrieval_refresh,
+            "corpus_assembly": config.cadence.corpus_assembly,
+            "retrain_compare": config.cadence.retrain_compare,
+            "promotion_review": config.cadence.promotion_review,
+        },
+        "promotion": {
+            "minimum_landed_outcome_cases": config.promotion.minimum_landed_outcome_cases,
+            "auto_promote": config.promotion.auto_promote,
+            "require_candidate_not_worse": config.promotion.require_candidate_not_worse,
+            "require_manual_review_report": config.promotion.require_manual_review_report,
+        },
+        "artifact_paths": {
+            "compare_corpus": config.artifact_paths.compare_corpus,
+            "compare_summary": config.artifact_paths.compare_summary,
+            "candidate_artifact": config.artifact_paths.candidate_artifact,
+            "promotion_decision": config.artifact_paths.promotion_decision,
+            "promotion_report": config.artifact_paths.promotion_report,
+            "runtime_artifact": config.artifact_paths.runtime_artifact,
+            "previous_runtime_artifact": config.artifact_paths.previous_runtime_artifact,
+        },
+        "rollback": {
+            "enabled": config.rollback.enabled,
+            "trigger_rule": config.rollback.trigger_rule,
+            "rollback_to_previous_runtime_artifact": config.rollback.rollback_to_previous_runtime_artifact,
+        },
+    }
+
+
+
 def load_feedback_governance_config(
     config_path: str | Path = Path("configs/feedback-governance.yaml"),
 ) -> FeedbackGovernanceConfig:

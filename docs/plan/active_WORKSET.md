@@ -1,38 +1,39 @@
 # warning-agent local autopilot active workset
 
-- source_pack: `warning-agent-minimax-local-primary-real-adapter-2026-04-20`
+- source_pack: `warning-agent-warning-plane-production-stability-2026-04-20`
 - queue_mode: `strict-serial`
 - mirror_last_updated: `2026-04-20`
 
 ## Stage Order
 
-- [x] `MM.S1a` boundary contract freeze + API-key semantics
-- [x] `MM.S1b` OpenAI-compatible local-primary adapter client baseline
-- [x] `MM.S2a` local_primary auto-wiring + runtime seam
-- [x] `MM.S2b` runtime verification + env-opt smoke surface
-- [x] `MM.RV1` reality audit + successor residual freeze
+- [x] `PS.S1a` model-role split + resident runtime contract freeze
+- [x] `PS.S1b` budget expansion + rollout evidence contract alignment
+- [x] `PS.S2a` Gemma4 26B resident local-primary lifecycle
+- [x] `PS.S2b` local not-ready -> fallback or queue semantics
+- [x] `PS.S2c` cloud fallback conversion to Neko GPT-5.4 xhigh
+- [x] `PS.S2d` 3.5 -> 3.6 stability gates under the new split
+- [x] `PS.S3a` warning-plane governance update for the new model topology
+- [x] `PS.S3b` end-to-end production evidence pack + operator runbook
+- [x] `PS.RV1` reality audit + residual freeze
 
 ## Active Stage
 
-### `MM.RV1`
+### `PS.RV1`
 
 - Owner: `execution-reality-audit`
 - State: `COMPLETED`
 - Priority: `highest`
 
-结果：
+终态 truth：
 
-- current pack reached terminal closeout truth
-- bounded Minimax/local-primary seam is finished inside this pack
-- next action must be successor planning rather than continued execution
+- current pack has been fully executed and closed out
+- further work must move to successor planning instead of reopening this workset
 
 ## Machine Queue
 
-- active_step: `MM.RV1`
-- latest_completed_step: `MM.RV1`
+- active_step: `PS.RV1`
+- latest_completed_step: `PS.RV1`
 - intended_handoff: `plan-creator`
-- latest_planning_input: `docs/plan/warning-agent-minimax-local-primary-successor-replan-input-2026-04-20.md`
 - latest_verification:
-  - `uv run pytest tests/test_provider_boundary.py tests/test_local_primary.py tests/test_local_primary_openai_compat.py tests/test_investigation_runtime.py -> 14 passed`
-  - `uv run pytest -> 179 passed`
+  - `uv run pytest -> 189 passed`
   - `uv run ruff check app tests scripts -> pass`

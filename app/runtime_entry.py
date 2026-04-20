@@ -414,6 +414,7 @@ def execute_runtime_inputs(
     metadata_store: MetadataStore | None = None,
     retrieval_index: RetrievalIndex | None = None,
     persist_artifacts: bool = True,
+    runtime_context: Literal["direct_runtime", "warning_worker"] = "direct_runtime",
 ) -> ReplayRuntimeExecution:
     repo_root = Path(repo_root)
     packet = build_incident_packet_from_bundle(normalized_alert, evidence_bundle)
@@ -437,6 +438,7 @@ def execute_runtime_inputs(
             decision,
             config_path=repo_root / "configs" / "escalation.yaml",
             repo_root=repo_root,
+            runtime_context=runtime_context,
         )
         investigation = execution.final_result
 
@@ -487,7 +489,14 @@ def execute_runtime_entrypoint(
     signoz_collector: SignozCollector | None = None,
     evidence_now: str | None = None,
 ) -> ReplayRuntimeExecution:
+    from app.investigator.local_primary import prewarm_local_primary_resident_service
+
     repo_root = Path(repo_root)
+    prewarm_local_primary_resident_service(
+        config_path=repo_root / "configs" / "escalation.yaml",
+        repo_root=repo_root,
+        prewarm_source="runtime_entry_boot",
+    )
     if entrypoint.mode == "signoz_alert":
         normalized = normalize_signoz_alert_payload(_load_json(entrypoint.replay_fixture))
     else:

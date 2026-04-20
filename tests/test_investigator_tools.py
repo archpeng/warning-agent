@@ -87,8 +87,8 @@ def test_bounded_tools_clamp_signoz_service_limit() -> None:
 
     payload = tools.list_signoz_services(limit=99)
 
-    assert signoz.list_calls == [("30m", 10, 0)]
-    assert len(payload["services"]) == 10
+    assert signoz.list_calls == [("30m", _budget().max_retrieval_refs, 0)]
+    assert len(payload["services"]) == _budget().max_retrieval_refs
     assert tools.usage_snapshot().calls_used == 1
 
 
@@ -104,7 +104,7 @@ def test_bounded_tools_cap_signoz_top_operations() -> None:
     operations = tools.get_signoz_top_operations("checkout")
 
     assert signoz.operation_calls == [("checkout", "30m")]
-    assert len(operations) == 5
+    assert len(operations) == _budget().max_trace_refs
     assert tools.usage_snapshot().calls_used == 1
 
 
@@ -140,10 +140,10 @@ def test_bounded_tools_wrap_live_followup_queries_with_budget_caps() -> None:
 
     assert value == 0.21
     assert prometheus.scalar_calls == [("checkout_error_rate", "primary")]
-    assert signoz.log_calls == [("checkout", "30m", "ERROR", 5)]
-    assert signoz.trace_calls == [("checkout", "30m", "true", 5)]
-    assert len(logs) == 5
-    assert len(traces) == 5
+    assert signoz.log_calls == [("checkout", "30m", "ERROR", _budget().max_log_refs)]
+    assert signoz.trace_calls == [("checkout", "30m", "true", _budget().max_trace_refs)]
+    assert len(logs) == _budget().max_log_refs
+    assert len(traces) == _budget().max_trace_refs
     assert tools.usage_snapshot().calls_used == 3
 
 
@@ -184,7 +184,7 @@ def test_bounded_tools_wrap_signoz_trace_details_and_trace_logs() -> None:
     trace_logs = tools.signoz_search_logs_by_trace_id("trace-123", limit=99)
 
     assert trace_details == {"traceId": "trace-123", "spans": [{"name": "POST /api/pay"}]}
-    assert len(trace_logs) == 5
+    assert len(trace_logs) == _budget().max_log_refs
     assert signoz.trace_detail_calls == [("trace-123", "30m")]
-    assert signoz.trace_log_calls == [("trace-123", "30m", 5)]
+    assert signoz.trace_log_calls == [("trace-123", "30m", _budget().max_log_refs)]
     assert tools.usage_snapshot().calls_used == 2

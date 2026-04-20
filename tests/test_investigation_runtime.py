@@ -4,10 +4,16 @@ import copy
 import json
 from pathlib import Path
 
+import pytest
 from jsonschema import Draft202012Validator
 
 from app.investigator.cloud_fallback import CloudFallbackInvestigator
 from app.investigator.contracts import load_schema as load_investigation_schema
+from app.investigator.local_primary import (
+    LocalPrimaryResidentLifecycle,
+    prewarm_local_primary_resident_service,
+    reset_local_primary_resident_service,
+)
 from app.investigator.router import load_investigator_routing_config, plan_cloud_fallback
 from app.investigator.runtime import run_investigation_runtime
 from app.packet.builder import build_incident_packet_from_bundle
@@ -23,9 +29,35 @@ DECISION_FIXTURE = REPO_ROOT / "fixtures" / "evidence" / "checkout.local-decisio
 LOCAL_INVESTIGATION_FIXTURE = REPO_ROOT / "fixtures" / "evidence" / "checkout.local-investigation.json"
 
 
+@pytest.fixture(autouse=True)
+def _reset_local_primary_resident_runtime() -> None:
+    reset_local_primary_resident_service()
+    yield
+    reset_local_primary_resident_service()
+
+
 class CrashingLocalPrimaryProvider:
     def investigate(self, request):
         raise RuntimeError("local tool budget exhausted before follow-up completed")
+
+
+class DegradedResidentLocalPrimaryProvider:
+    resident_lifecycle = LocalPrimaryResidentLifecycle(
+        service_mode="resident_prewarm_on_boot",
+        invocation_scope="needs_investigation_only",
+        startup_cost_policy="excluded_from_per_warning_budget",
+        provider_mode="real_adapter_resident",
+        state="degraded",
+        gate_state="ready",
+        model_name="gemma4-26b",
+        prewarm_completed_once=True,
+        prewarm_attempt_count=1,
+        prewarm_source="provider_init",
+        reason="local_primary resident prewarm failed: resident endpoint refused warmup",
+    )
+
+    def investigate(self, request):
+        raise AssertionError("degraded resident provider should not be invoked directly")
 
 
 class FakeOpenAICompatibleResponse:
@@ -161,6 +193,35 @@ def test_run_investigation_runtime_auto_wires_real_local_primary_provider_when_g
 
 
 
+def test_run_investigation_runtime_reuses_boot_prewarmed_local_primary_state() -> None:
+    prewarm = prewarm_local_primary_resident_service(
+        config_path=REPO_ROOT / "configs" / "escalation.yaml",
+        repo_root=REPO_ROOT,
+        prewarm_source="runtime_entry_boot",
+    )
+    packet = _build_packet()
+    decision = _load_json(DECISION_FIXTURE)
+
+    execution = run_investigation_runtime(
+        packet,
+        decision,
+        config_path=REPO_ROOT / "configs" / "escalation.yaml",
+        repo_root=REPO_ROOT,
+    )
+    reused = prewarm_local_primary_resident_service(
+        config_path=REPO_ROOT / "configs" / "escalation.yaml",
+        repo_root=REPO_ROOT,
+        prewarm_source="provider_init",
+    )
+
+    assert execution.final_result is not None
+    assert prewarm.lifecycle.prewarm_attempt_count == 1
+    assert reused.lifecycle.prewarm_attempt_count == 1
+    assert reused.lifecycle.prewarm_source == "runtime_entry_boot"
+    assert reused.lifecycle.state == "ready"
+
+
+
 def test_run_investigation_runtime_escalates_degraded_local_result_to_cloud() -> None:
     packet = _build_packet()
     decision = _load_json(DECISION_FIXTURE)
@@ -189,16 +250,44 @@ def test_run_investigation_runtime_escalates_degraded_local_result_to_cloud() ->
 
 
 
-def test_run_investigation_runtime_fail_closes_when_cloud_real_adapter_gate_is_ready_but_client_missing() -> None:
+def test_run_investigation_runtime_falls_back_to_cloud_when_resident_local_is_degraded() -> None:
+    packet = _build_packet()
+    decision = _load_json(DECISION_FIXTURE)
+
+    execution = run_investigation_runtime(
+        packet,
+        decision,
+        config_path=REPO_ROOT / "configs" / "escalation.yaml",
+        local_provider=DegradedResidentLocalPrimaryProvider(),
+    )
+
+    assert execution.local_result is not None
+    assert execution.cloud_plan is not None
+    assert execution.cloud_plan.should_escalate is True
+    assert execution.cloud_plan.trigger_reasons == ("local_primary_degraded_fallback_to_cloud",)
+    assert execution.cloud_audit is not None
+    assert execution.final_result is not None
+    assert execution.final_result["investigator_tier"] == "cloud_fallback_investigator"
+    assert "local_primary_resident_state=degraded" in execution.local_result["analysis_updates"]["notes"]
+    assert "local_primary_abnormal_action=fallback_to_cloud_fallback" in execution.local_result["analysis_updates"]["notes"]
+
+
+
+def test_run_investigation_runtime_fail_closes_when_cloud_real_adapter_request_errors(monkeypatch) -> None:
+    def fake_post(url: str, *, json: dict[str, object], headers: dict[str, str], timeout: float):
+        raise RuntimeError("neko vendor timeout during bounded cloud review")
+
+    monkeypatch.setattr("app.investigator.cloud_fallback_openai_responses.httpx.post", fake_post)
+
     packet = _build_packet()
     decision = _load_json(DECISION_FIXTURE)
     cloud_provider = CloudFallbackInvestigator.from_config(
         REPO_ROOT / "configs" / "escalation.yaml",
         env={
             "WARNING_AGENT_CLOUD_FALLBACK_REAL_ADAPTER_ENABLED": "true",
-            "OPENAI_BASE_URL": "https://api.openai.example/v1",
+            "OPENAI_BASE_URL": "https://api.neko.example/v1",
             "OPENAI_API_KEY": "secret-token",
-            "WARNING_AGENT_CLOUD_FALLBACK_MODEL": "gpt-4o-mini",
+            "WARNING_AGENT_CLOUD_FALLBACK_MODEL": "gpt-5.4-xhigh",
         },
     )
 
@@ -219,6 +308,6 @@ def test_run_investigation_runtime_fail_closes_when_cloud_real_adapter_gate_is_r
     assert execution.final_result["investigator_tier"] == "local_primary_investigator"
     assert execution.final_result["summary"]["recommended_action"] == "send_to_human_review"
     assert any(
-        "cloud_fallback real adapter gate ready but client unavailable" in note
+        "cloud_fallback_failure_reason=neko vendor timeout during bounded cloud review" in note
         for note in execution.final_result["analysis_updates"]["notes"]
     )

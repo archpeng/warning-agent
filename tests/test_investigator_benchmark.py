@@ -38,6 +38,8 @@ def test_local_primary_benchmark_writes_scaffold_summary_for_borrowed_calibratio
     assert summary["metrics"]["average_tool_calls_per_investigation"] == 1.0
     assert summary["metrics"]["structured_completeness_rate"] == 1.0
     assert summary["metrics"]["degraded_fallback_validity_rate"] == 1.0
+    assert summary["metrics"]["direct_runtime_abnormal_fallback_validity_rate"] == 1.0
+    assert summary["metrics"]["warning_worker_recovery_wait_validity_rate"] == 1.0
     assert summary["corpus_contract"]["schema_version"] == "local-analyzer-calibration-corpus.v1"
     assert summary["corpus_contract"]["measurement_ready"] is False
     assert summary["corpus_contract"]["blocking_reasons"] == ["dedicated_routing_eval_corpus_missing"]
@@ -63,6 +65,8 @@ def test_local_primary_benchmark_marks_dedicated_corpus_closeout_ready_after_rou
     assert summary["metrics"]["local_primary_invocation_rate"] == 0.2
     assert summary["metrics"]["routing_label_alignment_rate"] == 1.0
     assert summary["metrics"]["average_tool_calls_per_investigation"] == 1.0
+    assert summary["metrics"]["direct_runtime_abnormal_fallback_validity_rate"] == 1.0
+    assert summary["metrics"]["warning_worker_recovery_wait_validity_rate"] == 1.0
     assert summary["acceptance"]["accepted"] is True
     assert summary["acceptance"]["blockers"] == []
     assert summary["accepted_local_primary_baseline"] is True
@@ -93,6 +97,10 @@ def test_evaluate_local_primary_acceptance_accepts_closeout_ready_metrics() -> N
             "structured_completeness_rate": 1.0,
             "degraded_fallback_case_count": 2,
             "degraded_fallback_validity_rate": 1.0,
+            "direct_runtime_abnormal_fallback_case_count": 2,
+            "direct_runtime_abnormal_fallback_validity_rate": 1.0,
+            "warning_worker_recovery_wait_case_count": 2,
+            "warning_worker_recovery_wait_validity_rate": 1.0,
         },
         gate_snapshot=benchmark_gate_snapshot(thresholds, config),
     )

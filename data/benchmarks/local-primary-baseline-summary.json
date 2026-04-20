@@ -1,6 +1,6 @@
 {
   "summary_version": "local-primary-benchmark-summary.v1",
-  "generated_at": "2026-04-19T06:58:11Z",
+  "generated_at": "2026-04-20T09:00:04Z",
   "corpus_path": "/home/peng/dt-git/github/warning-agent/fixtures/evidence/local-primary-routing-eval-corpus.json",
   "corpus_contract": {
     "schema_version": "local-primary-routing-eval-corpus.v1",
@@ -19,16 +19,16 @@
     ],
     "allow_cloud_fallback": true,
     "local_primary_model_provider": "local_vllm",
-    "local_primary_model_name": "local-primary-pending",
+    "local_primary_model_name": "local-primary-smoke",
     "local_primary_budget": {
-      "wall_time_seconds": 120,
-      "max_tool_calls": 8,
-      "max_prompt_tokens": 2400,
-      "max_completion_tokens": 600,
-      "max_retrieval_refs": 10,
-      "max_trace_refs": 5,
-      "max_log_refs": 5,
-      "max_code_refs": 5
+      "wall_time_seconds": 300,
+      "max_tool_calls": 16,
+      "max_prompt_tokens": 12000,
+      "max_completion_tokens": 2400,
+      "max_retrieval_refs": 16,
+      "max_trace_refs": 8,
+      "max_log_refs": 8,
+      "max_code_refs": 8
     }
   },
   "gate_snapshot": {
@@ -36,10 +36,12 @@
     "minimum_cases": 10,
     "minimum_investigation_cases": 2,
     "local_primary_invocation_rate_max": 0.2,
-    "local_primary_p95_wall_time_sec_max": 120,
-    "average_tool_calls_per_investigation_max": 8,
+    "local_primary_p95_wall_time_sec_max": 300,
+    "average_tool_calls_per_investigation_max": 16,
     "structured_completeness_min": 0.95,
-    "degraded_fallback_validity_required": 1.0
+    "degraded_fallback_validity_required": 1.0,
+    "direct_runtime_abnormal_fallback_validity_required": 1.0,
+    "warning_worker_recovery_wait_validity_required": 1.0
   },
   "metrics": {
     "total_cases": 20,
@@ -47,11 +49,15 @@
     "actual_local_primary_invocation_count": 4,
     "local_primary_invocation_rate": 0.2,
     "routing_label_alignment_rate": 1.0,
-    "local_primary_p95_wall_time_sec": 0.2091,
+    "local_primary_p95_wall_time_sec": 0.2237,
     "average_tool_calls_per_investigation": 1.0,
     "structured_completeness_rate": 1.0,
     "degraded_fallback_case_count": 4,
-    "degraded_fallback_validity_rate": 1.0
+    "degraded_fallback_validity_rate": 1.0,
+    "direct_runtime_abnormal_fallback_case_count": 4,
+    "direct_runtime_abnormal_fallback_validity_rate": 1.0,
+    "warning_worker_recovery_wait_case_count": 4,
+    "warning_worker_recovery_wait_validity_rate": 1.0
   },
   "acceptance": {
     "accepted": true,
@@ -70,14 +76,14 @@
         "passed": true
       },
       "local_primary_p95_wall_time_sec": {
-        "actual": 0.2091,
-        "expected": 120,
+        "actual": 0.2237,
+        "expected": 300,
         "comparator": "<=",
         "passed": true
       },
       "average_tool_calls_per_investigation": {
         "actual": 1.0,
-        "expected": 8,
+        "expected": 16,
         "comparator": "<=",
         "passed": true
       },
@@ -88,6 +94,18 @@
         "passed": true
       },
       "degraded_fallback_validity_rate": {
+        "actual": 1.0,
+        "expected": 1.0,
+        "comparator": "==",
+        "passed": true
+      },
+      "direct_runtime_abnormal_fallback_validity_rate": {
+        "actual": 1.0,
+        "expected": 1.0,
+        "comparator": "==",
+        "passed": true
+      },
+      "warning_worker_recovery_wait_validity_rate": {
         "actual": 1.0,
         "expected": 1.0,
         "comparator": "==",

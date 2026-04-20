@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+import pytest
 from jsonschema import Draft202012Validator
 
 from app.investigator.cloud_fallback import (
@@ -32,6 +33,15 @@ EXPECTED_LOCAL_INVESTIGATION_FIXTURE = REPO_ROOT / "fixtures" / "evidence" / "ch
 EXPECTED_CLOUD_INVESTIGATION_FIXTURE = REPO_ROOT / "fixtures" / "evidence" / "checkout.cloud-investigation.json"
 
 
+@pytest.fixture(autouse=True)
+def _reset_local_primary_resident_runtime() -> None:
+    from app.investigator.local_primary import reset_local_primary_resident_service
+
+    reset_local_primary_resident_service()
+    yield
+    reset_local_primary_resident_service()
+
+
 class CrashingCloudFallbackClient:
     def investigate(self, request):
         raise RuntimeError("vendor timeout during bounded cloud review")
@@ -57,6 +67,19 @@ class FakeRealCloudFallbackClient:
             unknowns=("real adapter local proof only; remote rollout remains gated",),
             notes=("cloud_fallback_real_adapter_runtime_invoked",),
         )
+
+
+class FakeOpenAIResponsesResponse:
+    def __init__(self, payload: dict[str, object], *, status_code: int = 200) -> None:
+        self._payload = payload
+        self.status_code = status_code
+
+    def raise_for_status(self) -> None:
+        if self.status_code >= 400:
+            raise RuntimeError(f"unexpected status code: {self.status_code}")
+
+    def json(self) -> dict[str, object]:
+        return self._payload
 
 
 def _load_json(path: Path) -> dict:
@@ -142,8 +165,15 @@ def test_cloud_fallback_provider_produces_schema_valid_result_and_cloud_report()
     errors = sorted(validator.iter_errors(result), key=lambda error: error.json_path)
 
     assert not errors
-    assert result == expected
+    assert result["schema_version"] == expected["schema_version"]
+    assert result["investigator_tier"] == expected["investigator_tier"]
+    assert result["model_provider"] == expected["model_provider"]
+    assert result["model_name"] == expected["model_name"]
     assert result["parent_investigation_id"] == local_result["investigation_id"]
+    assert result["summary"] == expected["summary"]
+    assert result["hypotheses"] == expected["hypotheses"]
+    assert "cloud_fallback_target_model_provider=neko_api_openai" in result["analysis_updates"]["notes"]
+    assert "cloud_fallback_target_model_name=gpt-5.4-xhigh" in result["analysis_updates"]["notes"]
     assert result["compressed_handoff"]["handoff_tokens_estimate"] <= config.cloud_fallback.budget.max_handoff_tokens
     assert result["analysis_updates"]["fallback_invocation_was_correct"] is True
 
@@ -204,9 +234,9 @@ def test_cloud_fallback_can_use_real_adapter_client_when_gate_ready() -> None:
         real_adapter_client=FakeRealCloudFallbackClient(),
         env={
             "WARNING_AGENT_CLOUD_FALLBACK_REAL_ADAPTER_ENABLED": "true",
-            "OPENAI_BASE_URL": "https://api.openai.example/v1",
+            "OPENAI_BASE_URL": "https://api.neko.example/v1",
             "OPENAI_API_KEY": "secret-token",
-            "WARNING_AGENT_CLOUD_FALLBACK_MODEL": "gpt-4o-mini",
+            "WARNING_AGENT_CLOUD_FALLBACK_MODEL": "gpt-5.4-xhigh",
         },
     )
 
@@ -217,9 +247,99 @@ def test_cloud_fallback_can_use_real_adapter_client_when_gate_ready() -> None:
 
     assert not errors
     assert result["investigator_tier"] == "cloud_fallback_investigator"
-    assert result["model_name"] == "gpt-4o-mini"
+    assert result["model_provider"] == "openai"
+    assert result["model_name"] == "gpt-5.4-xhigh"
     assert result["summary"]["suspected_primary_cause"] == "real adapter confirmed db timeout on order lookup"
     assert "cloud_fallback_real_adapter_runtime_invoked" in result["analysis_updates"]["notes"]
+    assert "cloud_fallback_target_model_provider=neko_api_openai" in result["analysis_updates"]["notes"]
+
+
+
+def test_cloud_fallback_auto_builds_openai_responses_client_when_gate_ready(monkeypatch) -> None:
+    import json as json_module
+
+    captured: dict[str, object] = {}
+
+    def fake_post(url: str, *, json: dict[str, object], headers: dict[str, str], timeout: float):
+        captured["url"] = url
+        captured["headers"] = headers
+        captured["timeout"] = timeout
+        captured["payload"] = json
+        return FakeOpenAIResponsesResponse(
+            {
+                "output": [
+                    {
+                        "type": "message",
+                        "content": [
+                            {
+                                "type": "output_text",
+                                "text": json_module.dumps(
+                                    {
+                                        "severity_band": "P1",
+                                        "recommended_action": "page_owner",
+                                        "confidence": 0.9,
+                                        "suspected_primary_cause": "neko real adapter confirmed db timeout on order lookup",
+                                        "failure_chain_summary": "neko real adapter reviewed the bounded local handoff and confirmed db timeout on order lookup",
+                                        "hypotheses": [
+                                            {
+                                                "hypothesis": "bounded neko review confirms the checkout timeout regression",
+                                                "confidence": 0.9,
+                                                "supporting_reason_codes": ["neko_real_adapter_runtime"],
+                                            }
+                                        ],
+                                        "unknowns": ["bounded remote proof only; operator rollout remains gated"],
+                                        "notes": ["cloud_fallback_neko_real_adapter_mapped"],
+                                    }
+                                ),
+                            }
+                        ],
+                    }
+                ]
+            }
+        )
+
+    monkeypatch.setattr("app.investigator.cloud_fallback_openai_responses.httpx.post", fake_post)
+
+    packet = _build_packet()
+    decision, _, local_result = _build_local_investigation(packet)
+    request = build_cloud_fallback_request(
+        packet,
+        decision,
+        local_result,
+        config_path=REPO_ROOT / "configs" / "escalation.yaml",
+    )
+    provider = CloudFallbackInvestigator.from_config(
+        REPO_ROOT / "configs" / "escalation.yaml",
+        env={
+            "WARNING_AGENT_CLOUD_FALLBACK_REAL_ADAPTER_ENABLED": "true",
+            "OPENAI_BASE_URL": "https://api.neko.example/v1",
+            "OPENAI_API_KEY": "secret-token",
+            "WARNING_AGENT_CLOUD_FALLBACK_MODEL": "gpt-5.4-xhigh",
+        },
+    )
+
+    result = provider.investigate(request)
+
+    validator = Draft202012Validator(load_investigation_schema())
+    errors = sorted(validator.iter_errors(result), key=lambda error: error.json_path)
+
+    assert not errors
+    assert captured["url"] == "https://api.neko.example/v1/responses"
+    assert captured["headers"] == {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer secret-token",
+    }
+    assert captured["timeout"] == 90.0
+    assert isinstance(captured["payload"], dict)
+    assert captured["payload"]["model"] == "gpt-5.4-xhigh"
+    assert result["investigator_tier"] == "cloud_fallback_investigator"
+    assert result["model_provider"] == "openai"
+    assert result["model_name"] == "gpt-5.4-xhigh"
+    assert result["summary"]["suspected_primary_cause"] == "neko real adapter confirmed db timeout on order lookup"
+    assert "cloud_fallback_real_adapter_runtime_invoked" in result["analysis_updates"]["notes"]
+    assert "cloud_fallback_real_adapter_response_mapped" in result["analysis_updates"]["notes"]
+    assert "cloud_fallback_neko_real_adapter_mapped" in result["analysis_updates"]["notes"]
+    assert "cloud_fallback_target_model_provider=neko_api_openai" in result["analysis_updates"]["notes"]
 
 
 

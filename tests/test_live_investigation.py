@@ -2,13 +2,14 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import pytest
 from jsonschema import Draft202012Validator
 
 from app.analyzer.base import load_thresholds
 from app.analyzer.runtime import resolve_runtime_scorer
 from app.collectors.evidence_bundle import build_live_evidence_bundle, build_signoz_first_evidence_bundle
 from app.investigator.contracts import load_schema as load_investigation_schema
-from app.investigator.local_primary import LocalPrimaryInvestigator
+from app.investigator.local_primary import LocalPrimaryInvestigator, reset_local_primary_resident_service
 from app.investigator.router import load_investigator_routing_config, plan_investigation
 from app.investigator.tools import BoundedInvestigatorTools
 from app.packet.builder import build_incident_packet_from_bundle
@@ -19,6 +20,13 @@ from app.receiver.replay_loader import load_manual_replay_fixture
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 REPLAY_FIXTURE = REPO_ROOT / "fixtures" / "replay" / "manual-replay.checkout.high-error-rate.json"
+
+
+@pytest.fixture(autouse=True)
+def _reset_local_primary_resident_runtime() -> None:
+    reset_local_primary_resident_service()
+    yield
+    reset_local_primary_resident_service()
 
 
 class FakePrometheusCollector:
@@ -109,6 +117,9 @@ def test_local_primary_uses_live_followup_only_for_live_packet_refs() -> None:
     errors = sorted(validator.iter_errors(result), key=lambda error: error.json_path)
 
     assert not errors
+    assert provider.resident_lifecycle is not None
+    assert provider.resident_lifecycle.state == "ready"
+    assert provider.resident_lifecycle.provider_mode == "smoke_resident"
     assert "live_prometheus_followup_used" in result["analysis_updates"]["notes"]
     assert "live_signoz_logs_used" in result["analysis_updates"]["notes"]
     assert "live_signoz_traces_used" in result["analysis_updates"]["notes"]

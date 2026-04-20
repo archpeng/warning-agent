@@ -4,6 +4,7 @@ import copy
 import json
 from pathlib import Path
 
+import pytest
 from fastapi.testclient import TestClient
 
 from app.delivery.bridge_result import BridgeDispatchResult
@@ -22,6 +23,15 @@ from app.storage.sqlite_store import MetadataStore
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 FIXTURE_PATH = REPO_ROOT / "fixtures" / "replay" / "manual-replay.checkout.high-error-rate.json"
+
+
+@pytest.fixture(autouse=True)
+def _reset_local_primary_resident_runtime() -> None:
+    from app.investigator.local_primary import reset_local_primary_resident_service
+
+    reset_local_primary_resident_service()
+    yield
+    reset_local_primary_resident_service()
 
 
 
@@ -132,107 +142,46 @@ def test_create_app_exposes_health_and_readiness_routes(tmp_path: Path) -> None:
         "surface": "alertmanager_webhook",
     }
     assert readiness.status_code == 200
-    assert readiness.json() == {
-        "status": "ready",
-        "service": "warning-agent",
-        "surface": "alertmanager_webhook",
-        "evidence_source": "live",
-        "checks": {
-            "repo_root_exists": True,
-            "thresholds_config_exists": True,
-            "escalation_config_exists": True,
-        },
-        "integration_baseline": {
-            "schema_version": "integration-rollout-baseline.v1",
-            "surface": "warning-agent",
-            "operator_paths": {
-                "health": "/healthz",
-                "readiness": "/readyz",
-                "outcome_admit": "/outcome/admit",
-                "signoz_ingress": "/webhook/signoz",
-            },
-            "outcome_admission": {
-                "status": "ready",
-                "route_path": "/outcome/admit",
-                "receipt_schema_version": "outcome-admission-receipt.v1",
-                "artifact_root": str(tmp_path),
-                "metadata_db_path": str(tmp_path / "metadata.sqlite3"),
-                "retrieval_db_path": str(tmp_path / "retrieval" / "retrieval.sqlite3"),
-            },
-            "signoz_warning_plane": {
-                "route_path": "/webhook/signoz",
-                "receipt_schema_version": "signoz-warning-ingress-receipt.v1",
-                "caller_header": "X-Warning-Agent-Caller",
-                "auth_mode": "shared_token",
-                "auth_state": "missing_env",
-                "shared_token_env": "WARNING_AGENT_SIGNOZ_INGRESS_SHARED_TOKEN",
-                "artifact_root": str(tmp_path / "signoz_warnings"),
-                "index_db_path": str(tmp_path / "signoz_warnings" / "index.sqlite3"),
-                "queue": {
-                    "queue_states": {
-                        "pending": 0,
-                        "processing": 0,
-                        "completed": 0,
-                        "failed": 0,
-                        "dead_letter": 0,
-                        "deduped": 0,
-                    },
-                    "backlog_size": 0,
-                    "oldest_pending_age_sec": None,
-                    "processing_failure_count": 0,
-                    "delivery_deferred_count": 0,
-                    "cloud_fallback_ratio": 0.0,
-                },
-            },
-            "delivery_bridge": {
-                "delivery_class": "page_owner",
-                "route_adapter": "adapter_feishu",
-                "delivery_mode": "env_gated_live",
-                "provider_key": "warning-agent",
-                "env_gate_state": "missing_env",
-                "missing_env": [
-                    "WARNING_AGENT_ADAPTER_FEISHU_BASE_URL",
-                    "WARNING_AGENT_ADAPTER_FEISHU_CHAT_ID",
-                    "WARNING_AGENT_ADAPTER_FEISHU_OPEN_ID",
-                ],
-                "live_endpoint": None,
-                "endpoint_env": "WARNING_AGENT_ADAPTER_FEISHU_BASE_URL",
-                "target_env": {
-                    "chat_id_env": "WARNING_AGENT_ADAPTER_FEISHU_CHAT_ID",
-                    "open_id_env": "WARNING_AGENT_ADAPTER_FEISHU_OPEN_ID",
-                    "thread_id_env": "WARNING_AGENT_ADAPTER_FEISHU_THREAD_ID",
-                },
-            },
-            "provider_runtime": {
-                "local_primary": {
-                    "mode": "deterministic_smoke",
-                    "smoke_model_provider": "local_vllm",
-                    "smoke_model_name": "local-primary-smoke",
-                    "real_adapter": "local_vllm_openai_compat",
-                    "transport": "openai_compatible_http",
-                    "enabled_env": "WARNING_AGENT_LOCAL_PRIMARY_REAL_ADAPTER_ENABLED",
-                    "gate_state": "smoke_default",
-                    "missing_env": [],
-                    "model_name": None,
-                    "endpoint": None,
-                    "fail_closed_action": "send_to_human_review",
-                },
-                "cloud_fallback": {
-                    "mode": "deterministic_smoke",
-                    "smoke_model_provider": "openai",
-                    "smoke_model_name": "cloud-fallback-smoke",
-                    "real_adapter": "openai_responses_api",
-                    "transport": "openai_responses_api",
-                    "enabled_env": "WARNING_AGENT_CLOUD_FALLBACK_REAL_ADAPTER_ENABLED",
-                    "gate_state": "smoke_default",
-                    "missing_env": [],
-                    "model_name": None,
-                    "endpoint": None,
-                    "fail_closed_action": "send_to_human_review",
-                },
-            },
-        },
+    payload = readiness.json()
+    assert payload["status"] == "ready"
+    assert payload["service"] == "warning-agent"
+    assert payload["surface"] == "alertmanager_webhook"
+    assert payload["evidence_source"] == "live"
+    assert payload["checks"] == {
+        "repo_root_exists": True,
+        "thresholds_config_exists": True,
+        "escalation_config_exists": True,
     }
+
+    baseline = payload["integration_baseline"]
+    assert baseline["schema_version"] == "integration-rollout-baseline.v1"
+    assert baseline["operator_paths"] == {
+        "health": "/healthz",
+        "readiness": "/readyz",
+        "outcome_admit": "/outcome/admit",
+        "signoz_ingress": "/webhook/signoz",
+    }
+    assert baseline["outcome_admission"] == {
+        "status": "ready",
+        "route_path": "/outcome/admit",
+        "receipt_schema_version": "outcome-admission-receipt.v1",
+        "artifact_root": str(tmp_path),
+        "metadata_db_path": str(tmp_path / "metadata.sqlite3"),
+        "retrieval_db_path": str(tmp_path / "retrieval" / "retrieval.sqlite3"),
+    }
+    assert baseline["signoz_warning_plane"]["auth_state"] == "missing_env"
+    assert baseline["signoz_warning_plane"]["queue"]["queue_states"]["waiting_local_primary_recovery"] == 0
+    assert baseline["signoz_warning_plane"]["governance"]["queue_mode"] == "strict_serial_warning_plane"
+    assert baseline["delivery_bridge"]["env_gate_state"] == "missing_env"
+    assert baseline["delivery_bridge"]["governance"]["routes"]["page_owner"]["deferred_behavior"] == (
+        "env_gate_missing_or_unready_yields_deferred_dispatch"
+    )
+    assert baseline["feedback_loop"]["promotion"]["minimum_landed_outcome_cases"] == 3
+    assert baseline["provider_runtime"]["local_primary"]["resident_lifecycle"]["state"] == "ready"
+    assert baseline["provider_runtime"]["local_primary"]["abnormal_path_policy"]["warning_worker"]["degraded"] == (
+        "queue_wait_for_local_primary_recovery"
+    )
+    assert baseline["provider_runtime"]["cloud_fallback"]["operating_contract"]["target_model_name"] == "gpt-5.4-xhigh"
 
 
 

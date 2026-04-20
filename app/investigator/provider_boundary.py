@@ -16,12 +16,35 @@ ProviderTransport = Literal["openai_compatible_http", "openai_responses_api"]
 AdapterActivation = Literal["env_opt_in"]
 ApiKeyMode = Literal["not_used", "optional", "required"]
 RealAdapterGateState = Literal["smoke_default", "missing_env", "ready"]
+ProviderRole = Literal["primary_local_investigator", "sparse_cloud_fallback"]
+ProviderServiceMode = Literal["resident_prewarm_on_boot", "env_gated_remote"]
+ProviderInvocationScope = Literal["needs_investigation_only", "fallback_only"]
+ProviderReadinessSource = Literal["resident_service", "env_gate"]
+ProviderReadyAction = Literal["invoke_when_needed", "invoke_when_selected"]
+ProviderNonReadyAction = Literal["fallback_or_queue", "fail_closed"]
+ProviderFallbackName = Literal["cloud_fallback"]
+QueuePolicy = Literal["wait_for_local_primary_recovery"]
 
 
 @dataclass(frozen=True)
 class SmokeProviderContract:
     model_provider: str
     model_name: str
+
+
+@dataclass(frozen=True)
+class ProviderOperatingContract:
+    provider_role: ProviderRole
+    target_model_provider: str
+    target_model_name: str
+    service_mode: ProviderServiceMode
+    invocation_scope: ProviderInvocationScope
+    readiness_source: ProviderReadinessSource
+    ready_action: ProviderReadyAction
+    not_ready_action: ProviderNonReadyAction
+    degraded_action: ProviderNonReadyAction
+    fallback_provider: ProviderFallbackName | None
+    queue_policy: QueuePolicy | None
 
 
 @dataclass(frozen=True)
@@ -42,6 +65,7 @@ class ProviderBoundary:
     mode: ProviderMode
     fail_closed_recommended_action: RecommendedAction
     smoke: SmokeProviderContract
+    operating_contract: ProviderOperatingContract
     real_adapter: RealProviderAdapterContract
 
 
@@ -69,6 +93,14 @@ _ALLOWED_MODES = {"deterministic_smoke"}
 _ALLOWED_TRANSPORTS = {"openai_compatible_http", "openai_responses_api"}
 _ALLOWED_ACTIVATIONS = {"env_opt_in"}
 _ALLOWED_API_KEY_MODES = {"not_used", "optional", "required"}
+_ALLOWED_PROVIDER_ROLES = {"primary_local_investigator", "sparse_cloud_fallback"}
+_ALLOWED_SERVICE_MODES = {"resident_prewarm_on_boot", "env_gated_remote"}
+_ALLOWED_INVOCATION_SCOPES = {"needs_investigation_only", "fallback_only"}
+_ALLOWED_READINESS_SOURCES = {"resident_service", "env_gate"}
+_ALLOWED_READY_ACTIONS = {"invoke_when_needed", "invoke_when_selected"}
+_ALLOWED_NON_READY_ACTIONS = {"fallback_or_queue", "fail_closed"}
+_ALLOWED_FALLBACK_PROVIDERS = {"cloud_fallback"}
+_ALLOWED_QUEUE_POLICIES = {"wait_for_local_primary_recovery"}
 _ENABLED_VALUES = {"1", "true", "yes", "on", "enabled"}
 
 
@@ -113,6 +145,113 @@ def _load_smoke_contract(boundary_payload: dict[str, object], *, key: str) -> Sm
             smoke_payload.get("model_name"),
             label=f"{key}.smoke.model_name",
         ),
+    )
+
+
+def _load_operating_contract(
+    boundary_payload: dict[str, object],
+    *,
+    key: str,
+) -> ProviderOperatingContract:
+    contract_payload = _expect_mapping(
+        boundary_payload.get("operating_contract") or {},
+        label=f"{key}.operating_contract",
+    )
+    provider_role = _expect_non_empty_str(
+        contract_payload.get("provider_role"),
+        label=f"{key}.operating_contract.provider_role",
+    )
+    service_mode = _expect_non_empty_str(
+        contract_payload.get("service_mode"),
+        label=f"{key}.operating_contract.service_mode",
+    )
+    invocation_scope = _expect_non_empty_str(
+        contract_payload.get("invocation_scope"),
+        label=f"{key}.operating_contract.invocation_scope",
+    )
+    readiness_source = _expect_non_empty_str(
+        contract_payload.get("readiness_source"),
+        label=f"{key}.operating_contract.readiness_source",
+    )
+    ready_action = _expect_non_empty_str(
+        contract_payload.get("ready_action"),
+        label=f"{key}.operating_contract.ready_action",
+    )
+    not_ready_action = _expect_non_empty_str(
+        contract_payload.get("not_ready_action"),
+        label=f"{key}.operating_contract.not_ready_action",
+    )
+    degraded_action = _expect_non_empty_str(
+        contract_payload.get("degraded_action"),
+        label=f"{key}.operating_contract.degraded_action",
+    )
+    fallback_provider = _optional_non_empty_str(contract_payload.get("fallback_provider"))
+    queue_policy = _optional_non_empty_str(contract_payload.get("queue_policy"))
+
+    if provider_role not in _ALLOWED_PROVIDER_ROLES:
+        raise ValueError(f"{key}.operating_contract.provider_role is unsupported: {provider_role}")
+    if service_mode not in _ALLOWED_SERVICE_MODES:
+        raise ValueError(f"{key}.operating_contract.service_mode is unsupported: {service_mode}")
+    if invocation_scope not in _ALLOWED_INVOCATION_SCOPES:
+        raise ValueError(f"{key}.operating_contract.invocation_scope is unsupported: {invocation_scope}")
+    if readiness_source not in _ALLOWED_READINESS_SOURCES:
+        raise ValueError(f"{key}.operating_contract.readiness_source is unsupported: {readiness_source}")
+    if ready_action not in _ALLOWED_READY_ACTIONS:
+        raise ValueError(f"{key}.operating_contract.ready_action is unsupported: {ready_action}")
+    if not_ready_action not in _ALLOWED_NON_READY_ACTIONS:
+        raise ValueError(f"{key}.operating_contract.not_ready_action is unsupported: {not_ready_action}")
+    if degraded_action not in _ALLOWED_NON_READY_ACTIONS:
+        raise ValueError(f"{key}.operating_contract.degraded_action is unsupported: {degraded_action}")
+    if fallback_provider is not None and fallback_provider not in _ALLOWED_FALLBACK_PROVIDERS:
+        raise ValueError(f"{key}.operating_contract.fallback_provider is unsupported: {fallback_provider}")
+    if queue_policy is not None and queue_policy not in _ALLOWED_QUEUE_POLICIES:
+        raise ValueError(f"{key}.operating_contract.queue_policy is unsupported: {queue_policy}")
+
+    if readiness_source == "resident_service" and service_mode != "resident_prewarm_on_boot":
+        raise ValueError(
+            f"{key}.operating_contract.service_mode must be resident_prewarm_on_boot when readiness_source=resident_service"
+        )
+    if readiness_source == "env_gate" and service_mode != "env_gated_remote":
+        raise ValueError(
+            f"{key}.operating_contract.service_mode must be env_gated_remote when readiness_source=env_gate"
+        )
+
+    needs_fallback_or_queue = "fallback_or_queue" in {not_ready_action, degraded_action}
+    if needs_fallback_or_queue and fallback_provider is None:
+        raise ValueError(
+            f"{key}.operating_contract.fallback_provider must be set when fallback_or_queue is used"
+        )
+    if needs_fallback_or_queue and queue_policy is None:
+        raise ValueError(
+            f"{key}.operating_contract.queue_policy must be set when fallback_or_queue is used"
+        )
+    if not needs_fallback_or_queue and fallback_provider is not None:
+        raise ValueError(
+            f"{key}.operating_contract.fallback_provider must be empty when fallback_or_queue is not used"
+        )
+    if not needs_fallback_or_queue and queue_policy is not None:
+        raise ValueError(
+            f"{key}.operating_contract.queue_policy must be empty when fallback_or_queue is not used"
+        )
+
+    return ProviderOperatingContract(
+        provider_role=provider_role,
+        target_model_provider=_expect_non_empty_str(
+            contract_payload.get("target_model_provider"),
+            label=f"{key}.operating_contract.target_model_provider",
+        ),
+        target_model_name=_expect_non_empty_str(
+            contract_payload.get("target_model_name"),
+            label=f"{key}.operating_contract.target_model_name",
+        ),
+        service_mode=service_mode,
+        invocation_scope=invocation_scope,
+        readiness_source=readiness_source,
+        ready_action=ready_action,
+        not_ready_action=not_ready_action,
+        degraded_action=degraded_action,
+        fallback_provider=fallback_provider,
+        queue_policy=queue_policy,
     )
 
 
@@ -186,6 +325,7 @@ def _load_boundary(payload: dict[str, object], key: str) -> ProviderBoundary:
             label=f"{key}.fail_closed_recommended_action",
         ),
         smoke=_load_smoke_contract(boundary_payload, key=key),
+        operating_contract=_load_operating_contract(boundary_payload, key=key),
         real_adapter=_load_real_adapter(boundary_payload, key=key),
     )
 

@@ -5,19 +5,31 @@ investigator:
     allowed_provider_order:
       - local_primary
     allow_cloud_fallback: true
+    local_readiness_requirement: resident_service
+    local_not_ready_policy: fallback_or_queue
+    local_not_ready_fallback_provider: cloud_fallback
+    local_not_ready_queue_policy: wait_for_local_primary_recovery
+    local_degraded_policy: fallback_or_queue
   local_primary:
     enabled: true
     model_provider: local_vllm
     model_name: local-primary-smoke
+    contract_target:
+      model_provider: gemma4
+      model_name: gemma4-26b
+    budget_contract:
+      profile: resident_26b_high_budget
+      scope: per_investigation_when_resident_ready
+      startup_cost_policy: excluded_from_per_warning_budget
     budgets:
-      wall_time_seconds: 120
-      max_tool_calls: 8
-      max_prompt_tokens: 2400
-      max_completion_tokens: 600
-      max_retrieval_refs: 10
-      max_trace_refs: 5
-      max_log_refs: 5
-      max_code_refs: 5
+      wall_time_seconds: 300
+      max_tool_calls: 16
+      max_prompt_tokens: 12000
+      max_completion_tokens: 2400
+      max_retrieval_refs: 16
+      max_trace_refs: 8
+      max_log_refs: 8
+      max_code_refs: 8
     trigger_rules:
       confidence_below: 0.55
       novelty_at_or_above: 0.79
@@ -29,6 +41,9 @@ investigator:
     available_phase: P5
     model_provider: openai
     model_name: cloud-fallback-smoke
+    contract_target:
+      model_provider: neko_api_openai
+      model_name: gpt-5.4-xhigh
     budgets:
       max_invocation_rate_total: 0.05
       max_invocation_rate_investigated: 0.25

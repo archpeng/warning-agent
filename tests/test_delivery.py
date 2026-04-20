@@ -2,7 +2,13 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from app.delivery.runtime import EnvGatedLiveRoute, LocalDurableRoute, load_delivery_config, persist_report_delivery
+from app.delivery.runtime import (
+    EnvGatedLiveRoute,
+    LocalDurableRoute,
+    build_delivery_governance_snapshot,
+    load_delivery_config,
+    persist_report_delivery,
+)
 from app.storage.artifact_store import JSONLArtifactStore
 
 
@@ -43,6 +49,41 @@ def test_load_delivery_config_maps_mixed_local_and_live_routes() -> None:
     assert config.routes["page_owner"].target.channel == "feishu"
     assert config.routes["open_ticket"].queue == "ticket_queue"
     assert config.routes["send_to_human_review"].queue == "review_queue"
+
+
+
+def test_build_delivery_governance_snapshot_exposes_local_and_env_gated_routes() -> None:
+    assert build_delivery_governance_snapshot(REPO_ROOT / "configs" / "delivery.yaml") == {
+        "delivery_plane": "warning-agent",
+        "routes": {
+            "observe": {
+                "delivery_mode": "local_durable",
+                "route_adapter": "markdown_only",
+                "queue": "observe",
+                "deferred_behavior": None,
+            },
+            "open_ticket": {
+                "delivery_mode": "local_durable",
+                "route_adapter": "local_ticket_queue",
+                "queue": "ticket_queue",
+                "deferred_behavior": None,
+            },
+            "page_owner": {
+                "delivery_mode": "env_gated_live",
+                "route_adapter": "adapter_feishu",
+                "provider_key": "warning-agent",
+                "target_channel": "feishu",
+                "deferred_behavior": "env_gate_missing_or_unready_yields_deferred_dispatch",
+            },
+            "send_to_human_review": {
+                "delivery_mode": "local_durable",
+                "route_adapter": "local_review_queue",
+                "queue": "review_queue",
+                "deferred_behavior": None,
+            },
+        },
+        "deferred_delivery_policy": "operator_visible_and_runtime_persisted",
+    }
 
 
 

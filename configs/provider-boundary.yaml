@@ -4,6 +4,18 @@ local_primary:
   smoke:
     model_provider: local_vllm
     model_name: local-primary-smoke
+  operating_contract:
+    provider_role: primary_local_investigator
+    target_model_provider: gemma4
+    target_model_name: gemma4-26b
+    service_mode: resident_prewarm_on_boot
+    invocation_scope: needs_investigation_only
+    readiness_source: resident_service
+    ready_action: invoke_when_needed
+    not_ready_action: fallback_or_queue
+    degraded_action: fallback_or_queue
+    fallback_provider: cloud_fallback
+    queue_policy: wait_for_local_primary_recovery
   real_adapter:
     adapter: local_vllm_openai_compat
     transport: openai_compatible_http
@@ -20,6 +32,18 @@ cloud_fallback:
   smoke:
     model_provider: openai
     model_name: cloud-fallback-smoke
+  operating_contract:
+    provider_role: sparse_cloud_fallback
+    target_model_provider: neko_api_openai
+    target_model_name: gpt-5.4-xhigh
+    service_mode: env_gated_remote
+    invocation_scope: fallback_only
+    readiness_source: env_gate
+    ready_action: invoke_when_selected
+    not_ready_action: fail_closed
+    degraded_action: fail_closed
+    fallback_provider:
+    queue_policy:
   real_adapter:
     adapter: openai_responses_api
     transport: openai_responses_api

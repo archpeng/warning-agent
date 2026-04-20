@@ -1,51 +1,57 @@
 # warning-agent local autopilot active status
 
-- source_pack: `warning-agent-minimax-local-primary-real-adapter-2026-04-20`
+- source_pack: `warning-agent-warning-plane-production-stability-2026-04-20`
 - state: `completed`
 - mirror_last_updated: `2026-04-20`
 
 ## Current Step
 
-- active_step: `MM.RV1`
-- active_wave: `wave-3 / MM audit and residual freeze`
+- active_step: `PS.RV1`
+- active_wave: `closeout / PS complete`
 - intended_handoff: `plan-creator`
 
 ## Planned Stages
 
-- [x] `MM.S1a` boundary contract freeze + API-key semantics
-- [x] `MM.S1b` OpenAI-compatible local-primary adapter client baseline
-- [x] `MM.S2a` local_primary auto-wiring + runtime seam
-- [x] `MM.S2b` runtime verification + env-opt smoke surface
-- [x] `MM.RV1` reality audit + successor residual freeze
+- [x] `PS.S1a` model-role split + resident runtime contract freeze
+- [x] `PS.S1b` budget expansion + rollout evidence contract alignment
+- [x] `PS.S2a` Gemma4 26B resident local-primary lifecycle
+- [x] `PS.S2b` local not-ready -> fallback or queue semantics
+- [x] `PS.S2c` cloud fallback conversion to Neko GPT-5.4 xhigh
+- [x] `PS.S2d` 3.5 -> 3.6 stability gates under the new split
+- [x] `PS.S3a` warning-plane governance update for the new model topology
+- [x] `PS.S3b` end-to-end production evidence pack + operator runbook
+- [x] `PS.RV1` reality audit + residual freeze
 
 ## Immediate Focus
 
-### `MM.RV1`
+### `PS.RV1`
 
 - Owner: `execution-reality-audit`
 - State: `COMPLETED`
 - Priority: `highest`
 
-结果：
+终态 truth：
 
-- bounded Minimax/local-primary seam accepted with residuals
-- successor routing frozen to explicit replan input
-- active pack is terminal and should hand off to `plan-creator`
+- pack 已 closeout，verdict=`accept_with_residuals`
+- next handoff = `plan-creator`
+- remaining work 已冻结到 successor replan boundary
 
 ## Machine State
 
-- active_step: `MM.RV1`
-- latest_completed_step: `MM.RV1`
+- active_step: `PS.RV1`
+- latest_completed_step: `PS.RV1`
 - intended_handoff: `plan-creator`
-- latest_planning_input: `docs/plan/warning-agent-minimax-local-primary-successor-replan-input-2026-04-20.md`
+- closeout_doc:
+  - `docs/plan/warning-agent-warning-plane-production-stability-2026-04-20_CLOSEOUT.md`
+- successor_replan_input:
+  - `docs/plan/warning-agent-warning-plane-production-stability-successor-replan-input-2026-04-20.md`
 - latest_verification:
-  - `uv run pytest tests/test_provider_boundary.py tests/test_local_primary.py tests/test_local_primary_openai_compat.py tests/test_investigation_runtime.py -> 14 passed`
-  - `uv run pytest -> 179 passed`
+  - `uv run pytest -> 189 passed`
   - `uv run ruff check app tests scripts -> pass`
 
 ## Latest Evidence
 
-- landed explicit local-primary API-key contract semantics and bounded OpenAI-compatible provider
-- landed runtime auto-wiring for gate=`ready` without requiring injected fake providers
-- landed `app/live_local_primary_smoke.py` as optional env-opt smoke surface
-- recorded terminal closeout in `docs/plan/warning-agent-minimax-local-primary-real-adapter-2026-04-20_CLOSEOUT.md`
+- benchmark artifacts accepted for local analyzer / local primary / cloud fallback
+- runtime rollout evidence artifact persisted under `data/rollout_evidence/`
+- operator runbook landed at `docs/warning-agent-warning-plane-production-stability-runbook.md`
+- pack is terminally complete; future work must enter successor planning

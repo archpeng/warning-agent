@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+from contextlib import asynccontextmanager
 from dataclasses import asdict
 import os
 from pathlib import Path
@@ -210,8 +211,20 @@ def create_app(
     signoz_collector: SignozCollector | None = None,
     evidence_now: str | None = None,
 ) -> FastAPI:
+    from app.investigator.local_primary import prewarm_local_primary_resident_service
+
     repo_root = Path(repo_root)
-    app = FastAPI(title="warning-agent governed warning ingress")
+
+    @asynccontextmanager
+    async def lifespan(_: FastAPI):
+        prewarm_local_primary_resident_service(
+            config_path=repo_root / "configs" / "escalation.yaml",
+            repo_root=repo_root,
+            prewarm_source="fastapi_startup",
+        )
+        yield
+
+    app = FastAPI(title="warning-agent governed warning ingress", lifespan=lifespan)
 
     @app.get(HEALTH_PATH)
     def healthz() -> WebhookHealth:

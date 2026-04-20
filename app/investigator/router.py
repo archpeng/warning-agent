@@ -19,6 +19,26 @@ from app.investigator.base import (
 from app.investigator.contracts import InvestigationResult
 from app.packet.contracts import IncidentPacket
 
+RoutingReadinessRequirement = Literal["resident_service"]
+RoutingAvailabilityPolicy = Literal["fallback_or_queue"]
+RoutingQueuePolicy = Literal["wait_for_local_primary_recovery"]
+LocalPrimaryBudgetProfile = Literal["resident_26b_high_budget"]
+LocalPrimaryBudgetScope = Literal["per_investigation_when_resident_ready"]
+LocalPrimaryStartupCostPolicy = Literal["excluded_from_per_warning_budget"]
+
+
+@dataclass(frozen=True)
+class ProviderContractTarget:
+    model_provider: str
+    model_name: str
+
+
+@dataclass(frozen=True)
+class LocalPrimaryBudgetContract:
+    profile: LocalPrimaryBudgetProfile
+    scope: LocalPrimaryBudgetScope
+    startup_cost_policy: LocalPrimaryStartupCostPolicy
+
 CloudPhase = Literal["P5"]
 
 
@@ -27,6 +47,11 @@ class RoutingPolicy:
     require_needs_investigation: bool
     allowed_provider_order: tuple[ProviderName, ...]
     allow_cloud_fallback: bool
+    local_readiness_requirement: RoutingReadinessRequirement
+    local_not_ready_policy: RoutingAvailabilityPolicy
+    local_not_ready_fallback_provider: ProviderName
+    local_not_ready_queue_policy: RoutingQueuePolicy
+    local_degraded_policy: RoutingAvailabilityPolicy
 
 
 @dataclass(frozen=True)
@@ -34,6 +59,8 @@ class LocalPrimaryConfig:
     enabled: bool
     model_provider: str
     model_name: str
+    contract_target: ProviderContractTarget
+    budget_contract: LocalPrimaryBudgetContract
     budget: InvestigatorBudget
     trigger_rules: dict[str, float]
 
@@ -60,6 +87,7 @@ class CloudFallbackConfig:
     available_phase: CloudPhase
     model_provider: str
     model_name: str
+    contract_target: ProviderContractTarget
     budget: CloudFallbackBudget
     audit: CloudFallbackAuditConfig
     trigger_rules: dict[str, bool | float]
@@ -109,7 +137,10 @@ def load_investigator_routing_config(
     routing = investigator["routing"]
     local_primary = investigator["local_primary"]
     cloud_fallback = investigator["cloud_fallback"]
+    local_contract_target = local_primary["contract_target"]
+    local_budget_contract = local_primary["budget_contract"]
     budget = local_primary["budgets"]
+    cloud_contract_target = cloud_fallback["contract_target"]
     cloud_budget = cloud_fallback["budgets"]
     cloud_audit = cloud_fallback["audit"]
 
@@ -119,11 +150,25 @@ def load_investigator_routing_config(
             require_needs_investigation=bool(routing["require_needs_investigation"]),
             allowed_provider_order=tuple(routing["allowed_provider_order"]),
             allow_cloud_fallback=bool(routing["allow_cloud_fallback"]),
+            local_readiness_requirement=str(routing["local_readiness_requirement"]),
+            local_not_ready_policy=str(routing["local_not_ready_policy"]),
+            local_not_ready_fallback_provider=str(routing["local_not_ready_fallback_provider"]),
+            local_not_ready_queue_policy=str(routing["local_not_ready_queue_policy"]),
+            local_degraded_policy=str(routing["local_degraded_policy"]),
         ),
         local_primary=LocalPrimaryConfig(
             enabled=bool(local_primary["enabled"]),
             model_provider=str(local_primary["model_provider"]),
             model_name=str(local_primary["model_name"]),
+            contract_target=ProviderContractTarget(
+                model_provider=str(local_contract_target["model_provider"]),
+                model_name=str(local_contract_target["model_name"]),
+            ),
+            budget_contract=LocalPrimaryBudgetContract(
+                profile=str(local_budget_contract["profile"]),
+                scope=str(local_budget_contract["scope"]),
+                startup_cost_policy=str(local_budget_contract["startup_cost_policy"]),
+            ),
             budget=InvestigatorBudget(
                 wall_time_seconds=int(budget["wall_time_seconds"]),
                 max_tool_calls=int(budget["max_tool_calls"]),
@@ -141,6 +186,10 @@ def load_investigator_routing_config(
             available_phase=str(cloud_fallback["available_phase"]),
             model_provider=str(cloud_fallback["model_provider"]),
             model_name=str(cloud_fallback["model_name"]),
+            contract_target=ProviderContractTarget(
+                model_provider=str(cloud_contract_target["model_provider"]),
+                model_name=str(cloud_contract_target["model_name"]),
+            ),
             budget=CloudFallbackBudget(
                 max_invocation_rate_total=float(cloud_budget["max_invocation_rate_total"]),
                 max_invocation_rate_investigated=float(cloud_budget["max_invocation_rate_investigated"]),

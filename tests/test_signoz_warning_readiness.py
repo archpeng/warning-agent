@@ -29,7 +29,7 @@ def _headers() -> dict[str, str]:
 
 
 
-def test_readyz_exposes_signoz_warning_auth_and_queue_truth(tmp_path: Path, monkeypatch) -> None:
+def test_readyz_exposes_signoz_warning_auth_queue_and_provider_contract_truth(tmp_path: Path, monkeypatch) -> None:
     monkeypatch.setenv(SIGNOZ_SHARED_TOKEN_ENV, "secret-token")
     client = TestClient(create_app(repo_root=REPO_ROOT, data_root=tmp_path, evidence_source="live"))
 
@@ -67,12 +67,15 @@ def test_readyz_exposes_signoz_warning_auth_and_queue_truth(tmp_path: Path, monk
     readiness = client.get("/readyz")
 
     assert readiness.status_code == 200
-    queue = readiness.json()["integration_baseline"]["signoz_warning_plane"]["queue"]
-    assert readiness.json()["integration_baseline"]["signoz_warning_plane"]["auth_state"] == "ready"
+    payload = readiness.json()["integration_baseline"]
+    queue = payload["signoz_warning_plane"]["queue"]
+    assert payload["signoz_warning_plane"]["auth_state"] == "ready"
+    assert payload["signoz_warning_plane"]["governance"]["state_actions"]["waiting_local_primary_recovery"] == "retry_after_local_recovery_window"
     assert queue == {
         "queue_states": {
             "pending": 0,
             "processing": 0,
+            "waiting_local_primary_recovery": 0,
             "completed": 1,
             "failed": 0,
             "dead_letter": 0,
@@ -80,8 +83,21 @@ def test_readyz_exposes_signoz_warning_auth_and_queue_truth(tmp_path: Path, monk
         },
         "backlog_size": 0,
         "oldest_pending_age_sec": None,
+        "oldest_local_primary_recovery_wait_age_sec": None,
         "processing_failure_count": 0,
+        "local_primary_recovery_wait_count": 0,
         "delivery_deferred_count": 1,
         "cloud_fallback_ratio": 1.0,
     }
+    assert payload["provider_runtime"]["local_primary"]["operating_contract"]["not_ready_action"] == "fallback_or_queue"
+    assert payload["provider_runtime"]["local_primary"]["operating_contract"]["queue_policy"] == "wait_for_local_primary_recovery"
+    assert payload["provider_runtime"]["local_primary"]["budget_contract"]["profile"] == "resident_26b_high_budget"
+    assert payload["provider_runtime"]["local_primary"]["budget_contract"]["caps"]["wall_time_seconds"] == 300
+    assert payload["provider_runtime"]["local_primary"]["resident_lifecycle"]["state"] == "ready"
+    assert (
+        payload["provider_runtime"]["local_primary"]["abnormal_path_policy"]["warning_worker"]["degraded"]
+        == "queue_wait_for_local_primary_recovery"
+    )
+    assert payload["provider_runtime"]["cloud_fallback"]["operating_contract"]["target_model_provider"] == "neko_api_openai"
+    assert payload["feedback_loop"]["promotion"]["minimum_landed_outcome_cases"] == 3
     assert store.get_warning_row(first_warning_id)["queue_state"] == "completed"

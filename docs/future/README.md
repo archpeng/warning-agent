@@ -30,6 +30,10 @@
     - `warning-agent-runtime-materialization-2026-04-19`
     - `warning-agent-local-trust-upgrade-2026-04-19`
     - `warning-agent-compounding-learning-loop-2026-04-19`
+- [warning-agent-3.5-3.6-learning-optimization-minimal-engineering.md](./warning-agent-3.5-3.6-learning-optimization-minimal-engineering.md)
+  - `warning-agent` 内继续做 `3.5 / 3.6` 学习优化的最小工程技术说明
+  - 作用是冻结底层原则、步骤顺序、protected surfaces 与 do-not-touch 清单
+  - 不代表 active execution；若要执行，仍需新开 explicit control-plane pack
 
 ## 推荐阅读顺序
 
@@ -40,6 +44,8 @@
    - `docs/plan/warning-agent-autopilot-delivery-2026-04-18_STATUS.md`
    - `docs/plan/warning-agent-autopilot-delivery-2026-04-18_WORKSET.md`
 4. 本目录主文档
+5. 若关注 `3.5 / 3.6` 的后续学习优化而非 shell replatform，优先读：
+   - `warning-agent-3.5-3.6-learning-optimization-minimal-engineering.md`
 
 ## 目录约束
 

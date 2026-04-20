@@ -11,13 +11,27 @@ from typing import Any, Final, Literal
 
 from app.contracts_common import DATA_DIR
 
-QueueState = Literal["pending", "processing", "completed", "failed", "dead_letter", "deduped"]
+QueueState = Literal[
+    "pending",
+    "processing",
+    "waiting_local_primary_recovery",
+    "completed",
+    "failed",
+    "dead_letter",
+    "deduped",
+]
 
 _SIGNOZ_WARNING_DIR: Final = "signoz_warnings"
 _WARNING_INDEX_DB: Final = "index.sqlite3"
 _WARNING_QUEUE_SCHEMA_VERSION: Final = "signoz-warning-queue-entry.v1"
 _WARNING_PROCESSING_SCHEMA_VERSION: Final = "signoz-warning-processing-result.v1"
-_ACTIVE_DEDUPE_STATES: Final[tuple[QueueState, ...]] = ("pending", "processing", "completed", "failed")
+_ACTIVE_DEDUPE_STATES: Final[tuple[QueueState, ...]] = (
+    "pending",
+    "processing",
+    "waiting_local_primary_recovery",
+    "completed",
+    "failed",
+)
 
 
 @dataclass(frozen=True)
@@ -359,6 +373,9 @@ class SignozWarningStore:
         leased_at: str | None = None,
         last_error_code: str | None = None,
         last_error_message: str | None = None,
+        deferred_reason_code: str | None = None,
+        deferred_reason_message: str | None = None,
+        policy_state: dict[str, Any] | None = None,
     ) -> dict[str, Any]:
         self.initialize()
         row = self.get_warning_row(warning_id)
@@ -383,6 +400,15 @@ class SignozWarningStore:
                 if last_error_code or last_error_message
                 else None
             ),
+            "deferred_reason": (
+                {
+                    "code": deferred_reason_code,
+                    "message": deferred_reason_message,
+                }
+                if deferred_reason_code or deferred_reason_message
+                else None
+            ),
+            "policy_state": policy_state,
         }
         queue_entry_path = _write_json(self.build_paths(warning_id).queue_entry_path, payload)
         with self.connect() as connection:
@@ -430,13 +456,13 @@ class SignozWarningStore:
             rows = connection.execute(
                 """
                 SELECT * FROM signoz_warnings
-                WHERE queue_state IN ('pending', 'failed')
+                WHERE queue_state IN ('pending', 'failed', 'waiting_local_primary_recovery')
                 ORDER BY received_at, warning_id
                 """
             ).fetchall()
             for raw_row in rows:
                 row = dict(raw_row)
-                if row["queue_state"] == "failed" and row.get("next_attempt_after"):
+                if row["queue_state"] in {"failed", "waiting_local_primary_recovery"} and row.get("next_attempt_after"):
                     if _parse_utc(str(row["next_attempt_after"])) > now_dt:
                         continue
                 dedupe_key = str(row["dedupe_key"] or "")
@@ -471,6 +497,39 @@ class SignozWarningStore:
                 assert claimed is not None
                 return ClaimedWarning(warning_id=str(row["warning_id"]), row=claimed)
         return None
+
+    def mark_warning_waiting_for_local_primary_recovery(
+        self,
+        warning_id: str,
+        *,
+        now: str,
+        retry_backoff_sec: int,
+        resident_lifecycle: dict[str, Any],
+        abnormal_path: dict[str, Any],
+    ) -> dict[str, Any]:
+        row = self.get_warning_row(warning_id)
+        if row is None:
+            raise KeyError(f"unknown warning_id: {warning_id}")
+        next_attempt_after = (
+            _parse_utc(now) + timedelta(seconds=retry_backoff_sec)
+        ).replace(microsecond=0).isoformat().replace("+00:00", "Z")
+        return self.record_queue_state(
+            warning_id,
+            dedupe_key=str(row["dedupe_key"] or ""),
+            queue_state="waiting_local_primary_recovery",
+            updated_at=now,
+            duplicate_of_warning_id=_string_or_none(row.get("duplicate_of_warning_id")),
+            attempt_count=int(row["attempt_count"] or 0),
+            next_attempt_after=next_attempt_after,
+            leased_by=None,
+            leased_at=None,
+            deferred_reason_code="local_primary_recovery_wait",
+            deferred_reason_message=str(abnormal_path.get("reason") or "waiting for local primary recovery"),
+            policy_state={
+                "resident_lifecycle": resident_lifecycle,
+                "abnormal_path": abnormal_path,
+            },
+        )
 
     def mark_warning_failed(
         self,
@@ -589,12 +648,14 @@ class SignozWarningStore:
         counts = {
             "pending": 0,
             "processing": 0,
+            "waiting_local_primary_recovery": 0,
             "completed": 0,
             "failed": 0,
             "dead_letter": 0,
             "deduped": 0,
         }
         oldest_pending_age_sec: int | None = None
+        oldest_local_primary_recovery_wait_age_sec: int | None = None
         delivery_deferred_count = 0
         cloud_fallback_completed = 0
         completed_with_runtime = 0
@@ -605,18 +666,32 @@ class SignozWarningStore:
             if queue_state == "pending":
                 age_sec = int((_parse_utc(now_value) - _parse_utc(str(row["received_at"]))).total_seconds())
                 oldest_pending_age_sec = age_sec if oldest_pending_age_sec is None else min(oldest_pending_age_sec, age_sec)
+            if queue_state == "waiting_local_primary_recovery":
+                wait_age_sec = int((_parse_utc(now_value) - _parse_utc(str(row["received_at"]))).total_seconds())
+                oldest_local_primary_recovery_wait_age_sec = (
+                    wait_age_sec
+                    if oldest_local_primary_recovery_wait_age_sec is None
+                    else min(oldest_local_primary_recovery_wait_age_sec, wait_age_sec)
+                )
             if row.get("delivery_status") == "deferred":
                 delivery_deferred_count += 1
             if row.get("runtime_report_id"):
                 completed_with_runtime += 1
                 if row.get("investigation_stage") == "cloud_fallback":
                     cloud_fallback_completed += 1
-        backlog_size = counts["pending"] + counts["processing"] + counts["failed"]
+        backlog_size = (
+            counts["pending"]
+            + counts["processing"]
+            + counts["waiting_local_primary_recovery"]
+            + counts["failed"]
+        )
         return {
             "queue_states": counts,
             "backlog_size": backlog_size,
             "oldest_pending_age_sec": oldest_pending_age_sec,
+            "oldest_local_primary_recovery_wait_age_sec": oldest_local_primary_recovery_wait_age_sec,
             "processing_failure_count": counts["failed"] + counts["dead_letter"],
+            "local_primary_recovery_wait_count": counts["waiting_local_primary_recovery"],
             "delivery_deferred_count": delivery_deferred_count,
             "cloud_fallback_ratio": (
                 round(cloud_fallback_completed / completed_with_runtime, 4) if completed_with_runtime else 0.0

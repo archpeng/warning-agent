@@ -3,13 +3,18 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+import pytest
 from fastapi.testclient import TestClient
 
 import app.runtime_entry as runtime_entry_module
 from app.analyzer.runtime import resolve_runtime_scorer as resolve_actual_runtime_scorer
 from app.feedback.outcome_ingest import OutcomeIngestRequest, ingest_incident_outcome
 from app.feedback.retrieval_refresh import refresh_outcome_retrieval_docs
-from app.investigator.local_primary import LocalPrimaryInvestigator
+from app.investigator.local_primary import (
+    LocalPrimaryInvestigator,
+    prewarm_local_primary_resident_service,
+    reset_local_primary_resident_service,
+)
 from app.investigator.router import load_investigator_routing_config
 from app.investigator.runtime import run_investigation_runtime as run_actual_investigation_runtime
 from app.investigator.tools import BoundedInvestigatorTools
@@ -24,6 +29,13 @@ from app.storage.sqlite_store import MetadataStore
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 REPLAY_FIXTURE = REPO_ROOT / "fixtures" / "replay" / "manual-replay.checkout.high-error-rate.json"
+
+
+@pytest.fixture(autouse=True)
+def _reset_local_primary_resident_runtime() -> None:
+    reset_local_primary_resident_service()
+    yield
+    reset_local_primary_resident_service()
 
 
 
@@ -153,6 +165,22 @@ def test_webhook_live_mode_returns_runtime_receipt_without_fixture_bundle(tmp_pa
     assert response.json()["runtime"]["packet_id"] == "ipk_checkout_post_api_pay_20260419t100000z"
 
 
+
+def test_fastapi_startup_prewarms_local_primary_resident_service_once(tmp_path: Path) -> None:
+    with TestClient(create_app(repo_root=REPO_ROOT, data_root=tmp_path)) as client:
+        health = client.get("/healthz")
+        assert health.status_code == 200
+
+    lifecycle = prewarm_local_primary_resident_service(
+        config_path=REPO_ROOT / "configs" / "escalation.yaml",
+        repo_root=REPO_ROOT,
+        prewarm_source="provider_init",
+    ).lifecycle
+    assert lifecycle.prewarm_attempt_count == 1
+    assert lifecycle.prewarm_source == "fastapi_startup"
+    assert lifecycle.state == "ready"
+
+
 def test_execute_runtime_entrypoint_live_mode_can_reach_local_primary_investigation(monkeypatch, tmp_path: Path) -> None:
     entrypoint = RuntimeEntrypoint(mode="replay", replay_fixture=REPLAY_FIXTURE, evidence_source="live")
     store = JSONLArtifactStore(root=tmp_path)
@@ -181,13 +209,14 @@ def test_execute_runtime_entrypoint_live_mode_can_reach_local_primary_investigat
 
         return _Scorer()
 
-    def fake_run_investigation_runtime(packet, decision, *, config_path, repo_root):
+    def fake_run_investigation_runtime(packet, decision, *, config_path, repo_root, runtime_context="direct_runtime"):
         return run_actual_investigation_runtime(
             packet,
             decision,
             config_path=config_path,
             repo_root=repo_root,
             local_provider=local_provider,
+            runtime_context=runtime_context,
         )
 
     monkeypatch.setattr(runtime_entry_module, "resolve_runtime_scorer", fake_resolve_runtime_scorer)
@@ -236,3 +265,27 @@ def test_execute_runtime_entrypoint_live_mode_passes_retrieval_hits_into_runtime
             "known_outcome": "severe",
         }
     ]
+
+
+
+def test_execute_runtime_entrypoint_prewarms_local_primary_resident_service_once(tmp_path: Path) -> None:
+    entrypoint = RuntimeEntrypoint(mode="replay", replay_fixture=REPLAY_FIXTURE, evidence_source="fixture")
+    store = JSONLArtifactStore(root=tmp_path)
+
+    execution = execute_runtime_entrypoint(
+        entrypoint,
+        repo_root=REPO_ROOT,
+        artifact_store=store,
+    )
+
+    lifecycle = prewarm_local_primary_resident_service(
+        config_path=REPO_ROOT / "configs" / "escalation.yaml",
+        repo_root=REPO_ROOT,
+        prewarm_source="provider_init",
+    ).lifecycle
+
+    assert execution.packet["packet_id"] == "ipk_checkout_post_api_pay_20260418t120008z"
+    assert lifecycle.prewarm_attempt_count == 1
+    assert lifecycle.prewarm_source == "runtime_entry_boot"
+    assert lifecycle.state == "ready"
+    assert lifecycle.provider_mode == "smoke_resident"

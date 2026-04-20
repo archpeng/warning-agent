@@ -36,7 +36,7 @@ def _build_outcome_admission_baseline(*, data_root: Path) -> dict[str, object]:
 
 def _build_delivery_bridge_baseline(*, repo_root: Path, env: Mapping[str, str | None]) -> dict[str, object]:
     from app.delivery.env_gate import resolve_adapter_feishu_env_gate
-    from app.delivery.runtime import EnvGatedLiveRoute, load_delivery_config
+    from app.delivery.runtime import EnvGatedLiveRoute, build_delivery_governance_snapshot, load_delivery_config
 
     config = load_delivery_config(repo_root / "configs" / "delivery.yaml")
     route = config.routes["page_owner"]
@@ -59,18 +59,53 @@ def _build_delivery_bridge_baseline(*, repo_root: Path, env: Mapping[str, str | 
             "open_id_env": route.target.open_id_env,
             "thread_id_env": route.target.thread_id_env,
         },
+        "governance": build_delivery_governance_snapshot(repo_root / "configs" / "delivery.yaml"),
     }
 
 
 
-def _build_provider_gate_baseline(boundary, *, env: Mapping[str, str | None]) -> dict[str, object]:
+def _build_local_primary_abnormal_path_policy() -> dict[str, object]:
+    return {
+        "direct_runtime": {
+            "not_ready": "fallback_to_cloud_fallback",
+            "degraded": "fallback_to_cloud_fallback",
+        },
+        "warning_worker": {
+            "not_ready": "fallback_to_cloud_fallback",
+            "degraded": "queue_wait_for_local_primary_recovery",
+        },
+    }
+
+
+
+def _build_provider_gate_baseline(
+    boundary,
+    *,
+    env: Mapping[str, str | None],
+    budget_contract: dict[str, object] | None = None,
+    resident_lifecycle: dict[str, object] | None = None,
+    abnormal_path_policy: dict[str, object] | None = None,
+) -> dict[str, object]:
     from app.investigator.provider_boundary import resolve_real_adapter_gate
 
     gate = resolve_real_adapter_gate(boundary, env=env)
-    return {
+    payload = {
         "mode": boundary.mode,
         "smoke_model_provider": boundary.smoke.model_provider,
         "smoke_model_name": boundary.smoke.model_name,
+        "operating_contract": {
+            "provider_role": boundary.operating_contract.provider_role,
+            "target_model_provider": boundary.operating_contract.target_model_provider,
+            "target_model_name": boundary.operating_contract.target_model_name,
+            "service_mode": boundary.operating_contract.service_mode,
+            "invocation_scope": boundary.operating_contract.invocation_scope,
+            "readiness_source": boundary.operating_contract.readiness_source,
+            "ready_action": boundary.operating_contract.ready_action,
+            "not_ready_action": boundary.operating_contract.not_ready_action,
+            "degraded_action": boundary.operating_contract.degraded_action,
+            "fallback_provider": boundary.operating_contract.fallback_provider,
+            "queue_policy": boundary.operating_contract.queue_policy,
+        },
         "real_adapter": boundary.real_adapter.adapter,
         "transport": boundary.real_adapter.transport,
         "enabled_env": boundary.real_adapter.enabled_env,
@@ -80,6 +115,13 @@ def _build_provider_gate_baseline(boundary, *, env: Mapping[str, str | None]) ->
         "endpoint": gate.endpoint,
         "fail_closed_action": boundary.fail_closed_recommended_action,
     }
+    if budget_contract is not None:
+        payload["budget_contract"] = budget_contract
+    if resident_lifecycle is not None:
+        payload["resident_lifecycle"] = resident_lifecycle
+    if abnormal_path_policy is not None:
+        payload["abnormal_path_policy"] = abnormal_path_policy
+    return payload
 
 
 
@@ -90,6 +132,7 @@ def _build_signoz_warning_plane_baseline(*, data_root: Path, env: Mapping[str, s
         SIGNOZ_INGRESS_RECEIPT_SCHEMA_VERSION,
         resolve_signoz_ingress_auth,
     )
+    from app.receiver.signoz_queue import build_signoz_warning_queue_governance
     from app.storage.signoz_warning_store import SignozWarningStore
 
     warning_store = SignozWarningStore(root=data_root)
@@ -104,8 +147,29 @@ def _build_signoz_warning_plane_baseline(*, data_root: Path, env: Mapping[str, s
         "artifact_root": str(warning_store.warning_root),
         "index_db_path": str(warning_store.db_path),
         "queue": warning_store.queue_metrics(),
+        "governance": build_signoz_warning_queue_governance(),
     }
 
+
+
+def _build_local_primary_budget_contract(config) -> dict[str, object]:
+    budget = config.local_primary.budget
+    budget_contract = config.local_primary.budget_contract
+    return {
+        "profile": budget_contract.profile,
+        "scope": budget_contract.scope,
+        "startup_cost_policy": budget_contract.startup_cost_policy,
+        "caps": {
+            "wall_time_seconds": budget.wall_time_seconds,
+            "max_tool_calls": budget.max_tool_calls,
+            "max_prompt_tokens": budget.max_prompt_tokens,
+            "max_completion_tokens": budget.max_completion_tokens,
+            "max_retrieval_refs": budget.max_retrieval_refs,
+            "max_trace_refs": budget.max_trace_refs,
+            "max_log_refs": budget.max_log_refs,
+            "max_code_refs": budget.max_code_refs,
+        },
+    }
 
 
 def build_integration_baseline(
@@ -114,12 +178,25 @@ def build_integration_baseline(
     data_root: str | Path | None = None,
     env: Mapping[str, str | None] = os.environ,
 ) -> dict[str, object]:
+    from app.investigator.local_primary import (
+        local_primary_resident_lifecycle_payload,
+        prewarm_local_primary_resident_service,
+    )
     from app.investigator.provider_boundary import load_provider_boundary_config
+    from app.investigator.router import load_investigator_routing_config
     from app.receiver.signoz_ingress import SIGNOZ_INGRESS_PATH
 
     repo_root = Path(repo_root)
     data_root = _resolve_data_root(data_root)
     boundary = load_provider_boundary_config(repo_root / "configs" / "provider-boundary.yaml")
+    routing = load_investigator_routing_config(repo_root / "configs" / "escalation.yaml")
+    local_primary_resident = prewarm_local_primary_resident_service(
+        config_path=repo_root / "configs" / "escalation.yaml",
+        repo_root=repo_root,
+        env=env,
+    )
+
+    from app.feedback.governance import feedback_governance_payload, load_feedback_governance_config
 
     return {
         "schema_version": INTEGRATION_BASELINE_SCHEMA_VERSION,
@@ -133,8 +210,17 @@ def build_integration_baseline(
         "outcome_admission": _build_outcome_admission_baseline(data_root=data_root),
         "signoz_warning_plane": _build_signoz_warning_plane_baseline(data_root=data_root, env=env),
         "delivery_bridge": _build_delivery_bridge_baseline(repo_root=repo_root, env=env),
+        "feedback_loop": feedback_governance_payload(
+            load_feedback_governance_config(repo_root / "configs" / "feedback-governance.yaml")
+        ),
         "provider_runtime": {
-            "local_primary": _build_provider_gate_baseline(boundary.local_primary, env=env),
+            "local_primary": _build_provider_gate_baseline(
+                boundary.local_primary,
+                env=env,
+                budget_contract=_build_local_primary_budget_contract(routing),
+                resident_lifecycle=local_primary_resident_lifecycle_payload(local_primary_resident.lifecycle),
+                abnormal_path_policy=_build_local_primary_abnormal_path_policy(),
+            ),
             "cloud_fallback": _build_provider_gate_baseline(boundary.cloud_fallback, env=env),
         },
     }

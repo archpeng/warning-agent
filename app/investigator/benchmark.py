@@ -21,8 +21,9 @@ from app.analyzer.contracts import RetrievalHit
 from app.analyzer.runtime import resolve_runtime_scorer
 from app.investigator.contracts import load_schema as load_investigation_schema
 from app.investigator.fallback import run_local_primary_with_fallback
-from app.investigator.local_primary import LocalPrimaryInvestigator
+from app.investigator.local_primary import LocalPrimaryInvestigator, LocalPrimaryResidentLifecycle
 from app.investigator.router import InvestigatorRoutingConfig, load_investigator_routing_config, plan_investigation
+from app.investigator.runtime import LocalPrimaryRecoveryRequired, run_investigation_runtime
 from app.packet.builder import build_incident_packet_from_bundle
 from app.receiver.alertmanager_webhook import normalize_alertmanager_payload
 from app.receiver.replay_loader import load_manual_replay_fixture
@@ -33,6 +34,8 @@ LOCAL_PRIMARY_INVOCATION_RATE_MAX: Final = 0.20
 MINIMUM_ROUTING_EVAL_INVESTIGATION_CASES: Final = 2
 STRUCTURED_COMPLETENESS_MIN: Final = 0.95
 DEGRADED_FALLBACK_VALIDITY_REQUIRED: Final = 1.0
+DIRECT_RUNTIME_ABNORMAL_FALLBACK_VALIDITY_REQUIRED: Final = 1.0
+WARNING_WORKER_RECOVERY_WAIT_VALIDITY_REQUIRED: Final = 1.0
 
 
 class BenchmarkCase(TypedDict):
@@ -87,6 +90,8 @@ class BenchmarkGateSnapshot(TypedDict):
     average_tool_calls_per_investigation_max: int
     structured_completeness_min: float
     degraded_fallback_validity_required: float
+    direct_runtime_abnormal_fallback_validity_required: float
+    warning_worker_recovery_wait_validity_required: float
 
 
 class BenchmarkSummary(TypedDict):
@@ -105,6 +110,25 @@ class BenchmarkSummary(TypedDict):
 class _CrashingBenchmarkProvider:
     def investigate(self, request: object) -> object:
         raise RuntimeError("benchmark-injected local-primary failure")
+
+
+class _DegradedResidentBenchmarkProvider:
+    resident_lifecycle = LocalPrimaryResidentLifecycle(
+        service_mode="resident_prewarm_on_boot",
+        invocation_scope="needs_investigation_only",
+        startup_cost_policy="excluded_from_per_warning_budget",
+        provider_mode="real_adapter_resident",
+        state="degraded",
+        gate_state="ready",
+        model_name="gemma4-26b",
+        prewarm_completed_once=True,
+        prewarm_attempt_count=1,
+        prewarm_source="provider_init",
+        reason="local_primary resident prewarm failed: benchmark injected resident outage",
+    )
+
+    def investigate(self, request: object) -> object:
+        raise AssertionError("degraded resident benchmark provider should not be invoked directly")
 
 
 def _utc_now() -> str:
@@ -275,6 +299,8 @@ def benchmark_gate_snapshot(thresholds: AnalyzerThresholds, config: Investigator
         "average_tool_calls_per_investigation_max": config.local_primary.budget.max_tool_calls,
         "structured_completeness_min": STRUCTURED_COMPLETENESS_MIN,
         "degraded_fallback_validity_required": DEGRADED_FALLBACK_VALIDITY_REQUIRED,
+        "direct_runtime_abnormal_fallback_validity_required": DIRECT_RUNTIME_ABNORMAL_FALLBACK_VALIDITY_REQUIRED,
+        "warning_worker_recovery_wait_validity_required": WARNING_WORKER_RECOVERY_WAIT_VALIDITY_REQUIRED,
     }
 
 
@@ -298,6 +324,8 @@ def evaluate_local_primary_acceptance(
     average_tool_calls = float(metrics["average_tool_calls_per_investigation"])
     completeness = float(metrics["structured_completeness_rate"])
     degraded_validity = float(metrics["degraded_fallback_validity_rate"])
+    direct_runtime_abnormal_validity = float(metrics["direct_runtime_abnormal_fallback_validity_rate"])
+    warning_worker_recovery_wait_validity = float(metrics["warning_worker_recovery_wait_validity_rate"])
 
     checks: dict[str, AcceptanceCheck] = {
         "benchmark_measurement_ready": _metric_check(
@@ -336,6 +364,21 @@ def evaluate_local_primary_acceptance(
             comparator="==",
             passed=degraded_validity == gate_snapshot["degraded_fallback_validity_required"],
         ),
+        "direct_runtime_abnormal_fallback_validity_rate": _metric_check(
+            actual=direct_runtime_abnormal_validity,
+            expected=gate_snapshot["direct_runtime_abnormal_fallback_validity_required"],
+            comparator="==",
+            passed=direct_runtime_abnormal_validity == gate_snapshot["direct_runtime_abnormal_fallback_validity_required"],
+        ),
+        "warning_worker_recovery_wait_validity_rate": _metric_check(
+            actual=warning_worker_recovery_wait_validity,
+            expected=gate_snapshot["warning_worker_recovery_wait_validity_required"],
+            comparator="==",
+            passed=(
+                warning_worker_recovery_wait_validity
+                == gate_snapshot["warning_worker_recovery_wait_validity_required"]
+            ),
+        ),
     }
 
     blockers: list[str] = []
@@ -351,6 +394,10 @@ def evaluate_local_primary_acceptance(
         blockers.append("structured_completeness_below_gate")
     if not checks["degraded_fallback_validity_rate"]["passed"]:
         blockers.append("degraded_fallback_invalid")
+    if not checks["direct_runtime_abnormal_fallback_validity_rate"]["passed"]:
+        blockers.append("direct_runtime_abnormal_fallback_invalid")
+    if not checks["warning_worker_recovery_wait_validity_rate"]["passed"]:
+        blockers.append("warning_worker_recovery_wait_invalid")
 
     return {
         "accepted": not blockers,
@@ -417,6 +464,10 @@ def run_local_primary_benchmark(
     structured_complete_count = 0
     degraded_fallback_valid_count = 0
     degraded_fallback_case_count = 0
+    direct_runtime_abnormal_fallback_valid_count = 0
+    direct_runtime_abnormal_fallback_case_count = 0
+    warning_worker_recovery_wait_valid_count = 0
+    warning_worker_recovery_wait_case_count = 0
     routing_label_match_count = 0
 
     for case in corpus:
@@ -454,6 +505,40 @@ def run_local_primary_benchmark(
             not degraded_errors and degraded_result["analysis_updates"]["fallback_invocation_was_correct"] is True
         )
 
+        abnormal_execution = run_investigation_runtime(
+            packet,
+            decision,
+            config_path=repo_root / "configs" / "escalation.yaml",
+            local_provider=_DegradedResidentBenchmarkProvider(),
+        )
+        abnormal_errors = (
+            sorted(validator.iter_errors(abnormal_execution.final_result), key=lambda error: error.json_path)
+            if abnormal_execution.final_result is not None
+            else [ValueError("missing final result")]
+        )
+        direct_runtime_abnormal_fallback_case_count += 1
+        direct_runtime_abnormal_fallback_valid_count += int(
+            not abnormal_errors
+            and abnormal_execution.final_result is not None
+            and abnormal_execution.final_result["investigator_tier"] == "cloud_fallback_investigator"
+            and abnormal_execution.cloud_plan is not None
+            and abnormal_execution.cloud_plan.trigger_reasons == ("local_primary_degraded_fallback_to_cloud",)
+        )
+
+        warning_worker_recovery_wait_case_count += 1
+        try:
+            run_investigation_runtime(
+                packet,
+                decision,
+                config_path=repo_root / "configs" / "escalation.yaml",
+                local_provider=_DegradedResidentBenchmarkProvider(),
+                runtime_context="warning_worker",
+            )
+        except LocalPrimaryRecoveryRequired as exc:
+            warning_worker_recovery_wait_valid_count += int(
+                exc.signal.abnormal_path.action == "queue_wait_for_local_primary_recovery"
+            )
+
     total_cases = len(corpus)
     metrics = {
         "total_cases": total_cases,
@@ -469,6 +554,20 @@ def run_local_primary_benchmark(
             degraded_fallback_valid_count / degraded_fallback_case_count, 2
         )
         if degraded_fallback_case_count
+        else 0.0,
+        "direct_runtime_abnormal_fallback_case_count": direct_runtime_abnormal_fallback_case_count,
+        "direct_runtime_abnormal_fallback_validity_rate": round(
+            direct_runtime_abnormal_fallback_valid_count / direct_runtime_abnormal_fallback_case_count,
+            2,
+        )
+        if direct_runtime_abnormal_fallback_case_count
+        else 0.0,
+        "warning_worker_recovery_wait_case_count": warning_worker_recovery_wait_case_count,
+        "warning_worker_recovery_wait_validity_rate": round(
+            warning_worker_recovery_wait_valid_count / warning_worker_recovery_wait_case_count,
+            2,
+        )
+        if warning_worker_recovery_wait_case_count
         else 0.0,
     }
 

@@ -101,6 +101,30 @@ class CloudFallbackProvider(Protocol):
         ...
 
 
+
+def build_real_cloud_fallback_client(
+    *,
+    boundary,
+    gate,
+):
+    if gate.state != "ready":
+        raise ValueError("real cloud_fallback client can only be built when gate state is ready")
+    if gate.transport != "openai_responses_api":
+        raise RuntimeError(f"unsupported cloud_fallback real adapter transport: {gate.transport}")
+    if gate.endpoint is None or gate.model_name is None or gate.api_key is None:
+        raise RuntimeError("cloud_fallback real adapter gate ready but endpoint/model/api_key missing")
+
+    from app.investigator.cloud_fallback_openai_responses import CloudFallbackOpenAIResponsesClient
+
+    return CloudFallbackOpenAIResponsesClient(
+        endpoint=gate.endpoint,
+        api_key=gate.api_key,
+        model_name=gate.model_name,
+        timeout_seconds=boundary.real_adapter.timeout_seconds,
+        model_provider=boundary.operating_contract.target_model_provider,
+    )
+
+
 @dataclass(frozen=True)
 class DeterministicCloudFallbackClient:
     def investigate(self, request: CloudFallbackClientRequest) -> CloudFallbackClientResponse:
@@ -492,6 +516,10 @@ class CloudFallbackInvestigator:
         real_adapter_client: CloudFallbackClient | None = None,
     ) -> "CloudFallbackInvestigator":
         config = load_investigator_routing_config(config_path)
+        boundary = load_provider_boundary_config().cloud_fallback
+        gate = resolve_real_adapter_gate(boundary, env=env)
+        if real_adapter_client is None and gate.state == "ready":
+            real_adapter_client = build_real_cloud_fallback_client(boundary=boundary, gate=gate)
         return cls(
             budget=config.cloud_fallback.budget,
             audit=config.cloud_fallback.audit,
@@ -521,6 +549,7 @@ class CloudFallbackInvestigator:
         boundary = load_provider_boundary_config().cloud_fallback
         gate = resolve_real_adapter_gate(boundary, env=self.env)
 
+        result_model_provider = self.model_provider
         result_model_name = self.model_name
         if gate.state == "missing_env":
             raise RuntimeError(
@@ -533,7 +562,7 @@ class CloudFallbackInvestigator:
                     f"cloud_fallback real adapter gate ready but client unavailable for {gate.adapter}"
                 )
             response = self.real_adapter_client.investigate(client_request)
-            result_model_name = gate.model_name or gate.adapter
+            result_model_name = gate.model_name or boundary.operating_contract.target_model_name
         else:
             response = self.client.investigate(client_request)
 
@@ -546,6 +575,8 @@ class CloudFallbackInvestigator:
                 "cloud_fallback_future_real_adapter_enabled_env="
                 f"{boundary.real_adapter.enabled_env}"
             ),
+            f"cloud_fallback_target_model_provider={boundary.operating_contract.target_model_provider}",
+            f"cloud_fallback_target_model_name={boundary.operating_contract.target_model_name}",
         ]
         if self.audit.require_failure_reason_note:
             analysis_notes.append("cloud_fallback_invoked_after_local_primary_handoff")
@@ -557,7 +588,7 @@ class CloudFallbackInvestigator:
             "decision_id": request.decision["decision_id"],
             "parent_investigation_id": client_request.parent_investigation_id,
             "investigator_tier": "cloud_fallback_investigator",
-            "model_provider": self.model_provider,
+            "model_provider": result_model_provider,
             "model_name": result_model_name,
             "generated_at": _generated_at(request.packet),
             "input_refs": {

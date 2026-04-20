@@ -94,6 +94,35 @@ def load_delivery_config(config_path: str | Path = Path("configs/delivery.yaml")
 
 
 
+def build_delivery_governance_snapshot(
+    config_path: str | Path = Path("configs/delivery.yaml"),
+) -> dict[str, object]:
+    config = load_delivery_config(config_path)
+    routes: dict[str, dict[str, object]] = {}
+    for delivery_class, route in config.routes.items():
+        if isinstance(route, LocalDurableRoute):
+            routes[delivery_class] = {
+                "delivery_mode": route.delivery_mode,
+                "route_adapter": route.adapter,
+                "queue": route.queue,
+                "deferred_behavior": None,
+            }
+            continue
+        routes[delivery_class] = {
+            "delivery_mode": route.delivery_mode,
+            "route_adapter": route.adapter,
+            "provider_key": route.provider_key,
+            "target_channel": route.target.channel,
+            "deferred_behavior": "env_gate_missing_or_unready_yields_deferred_dispatch",
+        }
+    return {
+        "delivery_plane": "warning-agent",
+        "routes": routes,
+        "deferred_delivery_policy": "operator_visible_and_runtime_persisted",
+    }
+
+
+
 def _load_route(delivery_class: DeliveryClass, route_payload: dict[str, object]) -> DeliveryRoute:
     delivery_mode = str(route_payload.get("delivery_mode") or "local_durable")
     if delivery_mode == "local_durable":

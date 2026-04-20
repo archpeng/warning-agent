@@ -28,13 +28,13 @@
 
 当前 source pack：
 
-- `docs/plan/warning-agent-minimax-local-primary-real-adapter-2026-04-20_PLAN.md`
-- `docs/plan/warning-agent-minimax-local-primary-real-adapter-2026-04-20_STATUS.md`
-- `docs/plan/warning-agent-minimax-local-primary-real-adapter-2026-04-20_WORKSET.md`
+- `docs/plan/warning-agent-warning-plane-production-stability-2026-04-20_PLAN.md`
+- `docs/plan/warning-agent-warning-plane-production-stability-2026-04-20_STATUS.md`
+- `docs/plan/warning-agent-warning-plane-production-stability-2026-04-20_WORKSET.md`
 
 这层 truth 供人类执行、审阅、replan、closeout 使用。
 
-当前 pack 已在 `MM.RV1` terminal truth 停止；若要继续推进，默认下一步是 `plan-creator` 基于 successor residuals 创建新 pack，而不是继续在当前 pack 内追加 execution。
+当前 pack 已切到 terminal closeout truth；`PS.S1a` -> `PS.RV1` 已全部完成，下一步默认不是继续执行当前 pack，而是沿 successor replan boundary 进入新的 planning。
 
 ### 1.3 hard rule
 
@@ -77,7 +77,7 @@ uv run pytest tests/test_autopilot_control_plane.py
 rg -n "Current Active Slice|active_step:|active_slice:" \
   docs/plan/README.md \
   docs/plan/active_STATUS.md \
-  docs/plan/warning-agent-minimax-local-primary-real-adapter-2026-04-20_WORKSET.md
+  docs/plan/warning-agent-warning-plane-production-stability-2026-04-20_WORKSET.md
 ```
 
 预期：
@@ -194,8 +194,8 @@ git diff > /tmp/warning-agent-pre-autopilot.patch
 每次 autopilot 因为 `pause / stop / blocked / closeout` 停下来后，先做这三件事：
 
 1. 检查 richer source pack：
-   - `docs/plan/warning-agent-minimax-local-primary-real-adapter-2026-04-20_STATUS.md`
-   - `docs/plan/warning-agent-minimax-local-primary-real-adapter-2026-04-20_WORKSET.md`
+   - `docs/plan/warning-agent-warning-plane-production-stability-2026-04-20_STATUS.md`
+   - `docs/plan/warning-agent-warning-plane-production-stability-2026-04-20_WORKSET.md`
 2. 检查 machine pack：
    - `docs/plan/README.md`
    - `docs/plan/active_STATUS.md`

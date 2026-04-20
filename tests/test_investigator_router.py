@@ -41,11 +41,23 @@ def test_load_investigator_routing_config_freezes_local_first_mode() -> None:
     assert config.routing.require_needs_investigation is True
     assert config.routing.allowed_provider_order == ("local_primary",)
     assert config.routing.allow_cloud_fallback is True
+    assert config.routing.local_readiness_requirement == "resident_service"
+    assert config.routing.local_not_ready_policy == "fallback_or_queue"
+    assert config.routing.local_not_ready_fallback_provider == "cloud_fallback"
+    assert config.routing.local_not_ready_queue_policy == "wait_for_local_primary_recovery"
+    assert config.routing.local_degraded_policy == "fallback_or_queue"
     assert config.local_primary.enabled is True
     assert config.local_primary.model_provider == "local_vllm"
     assert config.local_primary.model_name == "local-primary-smoke"
-    assert config.local_primary.budget.wall_time_seconds == 120
-    assert config.local_primary.budget.max_tool_calls == 8
+    assert config.local_primary.contract_target.model_provider == "gemma4"
+    assert config.local_primary.contract_target.model_name == "gemma4-26b"
+    assert config.local_primary.budget_contract.profile == "resident_26b_high_budget"
+    assert config.local_primary.budget_contract.scope == "per_investigation_when_resident_ready"
+    assert config.local_primary.budget_contract.startup_cost_policy == "excluded_from_per_warning_budget"
+    assert config.local_primary.budget.wall_time_seconds == 300
+    assert config.local_primary.budget.max_tool_calls == 16
+    assert config.local_primary.budget.max_prompt_tokens == 12000
+    assert config.local_primary.budget.max_completion_tokens == 2400
     assert config.local_primary.trigger_rules["novelty_at_or_above"] == 0.79
     assert config.local_primary.trigger_rules["severity_probability_at_or_above"] == 0.95
     assert config.local_primary.trigger_rules["blast_radius_at_or_above"] == 0.84
@@ -54,6 +66,8 @@ def test_load_investigator_routing_config_freezes_local_first_mode() -> None:
     assert config.cloud_fallback.available_phase == "P5"
     assert config.cloud_fallback.model_provider == "openai"
     assert config.cloud_fallback.model_name == "cloud-fallback-smoke"
+    assert config.cloud_fallback.contract_target.model_provider == "neko_api_openai"
+    assert config.cloud_fallback.contract_target.model_name == "gpt-5.4-xhigh"
     assert config.cloud_fallback.budget.max_invocation_rate_total == 0.05
     assert config.cloud_fallback.budget.max_invocation_rate_investigated == 0.25
     assert config.cloud_fallback.budget.max_wall_time_seconds == 90
@@ -81,7 +95,7 @@ def test_plan_investigation_routes_checkout_case_to_local_primary() -> None:
     assert plan.provider_order == ("local_primary",)
     assert plan.allow_cloud_fallback is True
     assert plan.budget is not None
-    assert plan.budget.wall_time_seconds == 120
+    assert plan.budget.wall_time_seconds == 300
     assert plan.request is not None
     assert plan.request.retrieval_packet_ids == ("ipk_checkout_post_pay_20260411t110000z",)
     assert set(plan.trigger_reasons) == {
@@ -147,10 +161,10 @@ def test_build_investigation_request_caps_reference_lists_to_budget() -> None:
     config = load_investigator_routing_config(REPO_ROOT / "configs" / "escalation.yaml")
 
     packet_with_many_refs = copy.deepcopy(packet)
-    packet_with_many_refs["evidence_refs"]["prometheus_query_refs"] = [f"prom://query/{index}" for index in range(12)]
-    packet_with_many_refs["evidence_refs"]["signoz_query_refs"] = [f"signoz://query/{index}" for index in range(12)]
-    packet_with_many_refs["signoz"]["sample_trace_ids"] = [f"trace-{index}" for index in range(12)]
-    packet_with_many_refs["signoz"]["sample_log_refs"] = [f"signoz://logs/row-{index}" for index in range(12)]
+    packet_with_many_refs["evidence_refs"]["prometheus_query_refs"] = [f"prom://query/{index}" for index in range(24)]
+    packet_with_many_refs["evidence_refs"]["signoz_query_refs"] = [f"signoz://query/{index}" for index in range(24)]
+    packet_with_many_refs["signoz"]["sample_trace_ids"] = [f"trace-{index}" for index in range(24)]
+    packet_with_many_refs["signoz"]["sample_log_refs"] = [f"signoz://logs/row-{index}" for index in range(24)]
 
     decision_with_many_hits = copy.deepcopy(decision)
     decision_with_many_hits["retrieval_hits"] = [
@@ -159,14 +173,14 @@ def test_build_investigation_request_caps_reference_lists_to_budget() -> None:
             "similarity": 0.82,
             "known_outcome": "severe",
         }
-        for index in range(12)
+        for index in range(24)
     ]
 
     request = build_investigation_request(
         packet_with_many_refs,
         decision_with_many_hits,
         budget=config.local_primary.budget,
-        code_search_refs=tuple(f"repo://checkout/path/{index}" for index in range(12)),
+        code_search_refs=tuple(f"repo://checkout/path/{index}" for index in range(24)),
     )
 
     assert len(request.retrieval_packet_ids) == config.local_primary.budget.max_retrieval_refs

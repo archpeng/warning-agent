@@ -8,6 +8,23 @@ from app.storage.signoz_warning_store import SignozWarningStore, _utc_now
 
 
 
+def build_signoz_warning_queue_governance() -> dict[str, object]:
+    return {
+        "queue_mode": "strict_serial_warning_plane",
+        "dedupe_scope": "active_warning_eval_window",
+        "state_actions": {
+            "pending": "await_worker_claim",
+            "processing": "execute_canonical_runtime_spine",
+            "waiting_local_primary_recovery": "retry_after_local_recovery_window",
+            "failed": "bounded_retry",
+            "dead_letter": "operator_intervention_required",
+            "deduped": "suppress_duplicate_processing",
+            "completed": "retain_runtime_artifacts_for_delivery_and_feedback",
+        },
+    }
+
+
+
 def build_signoz_warning_dedupe_key(normalized_alert: dict[str, Any]) -> str:
     source_refs = normalized_alert.get("source_refs") or {}
     parts = [
@@ -68,4 +85,8 @@ def _string_or_unknown(value: object) -> str:
     return value if isinstance(value, str) and value else "unknown"
 
 
-__all__ = ["build_signoz_warning_dedupe_key", "enqueue_admitted_warning"]
+__all__ = [
+    "build_signoz_warning_dedupe_key",
+    "build_signoz_warning_queue_governance",
+    "enqueue_admitted_warning",
+]

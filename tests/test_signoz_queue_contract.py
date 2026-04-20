@@ -7,7 +7,7 @@ from fastapi.testclient import TestClient
 
 from app.receiver.alertmanager_webhook import create_app
 from app.receiver.signoz_ingress import SIGNOZ_CALLER_HEADER, SIGNOZ_INGRESS_PATH, SIGNOZ_SHARED_TOKEN_ENV
-from app.receiver.signoz_queue import build_signoz_warning_dedupe_key
+from app.receiver.signoz_queue import build_signoz_warning_dedupe_key, build_signoz_warning_queue_governance
 from app.storage.signoz_warning_store import SignozWarningStore
 
 
@@ -49,6 +49,8 @@ def test_signoz_ingress_enqueues_first_accepted_warning_as_pending(tmp_path: Pat
         "leased_at": None,
         "updated_at": receipt["queue"]["updated_at"],
         "last_error": None,
+        "deferred_reason": None,
+        "policy_state": None,
     }
 
     store = SignozWarningStore(root=tmp_path)
@@ -78,3 +80,20 @@ def test_signoz_ingress_marks_duplicate_warning_as_deduped(tmp_path: Path, monke
     rows = store.list_warning_rows()
     assert [row["queue_state"] for row in rows] == ["pending", "deduped"]
     assert rows[1]["duplicate_of_warning_id"] == first_receipt["warning_id"]
+
+
+
+def test_signoz_warning_queue_governance_exposes_recovery_wait_and_delivery_feedback_truth() -> None:
+    assert build_signoz_warning_queue_governance() == {
+        "queue_mode": "strict_serial_warning_plane",
+        "dedupe_scope": "active_warning_eval_window",
+        "state_actions": {
+            "pending": "await_worker_claim",
+            "processing": "execute_canonical_runtime_spine",
+            "waiting_local_primary_recovery": "retry_after_local_recovery_window",
+            "failed": "bounded_retry",
+            "dead_letter": "operator_intervention_required",
+            "deduped": "suppress_duplicate_processing",
+            "completed": "retain_runtime_artifacts_for_delivery_and_feedback",
+        },
+    }
