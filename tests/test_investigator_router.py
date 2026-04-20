@@ -43,6 +43,7 @@ def test_load_investigator_routing_config_freezes_local_first_mode() -> None:
     assert config.routing.allow_cloud_fallback is True
     assert config.local_primary.enabled is True
     assert config.local_primary.model_provider == "local_vllm"
+    assert config.local_primary.model_name == "local-primary-smoke"
     assert config.local_primary.budget.wall_time_seconds == 120
     assert config.local_primary.budget.max_tool_calls == 8
     assert config.local_primary.trigger_rules["novelty_at_or_above"] == 0.79
@@ -52,7 +53,7 @@ def test_load_investigator_routing_config_freezes_local_first_mode() -> None:
     assert config.cloud_fallback.enabled is True
     assert config.cloud_fallback.available_phase == "P5"
     assert config.cloud_fallback.model_provider == "openai"
-    assert config.cloud_fallback.model_name == "cloud-fallback-pending"
+    assert config.cloud_fallback.model_name == "cloud-fallback-smoke"
     assert config.cloud_fallback.budget.max_invocation_rate_total == 0.05
     assert config.cloud_fallback.budget.max_invocation_rate_investigated == 0.25
     assert config.cloud_fallback.budget.max_wall_time_seconds == 90

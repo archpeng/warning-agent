@@ -6,7 +6,9 @@ from pathlib import Path
 from jsonschema import Draft202012Validator
 
 from app.investigator.cloud_fallback import (
+    CloudFallbackClientResponse,
     CloudFallbackGuardSnapshot,
+    CloudFallbackHypothesis,
     CloudFallbackInvestigator,
     build_cloud_client_request,
     build_cloud_fallback_request,
@@ -33,6 +35,28 @@ EXPECTED_CLOUD_INVESTIGATION_FIXTURE = REPO_ROOT / "fixtures" / "evidence" / "ch
 class CrashingCloudFallbackClient:
     def investigate(self, request):
         raise RuntimeError("vendor timeout during bounded cloud review")
+
+
+class FakeRealCloudFallbackClient:
+    def investigate(self, request):
+        return CloudFallbackClientResponse(
+            severity_band="P1",
+            recommended_action="page_owner",
+            confidence=0.91,
+            suspected_primary_cause="real adapter confirmed db timeout on order lookup",
+            failure_chain_summary=(
+                "real adapter reviewed the bounded local handoff and confirmed db timeout on order lookup"
+            ),
+            hypotheses=(
+                CloudFallbackHypothesis(
+                    hypothesis="real adapter confirms the checkout timeout regression",
+                    confidence=0.91,
+                    supporting_reason_codes=("real_adapter_runtime",),
+                ),
+            ),
+            unknowns=("real adapter local proof only; remote rollout remains gated",),
+            notes=("cloud_fallback_real_adapter_runtime_invoked",),
+        )
 
 
 def _load_json(path: Path) -> dict:
@@ -165,6 +189,40 @@ def test_evaluate_cloud_fallback_guards_reports_pass_and_failure() -> None:
     }
 
 
+def test_cloud_fallback_can_use_real_adapter_client_when_gate_ready() -> None:
+    packet = _build_packet()
+    decision, _, local_result = _build_local_investigation(packet)
+    request = build_cloud_fallback_request(
+        packet,
+        decision,
+        local_result,
+        config_path=REPO_ROOT / "configs" / "escalation.yaml",
+    )
+    provider = CloudFallbackInvestigator.from_config(
+        REPO_ROOT / "configs" / "escalation.yaml",
+        client=CrashingCloudFallbackClient(),
+        real_adapter_client=FakeRealCloudFallbackClient(),
+        env={
+            "WARNING_AGENT_CLOUD_FALLBACK_REAL_ADAPTER_ENABLED": "true",
+            "OPENAI_BASE_URL": "https://api.openai.example/v1",
+            "OPENAI_API_KEY": "secret-token",
+            "WARNING_AGENT_CLOUD_FALLBACK_MODEL": "gpt-4o-mini",
+        },
+    )
+
+    result = provider.investigate(request)
+
+    validator = Draft202012Validator(load_investigation_schema())
+    errors = sorted(validator.iter_errors(result), key=lambda error: error.json_path)
+
+    assert not errors
+    assert result["investigator_tier"] == "cloud_fallback_investigator"
+    assert result["model_name"] == "gpt-4o-mini"
+    assert result["summary"]["suspected_primary_cause"] == "real adapter confirmed db timeout on order lookup"
+    assert "cloud_fallback_real_adapter_runtime_invoked" in result["analysis_updates"]["notes"]
+
+
+
 def test_run_cloud_fallback_with_local_fallback_returns_local_result_when_cloud_client_fails() -> None:
     packet = _build_packet()
     decision, config, local_result = _build_local_investigation(packet)
@@ -193,7 +251,13 @@ def test_run_cloud_fallback_with_local_fallback_returns_local_result_when_cloud_
     assert result["summary"]["recommended_action"] == "send_to_human_review"
     assert result["analysis_updates"]["recommended_action_changed"] is True
     assert "cloud_fallback_unavailable" in result["analysis_updates"]["notes"]
-    assert "provider_mode=deterministic_smoke" in result["analysis_updates"]["notes"]
+    assert "cloud_fallback_provider_mode=deterministic_smoke" in result["analysis_updates"]["notes"]
+    assert "cloud_fallback_current_smoke_model=cloud-fallback-smoke" in result["analysis_updates"]["notes"]
+    assert "cloud_fallback_future_real_adapter=openai_responses_api" in result["analysis_updates"]["notes"]
+    assert (
+        "cloud_fallback_future_real_adapter_enabled_env="
+        "WARNING_AGENT_CLOUD_FALLBACK_REAL_ADAPTER_ENABLED"
+    ) in result["analysis_updates"]["notes"]
     assert "fail_closed_to=send_to_human_review" in result["analysis_updates"]["notes"]
     assert any("vendor timeout during bounded cloud review" in item for item in result["unknowns"])
     assert result["compressed_handoff"]["handoff_tokens_estimate"] <= config.cloud_fallback.budget.max_handoff_tokens

@@ -90,8 +90,25 @@ python3 -m compileall app
 uv run warning-agent
 ```
 
+如果要启用当前已经落地的 `adapter-feishu` notify-first live bridge：
+
+```bash
+cp .env.example .env
+```
+
+当前 `.env.example` 已包含本机 `adapter-feishu` 地址和已验证过的本地测试群目标：
+
+- `WARNING_AGENT_ADAPTER_FEISHU_BASE_URL`
+- `WARNING_AGENT_ADAPTER_FEISHU_CHAT_ID`
+
+如果你要改成直接发给某个用户：
+
+- 清空 `WARNING_AGENT_ADAPTER_FEISHU_CHAT_ID`
+- 设置 `WARNING_AGENT_ADAPTER_FEISHU_OPEN_ID`
+
 ## 补充文档
 
+- [本地 autopilot clean-start runbook](./docs/warning-agent-local-autopilot-clean-start-runbook.md)
 - [最小 repo skeleton](./docs/warning-agent-minimal-repo-skeleton.md)
 - [设计决策表](./docs/analyse/warning-agent-design-decision-table.md)
 - [技术栈建议](./docs/analyse/warning-agent-tech-stack-recommendation.md)

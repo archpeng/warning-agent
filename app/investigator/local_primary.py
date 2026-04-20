@@ -2,15 +2,18 @@
 
 from __future__ import annotations
 
+import os
 import re
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
+from typing import Mapping, Protocol
 from urllib.parse import parse_qs, unquote, urlparse
 
 from app.analyzer.base import round_score
 from app.investigator.base import InvestigationRequest, InvestigatorBudget, ProviderName
 from app.investigator.contracts import InvestigationResult
+from app.investigator.provider_boundary import load_provider_boundary_config, resolve_real_adapter_gate
 from app.investigator.router import load_investigator_routing_config
 from app.investigator.tools import BoundedInvestigatorTools
 
@@ -68,12 +71,19 @@ def _trace_hint_summary(hint: dict[str, str | None]) -> str:
     return f"{target} via {span_name} returned {status_code}"
 
 
+class RealAdapterProviderProtocol(Protocol):
+    def investigate(self, request: InvestigationRequest) -> InvestigationResult:
+        ...
+
+
 @dataclass(frozen=True)
 class LocalPrimaryInvestigator:
     budget: InvestigatorBudget
     model_provider: str
     model_name: str
     tools: BoundedInvestigatorTools | None = None
+    env: Mapping[str, str | None] = field(default_factory=lambda: os.environ)
+    real_adapter_provider: RealAdapterProviderProtocol | None = None
     provider_name: ProviderName = "local_primary"
 
     @classmethod
@@ -83,6 +93,8 @@ class LocalPrimaryInvestigator:
         *,
         repo_root: str | Path = Path("."),
         tools: BoundedInvestigatorTools | None = None,
+        env: Mapping[str, str | None] = os.environ,
+        real_adapter_provider: RealAdapterProviderProtocol | None = None,
     ) -> "LocalPrimaryInvestigator":
         config = load_investigator_routing_config(config_path)
         return cls(
@@ -90,11 +102,28 @@ class LocalPrimaryInvestigator:
             model_provider=config.local_primary.model_provider,
             model_name=config.local_primary.model_name,
             tools=tools or BoundedInvestigatorTools.from_config(repo_root=Path(repo_root)),
+            env=env,
+            real_adapter_provider=real_adapter_provider,
         )
 
     def investigate(self, request: InvestigationRequest) -> InvestigationResult:
         if request.budget != self.budget:
             raise ValueError("request budget must match local-primary provider budget")
+
+        boundary = load_provider_boundary_config().local_primary
+        gate = resolve_real_adapter_gate(boundary, env=self.env)
+        if gate.state == "missing_env":
+            raise RuntimeError(
+                "local_primary real adapter gate enabled but missing env: "
+                + ", ".join(gate.missing_env)
+            )
+        if gate.state == "ready":
+            if self.real_adapter_provider is None:
+                raise RuntimeError(
+                    f"local_primary real adapter gate ready but client unavailable for {gate.adapter}"
+                )
+            return self.real_adapter_provider.investigate(request)
+
         if _is_signoz_first_packet(request.packet):
             return self._investigate_signoz_first(request)
         return self._investigate_legacy(request)
@@ -146,8 +175,18 @@ class LocalPrimaryInvestigator:
                 for repo_candidate in packet["topology"]["repo_candidates"][:2]
             ],
         ]
+        boundary = load_provider_boundary_config().local_primary
 
-        tool_notes = ["local_primary_smoke_result"]
+        tool_notes = [
+            "local_primary_smoke_result",
+            f"local_primary_provider_mode={boundary.mode}",
+            f"local_primary_current_smoke_model={boundary.smoke.model_name}",
+            f"local_primary_future_real_adapter={boundary.real_adapter.adapter}",
+            (
+                "local_primary_future_real_adapter_enabled_env="
+                f"{boundary.real_adapter.enabled_env}"
+            ),
+        ]
         unknowns = [
             "bounded tool wrappers are not connected yet; live follow-up queries remain pending",
         ]
@@ -299,8 +338,19 @@ class LocalPrimaryInvestigator:
                 for repo_candidate in packet["topology"]["repo_candidates"][:2]
             ],
         ]
+        boundary = load_provider_boundary_config().local_primary
 
-        tool_notes = ["local_primary_smoke_result", "packet_signoz_alert_context_used"]
+        tool_notes = [
+            "local_primary_smoke_result",
+            "packet_signoz_alert_context_used",
+            f"local_primary_provider_mode={boundary.mode}",
+            f"local_primary_current_smoke_model={boundary.smoke.model_name}",
+            f"local_primary_future_real_adapter={boundary.real_adapter.adapter}",
+            (
+                "local_primary_future_real_adapter_enabled_env="
+                f"{boundary.real_adapter.enabled_env}"
+            ),
+        ]
         if packet_trace_hints:
             tool_notes.append("packet_trace_detail_hints_used")
 

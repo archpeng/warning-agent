@@ -15,6 +15,8 @@ from app.collectors.prometheus import PrometheusCollector
 from app.collectors.signoz import SignozCollector
 from app.packet.contracts import CandidateSource
 from app.receiver.replay_loader import AlertmanagerWebhookPayload
+from app.retrieval.index import RetrievalIndex
+from app.storage.sqlite_store import MetadataStore
 
 WEBHOOK_PATH: Final = "/webhook/alertmanager"
 HEALTH_PATH: Final = "/healthz"
@@ -244,6 +246,21 @@ def create_app(
                     message=str(exc),
                 ),
             )
+
+    from app.feedback.outcome_api import build_outcome_router, register_outcome_exception_handlers
+    from app.storage.artifact_store import JSONLArtifactStore
+
+    outcome_artifact_store = JSONLArtifactStore(root=Path(data_root)) if data_root else JSONLArtifactStore()
+    outcome_metadata_store = MetadataStore(db_path=outcome_artifact_store.root / "metadata.sqlite3")
+    outcome_retrieval_index = RetrievalIndex(db_path=outcome_artifact_store.root / "retrieval" / "retrieval.sqlite3")
+    register_outcome_exception_handlers(app)
+    app.include_router(
+        build_outcome_router(
+            artifact_store=outcome_artifact_store,
+            metadata_store=outcome_metadata_store,
+            retrieval_index=outcome_retrieval_index,
+        )
+    )
 
     return app
 

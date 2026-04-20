@@ -8,7 +8,7 @@ investigator:
   local_primary:
     enabled: true
     model_provider: local_vllm
-    model_name: local-primary-pending
+    model_name: local-primary-smoke
     budgets:
       wall_time_seconds: 120
       max_tool_calls: 8
@@ -28,7 +28,7 @@ investigator:
     enabled: true
     available_phase: P5
     model_provider: openai
-    model_name: cloud-fallback-pending
+    model_name: cloud-fallback-smoke
     budgets:
       max_invocation_rate_total: 0.05
       max_invocation_rate_investigated: 0.25

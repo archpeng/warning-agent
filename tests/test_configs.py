@@ -45,6 +45,7 @@ def test_escalation_and_report_configs_are_loadable() -> None:
     assert escalation["investigator"]["default_mode"] == "local_first"
     assert escalation["investigator"]["routing"]["allowed_provider_order"] == ["local_primary"]
     assert escalation["investigator"]["routing"]["allow_cloud_fallback"] is True
+    assert escalation["investigator"]["local_primary"]["model_name"] == "local-primary-smoke"
     assert escalation["investigator"]["local_primary"]["budgets"]["wall_time_seconds"] == 120
     assert escalation["investigator"]["local_primary"]["budgets"]["max_tool_calls"] == 8
     assert escalation["investigator"]["local_primary"]["trigger_rules"]["novelty_at_or_above"] == 0.79
@@ -54,7 +55,7 @@ def test_escalation_and_report_configs_are_loadable() -> None:
     assert escalation["investigator"]["cloud_fallback"]["enabled"] is True
     assert escalation["investigator"]["cloud_fallback"]["available_phase"] == "P5"
     assert escalation["investigator"]["cloud_fallback"]["model_provider"] == "openai"
-    assert escalation["investigator"]["cloud_fallback"]["model_name"] == "cloud-fallback-pending"
+    assert escalation["investigator"]["cloud_fallback"]["model_name"] == "cloud-fallback-smoke"
     assert escalation["investigator"]["cloud_fallback"]["budgets"]["max_invocation_rate_total"] == 0.05
     assert escalation["investigator"]["cloud_fallback"]["budgets"]["max_invocation_rate_investigated"] == 0.25
     assert escalation["investigator"]["cloud_fallback"]["budgets"]["max_wall_time_seconds"] == 90

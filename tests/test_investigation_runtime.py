@@ -6,6 +6,7 @@ from pathlib import Path
 
 from jsonschema import Draft202012Validator
 
+from app.investigator.cloud_fallback import CloudFallbackInvestigator
 from app.investigator.contracts import load_schema as load_investigation_schema
 from app.investigator.router import load_investigator_routing_config, plan_cloud_fallback
 from app.investigator.runtime import run_investigation_runtime
@@ -106,3 +107,39 @@ def test_run_investigation_runtime_escalates_degraded_local_result_to_cloud() ->
 
     report = render_alert_report(packet, decision, execution.final_result)
     assert "investigation_stage: cloud_fallback" in report
+
+
+
+def test_run_investigation_runtime_fail_closes_when_cloud_real_adapter_gate_is_ready_but_client_missing() -> None:
+    packet = _build_packet()
+    decision = _load_json(DECISION_FIXTURE)
+    cloud_provider = CloudFallbackInvestigator.from_config(
+        REPO_ROOT / "configs" / "escalation.yaml",
+        env={
+            "WARNING_AGENT_CLOUD_FALLBACK_REAL_ADAPTER_ENABLED": "true",
+            "OPENAI_BASE_URL": "https://api.openai.example/v1",
+            "OPENAI_API_KEY": "secret-token",
+            "WARNING_AGENT_CLOUD_FALLBACK_MODEL": "gpt-4o-mini",
+        },
+    )
+
+    execution = run_investigation_runtime(
+        packet,
+        decision,
+        config_path=REPO_ROOT / "configs" / "escalation.yaml",
+        local_provider=CrashingLocalPrimaryProvider(),
+        cloud_provider=cloud_provider,
+    )
+
+    validator = Draft202012Validator(load_investigation_schema())
+    errors = sorted(validator.iter_errors(execution.final_result), key=lambda error: error.json_path)
+
+    assert execution.cloud_audit is not None
+    assert execution.cloud_audit.fallback_used is True
+    assert not errors
+    assert execution.final_result["investigator_tier"] == "local_primary_investigator"
+    assert execution.final_result["summary"]["recommended_action"] == "send_to_human_review"
+    assert any(
+        "cloud_fallback real adapter gate ready but client unavailable" in note
+        for note in execution.final_result["analysis_updates"]["notes"]
+    )

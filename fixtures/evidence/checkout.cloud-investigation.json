@@ -6,7 +6,7 @@
   "parent_investigation_id": "cir_checkout_post_api_pay_20260418t120012z",
   "investigator_tier": "cloud_fallback_investigator",
   "model_provider": "openai",
-  "model_name": "cloud-fallback-pending",
+  "model_name": "cloud-fallback-smoke",
   "generated_at": "2026-04-18T12:00:24Z",
   "input_refs": {
     "packet_id": "ipk_checkout_post_api_pay_20260418t120008z",
@@ -67,6 +67,10 @@
     "notes": [
       "cloud_fallback_smoke_result",
       "handoff_tokens_estimate=238",
+      "cloud_fallback_provider_mode=deterministic_smoke",
+      "cloud_fallback_current_smoke_model=cloud-fallback-smoke",
+      "cloud_fallback_future_real_adapter=openai_responses_api",
+      "cloud_fallback_future_real_adapter_enabled_env=WARNING_AGENT_CLOUD_FALLBACK_REAL_ADAPTER_ENABLED",
       "cloud_fallback_invoked_after_local_primary_handoff"
     ]
   },

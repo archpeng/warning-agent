@@ -2,17 +2,18 @@
 
 from __future__ import annotations
 
+import os
 from copy import deepcopy
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
-from typing import Protocol
+from typing import Mapping, Protocol
 
 from app.analyzer.base import round_score
 from app.analyzer.contracts import LocalAnalyzerDecision
 from app.investigator.contracts import InvestigationResult
 from app.investigator.local_primary import build_investigation_id
-from app.investigator.provider_boundary import load_provider_boundary_config
+from app.investigator.provider_boundary import load_provider_boundary_config, resolve_real_adapter_gate
 from app.investigator.router import (
     CloudFallbackAuditConfig,
     CloudFallbackBudget,
@@ -322,9 +323,19 @@ def build_cloud_unavailable_local_fallback(
     notes = list(fallback_result["analysis_updates"]["notes"])
     if "cloud_fallback_unavailable" not in notes:
         notes.append("cloud_fallback_unavailable")
-    notes.append(f"provider_mode={boundary.mode}")
-    notes.append(f"fail_closed_to={boundary.fail_closed_recommended_action}")
-    notes.append(f"cloud_fallback_failure_reason={failure_reason}")
+    for note in (
+        f"cloud_fallback_provider_mode={boundary.mode}",
+        f"cloud_fallback_current_smoke_model={boundary.smoke.model_name}",
+        f"cloud_fallback_future_real_adapter={boundary.real_adapter.adapter}",
+        (
+            "cloud_fallback_future_real_adapter_enabled_env="
+            f"{boundary.real_adapter.enabled_env}"
+        ),
+        f"fail_closed_to={boundary.fail_closed_recommended_action}",
+        f"cloud_fallback_failure_reason={failure_reason}",
+    ):
+        if note not in notes:
+            notes.append(note)
     fallback_result["analysis_updates"]["notes"] = notes
     fallback_result["analysis_updates"]["recommended_action_changed"] = (
         previous_recommended_action != boundary.fail_closed_recommended_action
@@ -467,6 +478,8 @@ class CloudFallbackInvestigator:
     model_provider: str
     model_name: str
     client: CloudFallbackClient
+    env: Mapping[str, str | None] = field(default_factory=lambda: os.environ)
+    real_adapter_client: CloudFallbackClient | None = None
     provider_name: str = "cloud_fallback"
 
     @classmethod
@@ -475,6 +488,8 @@ class CloudFallbackInvestigator:
         config_path: str | Path = Path("configs/escalation.yaml"),
         *,
         client: CloudFallbackClient | None = None,
+        env: Mapping[str, str | None] = os.environ,
+        real_adapter_client: CloudFallbackClient | None = None,
     ) -> "CloudFallbackInvestigator":
         config = load_investigator_routing_config(config_path)
         return cls(
@@ -483,6 +498,8 @@ class CloudFallbackInvestigator:
             model_provider=config.cloud_fallback.model_provider,
             model_name=config.cloud_fallback.model_name,
             client=client or DeterministicCloudFallbackClient(),
+            env=env,
+            real_adapter_client=real_adapter_client,
         )
 
     def investigate(self, request: CloudFallbackRequest) -> InvestigationResult:
@@ -498,12 +515,38 @@ class CloudFallbackInvestigator:
             raise ValueError("cloud fallback requires a non-negative handoff token estimate")
 
         client_request = build_cloud_client_request(request)
-        response = self.client.investigate(client_request)
         parent_routing = request.parent_investigation["routing"]
         parent_input_refs = request.parent_investigation["input_refs"]
         parent_evidence_refs = request.parent_investigation["evidence_refs"]
+        boundary = load_provider_boundary_config().cloud_fallback
+        gate = resolve_real_adapter_gate(boundary, env=self.env)
 
-        analysis_notes = list(response.notes)
+        result_model_name = self.model_name
+        if gate.state == "missing_env":
+            raise RuntimeError(
+                "cloud_fallback real adapter gate enabled but missing env: "
+                + ", ".join(gate.missing_env)
+            )
+        if gate.state == "ready":
+            if self.real_adapter_client is None:
+                raise RuntimeError(
+                    f"cloud_fallback real adapter gate ready but client unavailable for {gate.adapter}"
+                )
+            response = self.real_adapter_client.investigate(client_request)
+            result_model_name = gate.model_name or gate.adapter
+        else:
+            response = self.client.investigate(client_request)
+
+        analysis_notes = [
+            *response.notes,
+            f"cloud_fallback_provider_mode={boundary.mode}",
+            f"cloud_fallback_current_smoke_model={boundary.smoke.model_name}",
+            f"cloud_fallback_future_real_adapter={boundary.real_adapter.adapter}",
+            (
+                "cloud_fallback_future_real_adapter_enabled_env="
+                f"{boundary.real_adapter.enabled_env}"
+            ),
+        ]
         if self.audit.require_failure_reason_note:
             analysis_notes.append("cloud_fallback_invoked_after_local_primary_handoff")
 
@@ -515,7 +558,7 @@ class CloudFallbackInvestigator:
             "parent_investigation_id": client_request.parent_investigation_id,
             "investigator_tier": "cloud_fallback_investigator",
             "model_provider": self.model_provider,
-            "model_name": self.model_name,
+            "model_name": result_model_name,
             "generated_at": _generated_at(request.packet),
             "input_refs": {
                 "packet_id": request.packet["packet_id"],

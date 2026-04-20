@@ -5,7 +5,7 @@
   "decision_id": "lad_checkout_post_pay_20260418t120010z",
   "investigator_tier": "local_primary_investigator",
   "model_provider": "local_vllm",
-  "model_name": "local-primary-pending",
+  "model_name": "local-primary-smoke",
   "generated_at": "2026-04-18T12:00:08Z",
   "input_refs": {
     "packet_id": "ipk_checkout_post_api_pay_20260418t120008z",
@@ -70,6 +70,10 @@
     "fallback_invocation_was_correct": null,
     "notes": [
       "local_primary_smoke_result",
+      "local_primary_provider_mode=deterministic_smoke",
+      "local_primary_current_smoke_model=local-primary-smoke",
+      "local_primary_future_real_adapter=local_vllm_openai_compat",
+      "local_primary_future_real_adapter_enabled_env=WARNING_AGENT_LOCAL_PRIMARY_REAL_ADAPTER_ENABLED",
       "bounded_repo_search_used",
       "repo_search_hit_count=2",
       "tool_calls_used=1"

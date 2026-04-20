@@ -58,7 +58,13 @@ def test_degraded_local_fallback_returns_schema_valid_partial_result_and_report(
     assert result["analysis_updates"]["fallback_invocation_was_correct"] is True
     assert result["analysis_updates"]["recommended_action_changed"] is True
     assert "degraded_local_fallback" in result["analysis_updates"]["notes"]
-    assert "provider_mode=deterministic_smoke" in result["analysis_updates"]["notes"]
+    assert "local_primary_provider_mode=deterministic_smoke" in result["analysis_updates"]["notes"]
+    assert "local_primary_current_smoke_model=local-primary-smoke" in result["analysis_updates"]["notes"]
+    assert "local_primary_future_real_adapter=local_vllm_openai_compat" in result["analysis_updates"]["notes"]
+    assert (
+        "local_primary_future_real_adapter_enabled_env="
+        "WARNING_AGENT_LOCAL_PRIMARY_REAL_ADAPTER_ENABLED"
+    ) in result["analysis_updates"]["notes"]
     assert "fail_closed_to=send_to_human_review" in result["analysis_updates"]["notes"]
     assert any("local tool budget exhausted" in item for item in result["unknowns"])
 

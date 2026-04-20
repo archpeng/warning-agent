@@ -6,6 +6,7 @@ from pathlib import Path
 
 from fastapi.testclient import TestClient
 
+from app.delivery.bridge_result import BridgeDispatchResult
 from app.feedback.outcome_ingest import OutcomeIngestRequest, ingest_incident_outcome
 from app.feedback.retrieval_refresh import refresh_outcome_retrieval_docs
 from app.receiver.alertmanager_webhook import (
@@ -109,8 +110,12 @@ def test_webhook_stub_accepts_payload_and_returns_runtime_receipt(tmp_path: Path
     assert {hit.doc_id for hit in search_documents(retrieval_index, "timeout", service="checkout")} >= {
         "rpt_checkout_post_api_pay_20260418t120008z"
     }
-    assert [record["delivery_class"] for record in artifact_store.read_all("deliveries")] == ["page_owner"]
-    assert [record["route_adapter"] for record in artifact_store.read_all("deliveries")] == ["local_page_queue"]
+    delivery_records = artifact_store.read_all("deliveries")
+    assert [record["delivery_class"] for record in delivery_records] == ["page_owner"]
+    assert [record["route_adapter"] for record in delivery_records] == ["adapter_feishu"]
+    assert [record["delivery_mode"] for record in delivery_records] == ["env_gated_live"]
+    assert [record["status"] for record in delivery_records] == ["deferred"]
+    assert [record["env_gate_state"] for record in delivery_records] == ["missing_env"]
 
 
 
@@ -156,6 +161,44 @@ def test_webhook_returns_explicit_error_receipt_for_missing_fixture(tmp_path: Pa
     assert response.json()["normalized"]["service"] == "missing-service"
     assert response.json()["error"]["code"] == "runtime_validation_error"
     assert "webhook evidence fixture does not exist" in response.json()["error"]["message"]
+
+
+
+def test_webhook_runtime_path_materializes_feishu_bridge_payload_when_env_ready(tmp_path: Path, monkeypatch) -> None:
+    monkeypatch.setenv("WARNING_AGENT_ADAPTER_FEISHU_BASE_URL", "http://127.0.0.1:8787")
+    monkeypatch.setenv("WARNING_AGENT_ADAPTER_FEISHU_CHAT_ID", "oc-test-chat")
+    monkeypatch.delenv("WARNING_AGENT_ADAPTER_FEISHU_OPEN_ID", raising=False)
+    monkeypatch.delenv("WARNING_AGENT_ADAPTER_FEISHU_THREAD_ID", raising=False)
+    monkeypatch.setattr(
+        "app.delivery.runtime.post_adapter_feishu_notification",
+        lambda endpoint, payload, timeout_seconds: BridgeDispatchResult(
+            status="delivered",
+            response_code=202,
+            provider_key="warning-agent",
+            provider_status="delivered",
+            message=None,
+            external_ref="msg-1",
+            raw_response={"code": 0, "providerKey": "warning-agent", "status": "delivered"},
+        ),
+    )
+    client = TestClient(create_app(repo_root=REPO_ROOT, data_root=tmp_path))
+
+    response = client.post(WEBHOOK_PATH, json=_load_alert_payload())
+
+    assert response.status_code == 200
+    artifact_store = JSONLArtifactStore(root=tmp_path)
+    delivery_records = artifact_store.read_all("deliveries")
+    assert [record["route_adapter"] for record in delivery_records] == ["adapter_feishu"]
+    assert [record["delivery_mode"] for record in delivery_records] == ["env_gated_live"]
+    assert [record["status"] for record in delivery_records] == ["delivered"]
+    assert [record["env_gate_state"] for record in delivery_records] == ["ready"]
+    assert delivery_records[0]["response_code"] == 202
+    assert delivery_records[0]["provider_key"] == "warning-agent"
+    assert delivery_records[0]["provider_status"] == "delivered"
+    assert delivery_records[0]["external_ref"] == "msg-1"
+    assert delivery_records[0]["target_ref"] == "oc-test-chat"
+    assert delivery_records[0]["live_endpoint"] == "http://127.0.0.1:8787/providers/webhook"
+    assert Path(delivery_records[0]["bridge_payload_path"]).exists()
 
 
 

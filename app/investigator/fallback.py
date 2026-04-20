@@ -73,7 +73,13 @@ def build_degraded_local_fallback(
             "fallback_invocation_was_correct": True,
             "notes": [
                 "degraded_local_fallback",
-                f"provider_mode={boundary.mode}",
+                f"local_primary_provider_mode={boundary.mode}",
+                f"local_primary_current_smoke_model={boundary.smoke.model_name}",
+                f"local_primary_future_real_adapter={boundary.real_adapter.adapter}",
+                (
+                    "local_primary_future_real_adapter_enabled_env="
+                    f"{boundary.real_adapter.enabled_env}"
+                ),
                 f"fail_closed_to={fallback_recommended_action}",
                 failure_reason,
             ],

@@ -2,13 +2,24 @@ schema_version: delivery-config.v1
 routes:
   observe:
     adapter: markdown_only
+    delivery_mode: local_durable
     queue: observe
   open_ticket:
     adapter: local_ticket_queue
+    delivery_mode: local_durable
     queue: ticket_queue
   page_owner:
-    adapter: local_page_queue
-    queue: page_queue
+    adapter: adapter_feishu
+    delivery_mode: env_gated_live
+    provider_key: warning-agent
+    endpoint_env: WARNING_AGENT_ADAPTER_FEISHU_BASE_URL
+    timeout_seconds: 5
+    target:
+      channel: feishu
+      chat_id_env: WARNING_AGENT_ADAPTER_FEISHU_CHAT_ID
+      open_id_env: WARNING_AGENT_ADAPTER_FEISHU_OPEN_ID
+      thread_id_env: WARNING_AGENT_ADAPTER_FEISHU_THREAD_ID
   send_to_human_review:
     adapter: local_review_queue
+    delivery_mode: local_durable
     queue: review_queue
